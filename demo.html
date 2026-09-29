@@ -183,13 +183,13 @@ button{
     <div id="status" class="status hidden" aria-live="polite"></div>
     <div id="results"></div>
 
-    <p class="note">The demo does not edit the Google Sheet. The demo does not edit the Google Sheet. Only confirmation details are shown here; your full registration record remains in Google Sheets.</p>
+    <p class="note">The demo does not edit the Google Sheet. Only confirmation details are shown here; your full registration record remains in Google Sheets.</p>
   </section>
 
   <div class="footer">Demo • Search Name → QR Event Pass</div>
 </main>
 
-<script src="./app-core.js?v=15"></script>
+<script src="./app-core.js?v=18"></script>
 <script>
 const SHEET_ID='1l8Xk4B5EkniJq3hVoES6blYPIFCEl1-rnmXmxWEJLgI';
 const SHEET_NAME='Form Responses 1';
@@ -223,6 +223,34 @@ function cell(row,i){
   if(!c)return '';
   return c.f!=null?c.f:(c.v!=null?c.v:'');
 }
+function parseCompanions(raw){
+  const text=safeText(raw).trim();
+  if(!text||/^(none|na|n\/a|wala|0)$/i.test(text))return [];
+  const lines=text.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+  return lines.map((line,index)=>{
+    const parts=line.split(/\s*-\s*/).map(x=>x.trim()).filter(Boolean);
+    let name='',nickname='',age='';
+    if(parts.length>=3){
+      name=parts[0];
+      nickname=parts.slice(1,-1).join(' - ');
+      const m=parts[parts.length-1].match(/\d{1,3}/);
+      age=m?m[0]:'';
+    }else if(parts.length===2){
+      name=parts[0];
+      const m=parts[1].match(/\b(\d{1,3})\b/);
+      if(m){
+        age=m[1];
+        nickname=parts[1].replace(m[0],'').trim();
+      }else{
+        nickname=parts[1];
+      }
+    }else{
+      const m=line.match(/^(.*?)(?:\s*[, ]\s*)(\d{1,3})(?:\s*(?:yrs?|years?|yo|old))?\.?$/i);
+      if(m){name=m[1].trim();age=m[2]}else{name=line}
+    }
+    return {name,nickname,age,index:index+1,raw:line};
+  }).filter(c=>c.name&&!/^(none|na|n\/a|wala|0)$/i.test(c.name));
+}
 function renderResults(rows){
   resultsEl.innerHTML='';
   if(!rows.length){
@@ -236,7 +264,9 @@ function renderResults(rows){
       name:safeText(cell(row,1)).trim(),
       nickname:safeText(cell(row,2)).trim(),
       mobile:safeText(cell(row,3)).trim(),
-      location:safeText(cell(row,4)).trim()
+      location:safeText(cell(row,4)).trim(),
+      companionCount:safeText(cell(row,5)).trim(),
+      companionRaw:safeText(cell(row,6)).trim()
     };
     if(!record.name)return;
     const box=document.createElement('div');
@@ -253,9 +283,58 @@ function renderResults(rows){
     b.textContent='THIS IS ME — CREATE QR EVENT PASS';
     b.onclick=()=>{
       PDW.selectMasterRecord(record);
-      location.href='./pass.html?v=15';
+      location.href='./pass.html?v=18';
     };
     box.append(h,p,b);
+
+    const companions=parseCompanions(record.companionRaw);
+    if(companions.length){
+      const heading=document.createElement('p');
+      heading.style.marginTop='18px';
+      heading.style.fontWeight='900';
+      heading.style.color='#0f5132';
+      heading.textContent='Companion Passes';
+      box.appendChild(heading);
+
+      companions.forEach(c=>{
+        const cwrap=document.createElement('div');
+        cwrap.style.marginTop='10px';
+        cwrap.style.padding='14px';
+        cwrap.style.border='2px solid #d8d0c0';
+        cwrap.style.borderRadius='16px';
+        cwrap.style.background='#fff';
+
+        const cname=document.createElement('strong');
+        cname.style.display='block';
+        cname.style.fontSize='clamp(18px,3.6vw,28px)';
+        cname.textContent=c.name+(c.nickname?' ('+c.nickname+')':'')+(c.age?' • Age '+c.age:'');
+
+        const cnote=document.createElement('p');
+        cnote.style.margin='6px 0 0';
+        cnote.style.color='#59655f';
+        cnote.style.fontWeight='650';
+        cnote.textContent='Snack + Lunch • No Raffle • Biometric Optional';
+
+        const cb=document.createElement('button');
+        cb.textContent='CREATE COMPANION QR PASS';
+        cb.onclick=()=>{
+          PDW.selectCompanionRecord({
+            sourceKey:record.sourceKey,
+            patientName:record.name,
+            name:c.name,
+            nickname:c.nickname,
+            age:c.age,
+            index:c.index,
+            location:record.location
+          });
+          location.href='./pass.html?v=18';
+        };
+
+        cwrap.append(cname,cnote,cb);
+        box.appendChild(cwrap);
+      });
+    }
+
     resultsEl.appendChild(box);
   });
 }
@@ -265,7 +344,7 @@ function searchGoogleSheet(query){
     const clean=normalizeQuery(query);
     if(clean.length<2){reject(new Error('SHORT'));return}
     const qSafe=clean.replace(/'/g,'');
-    const tq="select A,B,C,E,H where lower(B) contains '"+qSafe+"' or lower(C) contains '"+qSafe+"' limit 10";
+    const tq="select A,B,C,E,H,M,N where lower(B) contains '"+qSafe+"' or lower(C) contains '"+qSafe+"' limit 10";
     const script=document.createElement('script');
     let finished=false;
     const timer=setTimeout(()=>{
