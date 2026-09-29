@@ -186,10 +186,10 @@ button{
     <p class="note">The demo does not edit the Google Sheet. Only confirmation details are shown here; your full registration record remains in Google Sheets.</p>
   </section>
 
-  <div class="footer">Demo • Step 1 of 3 • Search & Confirm</div>
+  <div class="footer">Demo • Search Name → QR Event Pass</div>
 </main>
 
-<script src="./app-core.js?v=14"></script>
+<script src="./app-core.js?v=15"></script>
 <script>
 const SHEET_ID='1l8Xk4B5EkniJq3hVoES6blYPIFCEl1-rnmXmxWEJLgI';
 const SHEET_NAME='Form Responses 1';
@@ -250,10 +250,10 @@ function renderResults(rows){
     parts.push('Mobile: '+maskMobile(record.mobile));
     p.textContent=parts.join(' • ');
     const b=document.createElement('button');
-    b.textContent='THIS IS ME — CREATE EVENT PASS';
+    b.textContent='THIS IS ME — CREATE QR EVENT PASS';
     b.onclick=()=>{
       PDW.selectMasterRecord(record);
-      location.href='./biometric.html?v=14';
+      location.href='./pass.html?v=15';
     };
     box.append(h,p,b);
     resultsEl.appendChild(box);
