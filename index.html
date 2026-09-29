@@ -113,6 +113,7 @@ button{
   line-height:1.5;
   font-weight:650;
 }
+.note a{color:var(--green);font-weight:900}
 .footer{
   width:100%;
   padding:16px 8px 4px;
@@ -122,6 +123,53 @@ button{
   line-height:1.4;
   font-weight:650;
 }
+.conditional{display:none}
+.checkbox-row{
+  display:grid;
+  grid-template-columns:auto 1fr;
+  align-items:start;
+  gap:12px;
+  margin-top:clamp(20px,3vw,30px);
+  padding:16px;
+  border:2px solid var(--line);
+  border-radius:18px;
+  background:#fffdf8;
+}
+.checkbox-row input[type="checkbox"]{
+  width:28px;
+  height:28px;
+  min-height:28px;
+  margin:2px 0 0;
+  accent-color:var(--green);
+}
+.checkbox-row label{
+  margin:0;
+  font-size:clamp(17px,3.4vw,34px);
+  line-height:1.45;
+  font-weight:750;
+}
+.confirmation{
+  text-align:center;
+}
+.confirmation .pid{
+  margin:18px auto 8px;
+  color:var(--green);
+  font-size:clamp(34px,8vw,72px);
+  line-height:1;
+  font-weight:950;
+  letter-spacing:.02em;
+}
+.confirmation .success{
+  display:inline-block;
+  margin:0 auto 8px;
+  padding:8px 14px;
+  border-radius:999px;
+  background:#eef8f2;
+  color:var(--green);
+  font-weight:900;
+  font-size:clamp(16px,3vw,26px);
+}
+.hidden{display:none!important}
 @media (min-width:1200px){
   .screen{padding-top:28px}
   .hero h1{font-size:52px}
@@ -131,6 +179,7 @@ button{
   input,select,button{font-size:22px;min-height:68px}
   .note{font-size:18px}
   .footer{font-size:17px}
+  .checkbox-row label{font-size:18px}
 }
 </style>
 </head>
@@ -141,37 +190,158 @@ button{
     <p>Home Registration</p>
   </section>
 
-  <section class="card">
+  <section class="card" id="registrationCard">
     <h2>Participant Registration</h2>
 
-    <label for="name">Full Name</label>
-    <input id="name" autocomplete="name" placeholder="Enter your full name">
+    <form id="registrationForm" novalidate>
+      <label for="name">Full Name</label>
+      <input id="name" autocomplete="name" placeholder="Enter your full name" required>
 
-    <label for="type">Participant Type</label>
-    <select id="type">
-      <option value="PATIENT">Patient / PD Warrior</option>
-      <option value="COMPANION">Companion</option>
-    </select>
+      <label for="mobile">Mobile Number</label>
+      <input id="mobile" type="tel" autocomplete="tel" inputmode="tel" placeholder="Example: 09171234567" required>
 
-    <button id="go">REGISTER &amp; CONTINUE</button>
+      <label for="location">City / Province</label>
+      <input id="location" autocomplete="address-level2" placeholder="Example: Bacoor, Cavite" required>
 
-    <p class="note">
-      Patient: Snack + Lunch + Raffle.<br>
-      Companion: Snack + Lunch only.
-    </p>
+      <label for="type">Participant Type</label>
+      <select id="type" required>
+        <option value="PATIENT">Patient / PD Warrior</option>
+        <option value="COMPANION">Companion</option>
+      </select>
+
+      <div id="companionWrap" class="conditional">
+        <label for="companionOf">Companion of</label>
+        <input id="companionOf" placeholder="Enter PD Warrior's full name">
+      </div>
+
+      <label for="assistance">Accessibility / Assistance Needed</label>
+      <select id="assistance">
+        <option value="NONE">None</option>
+        <option value="WHEELCHAIR">Wheelchair assistance</option>
+        <option value="WALKING">Walking assistance</option>
+        <option value="SPEECH">Speech / communication assistance</option>
+        <option value="OTHER">Other assistance</option>
+      </select>
+
+      <label for="emergencyName">Emergency Contact Name <span class="note">(Optional)</span></label>
+      <input id="emergencyName" autocomplete="name" placeholder="Emergency contact">
+
+      <label for="emergencyMobile">Emergency Contact Number <span class="note">(Optional)</span></label>
+      <input id="emergencyMobile" type="tel" inputmode="tel" placeholder="Contact number">
+
+      <label for="idStatus">Senior Citizen / PWD Status</label>
+      <select id="idStatus">
+        <option value="NONE">None</option>
+        <option value="SENIOR">Senior Citizen</option>
+        <option value="PWD">PWD</option>
+        <option value="BOTH">Senior Citizen and PWD</option>
+      </select>
+
+      <label for="authorization">Will another person submit or claim documents for you?</label>
+      <select id="authorization">
+        <option value="NO">No</option>
+        <option value="YES">Yes — authorization may be required</option>
+      </select>
+
+      <div class="checkbox-row">
+        <input id="consent" type="checkbox">
+        <label for="consent">
+          I confirm that the information I provided is correct and may be used for event registration and attendance management.
+        </label>
+      </div>
+
+      <button type="submit" id="go">REGISTER &amp; CONTINUE</button>
+
+      <p class="note" id="entitlementNote">
+        Patient: Snack + Lunch + Raffle.<br>
+        Companion: Snack + Lunch only.
+      </p>
+
+      <p class="note">
+        <a href="./privacy.html" target="_blank" rel="noopener">Read Privacy Notice</a>
+      </p>
+    </form>
+  </section>
+
+  <section class="card confirmation hidden" id="confirmationCard" aria-live="polite">
+    <div class="success">Registration successful ✓</div>
+    <h2>Your Participant ID</h2>
+    <div class="pid" id="participantId">—</div>
+    <p class="note" id="confirmationName"></p>
+    <p class="note" id="confirmationEntitlement"></p>
+    <button id="continueBio">CONTINUE TO BIOMETRIC</button>
   </section>
 
   <div class="footer">Step 1 of 3 • Registration only</div>
 </main>
 
-<script src="./app-core.js?v=8"></script>
+<script src="./app-core.js?v=10"></script>
 <script>
-document.querySelector('#go').onclick=()=>{
-  const n=document.querySelector('#name').value.trim();
-  if(!n)return alert('Please enter your full name.');
-  PDW.register(n,document.querySelector('#type').value);
-  location.href='./biometric.html?v=8';
-};
+const typeEl=document.querySelector('#type');
+const companionWrap=document.querySelector('#companionWrap');
+const companionOf=document.querySelector('#companionOf');
+
+function updateTypeUI(){
+  const isCompanion=typeEl.value==='COMPANION';
+  companionWrap.style.display=isCompanion?'block':'none';
+  companionOf.required=isCompanion;
+}
+typeEl.addEventListener('change',updateTypeUI);
+updateTypeUI();
+
+function cleanPhone(value){
+  return value.replace(/[^0-9+]/g,'');
+}
+function validPhone(value){
+  const digits=value.replace(/\D/g,'');
+  return digits.length>=10 && digits.length<=13;
+}
+
+document.querySelector('#registrationForm').addEventListener('submit',(e)=>{
+  e.preventDefault();
+
+  const name=document.querySelector('#name').value.trim();
+  const mobile=cleanPhone(document.querySelector('#mobile').value.trim());
+  const location=document.querySelector('#location').value.trim();
+  const type=typeEl.value;
+  const companionName=companionOf.value.trim();
+  const emergencyName=document.querySelector('#emergencyName').value.trim();
+  const emergencyMobile=cleanPhone(document.querySelector('#emergencyMobile').value.trim());
+  const consent=document.querySelector('#consent').checked;
+
+  if(!name)return alert('Please enter your full name.');
+  if(!validPhone(mobile))return alert('Please enter a valid mobile number.');
+  if(!location)return alert('Please enter your City / Province.');
+  if(type==='COMPANION'&&!companionName)return alert('Please enter the name of the PD Warrior you are accompanying.');
+  if((emergencyName&&!emergencyMobile)||(!emergencyName&&emergencyMobile))return alert('Please complete both emergency contact fields, or leave both blank.');
+  if(emergencyMobile&&!validPhone(emergencyMobile))return alert('Please enter a valid emergency contact number.');
+  if(!consent)return alert('Please confirm the registration consent before continuing.');
+
+  const id=PDW.register(name,type,{
+    mobile,
+    location,
+    companionOf:companionName,
+    assistance:document.querySelector('#assistance').value,
+    emergencyName,
+    emergencyMobile,
+    idStatus:document.querySelector('#idStatus').value,
+    authorization:document.querySelector('#authorization').value,
+    consent:true
+  });
+
+  document.querySelector('#participantId').textContent=id;
+  document.querySelector('#confirmationName').textContent=name+' • '+(type==='PATIENT'?'PD Warrior':'Companion');
+  document.querySelector('#confirmationEntitlement').textContent=
+    type==='PATIENT'?'Entitlement: Snack + Lunch + Raffle':'Entitlement: Snack + Lunch • No Raffle';
+
+  document.querySelector('#registrationCard').classList.add('hidden');
+  document.querySelector('#confirmationCard').classList.remove('hidden');
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+
+document.querySelector('#continueBio').addEventListener('click',()=>{
+  location.href='./biometric.html?v=10';
+});
 </script>
 </body>
 </html>
