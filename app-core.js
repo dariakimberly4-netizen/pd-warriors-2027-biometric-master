@@ -146,7 +146,63 @@ const PDW={
     this.setActive(patientId);
     return {patientId,companionIds};
   },
-  eventPassPayload(p){return p?(p.eventPassCode||('PDW2027|PASS|'+p.id+'|'+(p.type==='COMPANION'?'COMPANION':'PATIENT'))):''},
+  eventPassPayload(p){
+    if(!p)return '';
+    return [
+      'PDW2027','PASS',
+      p.id||'',
+      p.type==='COMPANION'?'COMPANION':'PATIENT',
+      encodeURIComponent(p.name||''),
+      encodeURIComponent(p.nickname||''),
+      encodeURIComponent(p.location||''),
+      encodeURIComponent(p.sourceKey||'')
+    ].join('|');
+  },
+  parseEventPassPayload(payload){
+    const parts=String(payload||'').split('|');
+    if(parts.length<4||parts[0]!=='PDW2027'||parts[1]!=='PASS')return null;
+    const dec=v=>{try{return decodeURIComponent(v||'')}catch(e){return v||''}};
+    return {
+      id:parts[2]||'',
+      type:parts[3]==='COMPANION'?'COMPANION':'PATIENT',
+      name:dec(parts[4]),
+      nickname:dec(parts[5]),
+      location:dec(parts[6]),
+      sourceKey:dec(parts[7])
+    };
+  },
+  importFromEventPass(payload){
+    const rec=this.parseEventPassPayload(payload);
+    if(!rec||!rec.id)return null;
+    const d=this.db();
+    let p=d.people.find(x=>x.id===rec.id);
+    if(!p){
+      p={
+        id:rec.id,
+        type:rec.type,
+        name:rec.name||rec.id,
+        nickname:rec.nickname||'',
+        location:rec.location||'',
+        sourceKey:rec.sourceKey||'',
+        fromEventPass:true,
+        biometric:false,
+        verifyMethod:null,
+        arrived:false,
+        snack:false,
+        lunch:false,
+        raffle:false,
+        registeredAt:new Date().toISOString()
+      };
+      d.people.push(p);
+    }else{
+      if(rec.name)p.name=rec.name;
+      if(rec.nickname)p.nickname=rec.nickname;
+      if(rec.location)p.location=rec.location;
+      if(rec.sourceKey)p.sourceKey=rec.sourceKey;
+    }
+    this.save(d);
+    return p;
+  },
   updatePerson(id,fn){const d=this.db();const p=d.people.find(x=>x.id===id);if(!p)return null;fn(p,d);this.save(d);return p},
   addTx(id,action,station){const d=this.db();d.tx.push({id,action,station,time:new Date().toLocaleTimeString()});d.pending=(d.pending||0)+1;this.save(d)},
   process(id,kind,station){
