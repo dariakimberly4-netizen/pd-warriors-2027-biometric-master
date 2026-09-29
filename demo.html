@@ -189,7 +189,7 @@ button{
   <div class="footer">Demo • Step 1 of 3 • Search & Confirm</div>
 </main>
 
-<script src="./app-core.js?v=12"></script>
+<script src="./app-core.js?v=14"></script>
 <script>
 const SHEET_ID='1l8Xk4B5EkniJq3hVoES6blYPIFCEl1-rnmXmxWEJLgI';
 const SHEET_NAME='Form Responses 1';
@@ -250,10 +250,10 @@ function renderResults(rows){
     parts.push('Mobile: '+maskMobile(record.mobile));
     p.textContent=parts.join(' • ');
     const b=document.createElement('button');
-    b.textContent='THIS IS ME';
+    b.textContent='THIS IS ME — CREATE EVENT PASS';
     b.onclick=()=>{
       PDW.selectMasterRecord(record);
-      location.href='./biometric.html?v=13';
+      location.href='./biometric.html?v=14';
     };
     box.append(h,p,b);
     resultsEl.appendChild(box);
