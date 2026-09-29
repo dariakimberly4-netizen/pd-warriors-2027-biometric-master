@@ -330,3 +330,90 @@ th{color:var(--green)}
   .registration-page select{min-height:60px}
   .registration-page button{min-height:62px}
 }
+
+
+/* Mobile readability pass */
+@media(max-width:700px){
+  .registration-page{
+    font-size:20px;
+  }
+  .registration-page .app{
+    width:100%;
+    max-width:100%;
+    padding:12px;
+  }
+  .registration-page .hero{
+    min-height:126px;
+    padding:22px 16px;
+  }
+  .registration-page .hero h1{
+    font-size:36px;
+    line-height:1.05;
+  }
+  .registration-page .hero p{
+    font-size:19px;
+    line-height:1.3;
+  }
+  .registration-page .card{
+    padding:24px 20px 22px;
+  }
+  .registration-page .card h2{
+    font-size:29px;
+    line-height:1.15;
+    margin-bottom:20px;
+  }
+  .registration-page label{
+    font-size:20px;
+    line-height:1.25;
+    margin:18px 0 9px;
+  }
+  .registration-page input,
+  .registration-page select{
+    min-height:68px;
+    font-size:20px;
+    line-height:1.2;
+    padding:14px 16px;
+  }
+  .registration-page input::placeholder{
+    font-size:19px;
+    opacity:.8;
+  }
+  .registration-page button{
+    min-height:70px;
+    font-size:20px;
+    line-height:1.2;
+    letter-spacing:.01em;
+  }
+  .registration-page .small{
+    font-size:17px;
+    line-height:1.55;
+    margin-top:16px;
+  }
+  .registration-page .footer{
+    font-size:16px;
+    line-height:1.4;
+    padding:8px 6px 12px;
+  }
+
+  /* Keep the next participant pages equally readable */
+  body:not(.registration-page) .hero h1{font-size:34px}
+  body:not(.registration-page) .hero p{font-size:18px}
+  body:not(.registration-page) h2{font-size:27px}
+  body:not(.registration-page) label{font-size:19px}
+  body:not(.registration-page) input,
+  body:not(.registration-page) select{font-size:19px;min-height:64px}
+  body:not(.registration-page) button,
+  body:not(.registration-page) .btn{font-size:19px;min-height:64px}
+  body:not(.registration-page) .small{font-size:16px}
+  body:not(.registration-page) .status{font-size:18px;line-height:1.45}
+}
+@media(max-width:390px){
+  .registration-page .hero h1{font-size:33px}
+  .registration-page .card h2{font-size:27px}
+  .registration-page label{font-size:19px}
+  .registration-page input,
+  .registration-page select{font-size:19px;min-height:64px}
+  .registration-page button{font-size:19px;min-height:66px}
+  .registration-page .small{font-size:16px}
+  .registration-page .footer{font-size:15px}
+}
