@@ -22,6 +22,12 @@ const PDW={
     for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}
     return 'PDW-'+String(Math.abs(h>>>0)%1000000).padStart(6,'0');
   },
+  companionMasterId(sourceKey,patientName,companionName,index){
+    const s=String(sourceKey||'')+'|'+String(patientName||'')+'|'+String(companionName||'')+'|'+String(index||0);
+    let h=2166136261;
+    for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}
+    return 'COM-'+String(Math.abs(h>>>0)%1000000).padStart(6,'0');
+  },
   selectMasterRecord(record){
     const d=this.db();
     const id=this.masterId(record.sourceKey,record.name);
@@ -58,6 +64,46 @@ const PDW={
       p.eventPassCode=p.eventPassCode||('PDW2027|PASS|'+id+'|PATIENT');
       p.eventPassCreated=true;
       p.passCreatedAt=p.passCreatedAt||new Date().toISOString();
+    }
+    this.save(d);
+    this.setActive(id);
+    return id;
+  },
+  selectCompanionRecord(record){
+    const d=this.db();
+    const id=this.companionMasterId(record.sourceKey,record.patientName,record.name,record.index);
+    let p=d.people.find(x=>x.id===id);
+    if(!p){
+      p={
+        id,
+        type:'COMPANION',
+        name:record.name||'Companion',
+        nickname:record.nickname||'',
+        age:record.age||'',
+        location:record.location||'',
+        linkedPatientName:record.patientName||'',
+        fromMaster:true,
+        sourceKey:record.sourceKey||'',
+        biometric:false,
+        verifyMethod:null,
+        arrived:false,
+        snack:false,
+        lunch:false,
+        raffle:false,
+        eventPassCreated:true,
+        passCreatedAt:new Date().toISOString(),
+        registeredAt:new Date().toISOString()
+      };
+      d.people.push(p);
+    }else{
+      p.name=record.name||p.name;
+      p.nickname=record.nickname||p.nickname;
+      p.age=record.age||p.age;
+      p.location=record.location||p.location;
+      p.linkedPatientName=record.patientName||p.linkedPatientName||'';
+      p.fromMaster=true;
+      p.sourceKey=record.sourceKey||p.sourceKey;
+      p.type='COMPANION';
     }
     this.save(d);
     this.setActive(id);
