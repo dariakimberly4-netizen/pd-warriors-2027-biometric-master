@@ -22,6 +22,46 @@ const PDW={
     for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}
     return 'PDW-'+String(Math.abs(h>>>0)%1000000).padStart(6,'0');
   },
+  selectDatabaseRecord(record){
+    const d=this.db();
+    const id=record.id||this.masterId(record.sourceKey,record.name);
+    let p=d.people.find(x=>x.id===id);
+    const type=record.type==='COMPANION'?'COMPANION':'PATIENT';
+    if(!p){
+      p={
+        id,
+        type,
+        name:record.name||'',
+        nickname:record.nickname||'',
+        mobile:record.mobile||'',
+        location:record.location||'',
+        linkedPatientId:record.patientId||'',
+        fromDatabase:true,
+        sourceKey:record.sourceKey||id,
+        biometric:false,
+        verifyMethod:null,
+        arrived:false,
+        snack:false,
+        lunch:false,
+        raffle:false,
+        eventPassCreated:true,
+        passCreatedAt:new Date().toISOString(),
+        registeredAt:new Date().toISOString()
+      };
+      d.people.push(p);
+    }else{
+      p.type=type;
+      p.name=record.name||p.name;
+      p.nickname=record.nickname||p.nickname;
+      p.mobile=record.mobile||p.mobile;
+      p.location=record.location||p.location;
+      p.linkedPatientId=record.patientId||p.linkedPatientId||'';
+      p.fromDatabase=true;
+    }
+    this.save(d);
+    this.setActive(id);
+    return id;
+  },
   selectMasterRecord(record){
     const d=this.db();
     const id=this.masterId(record.sourceKey,record.name);
