@@ -16,6 +16,47 @@ const PDW={
     const next=(nums.length?Math.max(...nums):0)+1;
     return prefix+String(next).padStart(4,'0');
   },
+  masterId(sourceKey,name){
+    const s=String(sourceKey||'')+'|'+String(name||'');
+    let h=2166136261;
+    for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}
+    return 'PDW-'+String(Math.abs(h>>>0)%1000000).padStart(6,'0');
+  },
+  selectMasterRecord(record){
+    const d=this.db();
+    const id=this.masterId(record.sourceKey,record.name);
+    let p=d.people.find(x=>x.id===id);
+    if(!p){
+      p={
+        id,
+        type:'PATIENT',
+        name:record.name||'',
+        nickname:record.nickname||'',
+        mobile:record.mobile||'',
+        location:record.location||'',
+        fromMaster:true,
+        sourceKey:record.sourceKey||'',
+        biometric:false,
+        verifyMethod:null,
+        arrived:false,
+        snack:false,
+        lunch:false,
+        raffle:false,
+        registeredAt:new Date().toISOString()
+      };
+      d.people.push(p);
+    }else{
+      p.name=record.name||p.name;
+      p.nickname=record.nickname||p.nickname;
+      p.mobile=record.mobile||p.mobile;
+      p.location=record.location||p.location;
+      p.fromMaster=true;
+      p.sourceKey=record.sourceKey||p.sourceKey;
+    }
+    this.save(d);
+    this.setActive(id);
+    return id;
+  },
   register(name,type,extra={}){
     const d=this.db();
     const id=this.nextId(type,d);
