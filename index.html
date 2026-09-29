@@ -1,1 +1,177 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="manifest" href="./manifest.webmanifest"><link rel="stylesheet" href="./app.css"><title>PD Warriors 2027 — Registration</title></head><body class="registration-page"><div class="app"><div class="hero"><h1>PD Warriors 2027</h1><p>Home Registration</p></div><div class="card"><h2>Participant Registration</h2><label>Full Name</label><input id="name" autocomplete="name" placeholder="Enter your full name"><label>Participant Type</label><select id="type"><option value="PATIENT">Patient / PD Warrior</option><option value="COMPANION">Companion</option></select><button class="primary" id="go">REGISTER & CONTINUE</button><p class="small">Patient: Snack + Lunch + Raffle. Companion: Snack + Lunch only.</p></div><div class="footer">Step 1 of 3 • Registration only</div></div><script src="./app-core.js"></script><script>document.querySelector('#go').onclick=()=>{const n=document.querySelector('#name').value.trim();if(!n)return alert('Please enter your full name.');PDW.register(n,document.querySelector('#type').value);location.href='./biometric.html'};</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f5132">
+<link rel="manifest" href="./manifest.webmanifest">
+<title>PD Warriors 2027 — Registration</title>
+<style>
+:root{
+  --green:#0f5132;
+  --cream:#fffaf0;
+  --gold:#c6a15b;
+  --ink:#17221c;
+  --muted:#59655f;
+  --line:#d8d0c0;
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;min-height:100%;overflow-x:hidden}
+body{
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  background:var(--cream);
+  color:var(--ink);
+  -webkit-text-size-adjust:100%;
+}
+.screen{
+  width:min(calc(100vw - 20px),1100px);
+  margin:0 auto;
+  padding:10px 0 22px;
+}
+.hero{
+  width:100%;
+  background:var(--green);
+  color:#fff;
+  border-radius:24px;
+  padding:clamp(24px,5vw,52px) 18px;
+  text-align:center;
+  box-shadow:0 10px 24px rgba(20,35,28,.10);
+}
+.hero h1{
+  margin:0;
+  font-size:clamp(34px,7vw,68px);
+  line-height:1.05;
+  font-weight:900;
+  letter-spacing:-.02em;
+}
+.hero p{
+  margin:10px 0 0;
+  font-size:clamp(20px,3.7vw,38px);
+  line-height:1.25;
+  font-weight:700;
+  opacity:.95;
+}
+.card{
+  width:100%;
+  margin-top:14px;
+  background:#fff;
+  border:1px solid #e8e0d2;
+  border-radius:24px;
+  padding:clamp(22px,4.5vw,44px);
+  box-shadow:0 10px 24px rgba(20,35,28,.08);
+}
+.card h2{
+  margin:0 0 clamp(18px,3vw,30px);
+  color:var(--green);
+  font-size:clamp(28px,5vw,48px);
+  line-height:1.12;
+  font-weight:900;
+}
+label{
+  display:block;
+  margin:clamp(18px,3vw,28px) 0 10px;
+  font-size:clamp(20px,4vw,40px);
+  line-height:1.2;
+  font-weight:900;
+}
+input,select{
+  display:block;
+  width:100%;
+  min-height:clamp(66px,10vw,100px);
+  border:2px solid var(--line);
+  border-radius:18px;
+  padding:14px 18px;
+  background:#fff;
+  color:var(--ink);
+  font:inherit;
+  font-size:clamp(20px,4vw,40px);
+  line-height:1.2;
+}
+input::placeholder{
+  color:#707873;
+  opacity:1;
+}
+button{
+  display:block;
+  width:100%;
+  min-height:clamp(68px,10vw,104px);
+  margin-top:clamp(20px,3.5vw,34px);
+  border:0;
+  border-radius:18px;
+  padding:14px 18px;
+  background:var(--green);
+  color:#fff;
+  font-size:clamp(20px,4vw,40px);
+  line-height:1.2;
+  font-weight:900;
+  cursor:pointer;
+}
+.note{
+  margin:clamp(16px,2.5vw,26px) 0 0;
+  color:var(--muted);
+  font-size:clamp(17px,3.4vw,34px);
+  line-height:1.5;
+  font-weight:650;
+}
+.footer{
+  width:100%;
+  padding:16px 8px 4px;
+  text-align:center;
+  color:var(--muted);
+  font-size:clamp(16px,3vw,30px);
+  line-height:1.4;
+  font-weight:650;
+}
+@media (min-width:1200px){
+  .screen{padding-top:24px}
+  .hero h1{font-size:52px}
+  .hero p{font-size:24px}
+  .card h2{font-size:34px}
+  label{font-size:24px}
+  input,select,button{font-size:22px;min-height:68px}
+  .note{font-size:18px}
+  .footer{font-size:17px}
+}
+</style>
+</head>
+<body>
+<main class="screen">
+  <section class="hero">
+    <h1>PD Warriors 2027</h1>
+    <p>Home Registration</p>
+  </section>
+
+  <section class="card">
+    <h2>Participant Registration</h2>
+
+    <label for="name">Full Name</label>
+    <input id="name" autocomplete="name" placeholder="Enter your full name">
+
+    <label for="type">Participant Type</label>
+    <select id="type">
+      <option value="PATIENT">Patient / PD Warrior</option>
+      <option value="COMPANION">Companion</option>
+    </select>
+
+    <button id="go">REGISTER &amp; CONTINUE</button>
+
+    <p class="note">
+      Patient: Snack + Lunch + Raffle.<br>
+      Companion: Snack + Lunch only.
+    </p>
+  </section>
+
+  <div class="footer">Step 1 of 3 • Registration only</div>
+</main>
+
+<script src="./app-core.js?v=8"></script>
+<script>
+document.querySelector('#go').onclick=()=>{
+  const n=document.querySelector('#name').value.trim();
+  if(!n)return alert('Please enter your full name.');
+  PDW.register(n,document.querySelector('#type').value);
+  location.href='./biometric.html?v=8';
+};
+</script>
+</body>
+</html>
