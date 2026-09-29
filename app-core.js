@@ -42,6 +42,9 @@ const PDW={
         snack:false,
         lunch:false,
         raffle:false,
+        eventPassCode:'PDW2027|PASS|'+id+'|PATIENT',
+        eventPassCreated:true,
+        passCreatedAt:new Date().toISOString(),
         registeredAt:new Date().toISOString()
       };
       d.people.push(p);
@@ -52,6 +55,9 @@ const PDW={
       p.location=record.location||p.location;
       p.fromMaster=true;
       p.sourceKey=record.sourceKey||p.sourceKey;
+      p.eventPassCode=p.eventPassCode||('PDW2027|PASS|'+id+'|PATIENT');
+      p.eventPassCreated=true;
+      p.passCreatedAt=p.passCreatedAt||new Date().toISOString();
     }
     this.save(d);
     this.setActive(id);
@@ -140,6 +146,7 @@ const PDW={
     this.setActive(patientId);
     return {patientId,companionIds};
   },
+  eventPassPayload(p){return p?(p.eventPassCode||('PDW2027|PASS|'+p.id+'|'+(p.type==='COMPANION'?'COMPANION':'PATIENT'))):''},
   updatePerson(id,fn){const d=this.db();const p=d.people.find(x=>x.id===id);if(!p)return null;fn(p,d);this.save(d);return p},
   addTx(id,action,station){const d=this.db();d.tx.push({id,action,station,time:new Date().toLocaleTimeString()});d.pending=(d.pending||0)+1;this.save(d)},
   process(id,kind,station){
