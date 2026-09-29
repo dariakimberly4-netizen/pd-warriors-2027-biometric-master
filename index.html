@@ -5,12 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0f5132">
 <link rel="manifest" href="./manifest.webmanifest">
-<title>PD Warriors 2027 — Registration</title>
+<title>PD Warriors 2027 — Home Biometric</title>
 <style>
 :root{
   --green:#0f5132;
   --cream:#fffaf0;
-  --gold:#c6a15b;
   --ink:#17221c;
   --muted:#59655f;
   --line:#d8d0c0;
@@ -67,12 +66,6 @@ body{
   line-height:1.12;
   font-weight:900;
 }
-.card h3{
-  margin:clamp(24px,4vw,36px) 0 8px;
-  color:var(--green);
-  font-size:clamp(22px,4vw,34px);
-  line-height:1.2;
-}
 label{
   display:block;
   margin:clamp(18px,3vw,28px) 0 10px;
@@ -80,7 +73,7 @@ label{
   line-height:1.2;
   font-weight:900;
 }
-input,select{
+input{
   display:block;
   width:100%;
   min-height:clamp(66px,10vw,100px);
@@ -109,16 +102,6 @@ button{
   font-weight:900;
   cursor:pointer;
 }
-button.secondary{
-  background:#fffdf8;
-  color:var(--green);
-  border:2px solid var(--green);
-}
-button.remove{
-  background:#fff8f5;
-  color:#7d332b;
-  border:2px solid #d8b5ae;
-}
 .note{
   margin:clamp(16px,2.5vw,26px) 0 0;
   color:var(--muted);
@@ -126,7 +109,6 @@ button.remove{
   line-height:1.5;
   font-weight:650;
 }
-.note a{color:var(--green);font-weight:900}
 .footer{
   width:100%;
   padding:16px 8px 4px;
@@ -136,98 +118,48 @@ button.remove{
   line-height:1.4;
   font-weight:650;
 }
-.check-group{
-  margin-top:10px;
-  display:grid;
-  gap:10px;
-}
-.check-row{
-  display:grid;
-  grid-template-columns:auto 1fr;
-  align-items:start;
-  gap:12px;
-  padding:14px 16px;
+.status{
+  margin-top:16px;
+  padding:15px 16px;
   border:2px solid var(--line);
   border-radius:18px;
   background:#fffdf8;
-}
-.check-row input[type="checkbox"]{
-  width:28px;
-  height:28px;
-  min-height:28px;
-  margin:2px 0 0;
-  accent-color:var(--green);
-}
-.check-row label{
-  margin:0;
-  font-size:clamp(17px,3.4vw,34px);
+  font-size:clamp(17px,3.4vw,30px);
   line-height:1.45;
   font-weight:750;
 }
-.companion-card{
+.result{
   margin-top:14px;
   padding:18px;
   border:2px solid var(--line);
   border-radius:20px;
   background:#fffdf8;
 }
-.companion-card h3{margin:0 0 6px}
-.count-badge{
-  display:inline-block;
-  margin-top:8px;
-  padding:7px 12px;
-  border-radius:999px;
-  background:#eef8f2;
+.result h3{
+  margin:0;
   color:var(--green);
-  font-weight:900;
-  font-size:clamp(15px,3vw,24px);
+  font-size:clamp(22px,4.4vw,36px);
+  line-height:1.15;
 }
-.confirmation{text-align:center}
-.confirmation .pid{
-  margin:18px auto 8px;
-  color:var(--green);
-  font-size:clamp(34px,8vw,72px);
-  line-height:1;
-  font-weight:950;
-  letter-spacing:.02em;
+.result p{
+  margin:8px 0 0;
+  color:var(--muted);
+  font-size:clamp(17px,3.3vw,28px);
+  line-height:1.5;
+  font-weight:650;
 }
-.confirmation .success{
-  display:inline-block;
-  margin:0 auto 8px;
-  padding:8px 14px;
-  border-radius:999px;
-  background:#eef8f2;
-  color:var(--green);
-  font-weight:900;
-  font-size:clamp(16px,3vw,26px);
-}
-.id-list{
+.result button{
   margin-top:16px;
-  text-align:left;
-  border-top:1px solid var(--line);
-  padding-top:10px;
 }
-.id-row{
-  display:flex;
-  justify-content:space-between;
-  gap:12px;
-  padding:10px 0;
-  border-bottom:1px solid #eee6d8;
-  font-size:clamp(16px,3.2vw,24px);
-}
-.id-row strong{color:var(--green)}
 .hidden{display:none!important}
 @media (min-width:1200px){
   .screen{padding-top:28px}
   .hero h1{font-size:52px}
   .hero p{font-size:24px}
   .card h2{font-size:34px}
-  .card h3{font-size:26px}
   label{font-size:24px}
-  input,select,button{font-size:22px;min-height:68px}
-  .note{font-size:18px}
-  .footer{font-size:17px}
-  .check-row label{font-size:18px}
+  input,button{font-size:22px;min-height:68px}
+  .note,.footer{font-size:18px}
 }
 </style>
 </head>
@@ -235,236 +167,160 @@ button.remove{
 <main class="screen">
   <section class="hero">
     <h1>PD Warriors 2027</h1>
-    <p>Home Registration</p>
+    <p>Home Biometric</p>
   </section>
 
-  <section class="card" id="registrationCard">
-    <h2>Participant Registration</h2>
-    <p class="note">Based on the current Parkinson's Disease PH Gathering 2027 registration format.</p>
+  <section class="card">
+    <h2>Find Your Name</h2>
+    <p class="note">Your registration details are already in the Master Database. Search your name to continue to biometric verification.</p>
 
-    <form id="registrationForm" novalidate>
-      <label for="name">Patient's Full Name</label>
-      <input id="name" autocomplete="name" placeholder="Enter patient's full name" required>
+    <label for="searchName">Search Name</label>
+    <input id="searchName" autocomplete="name" placeholder="Enter patient name or nickname">
 
-      <label for="nickname">Nickname</label>
-      <input id="nickname" placeholder="Nickname">
+    <button id="searchBtn">SEARCH MASTER DATABASE</button>
 
-      <label for="facebookName">Facebook Name</label>
-      <input id="facebookName" placeholder="Facebook name">
+    <div id="status" class="status hidden" aria-live="polite"></div>
+    <div id="results"></div>
 
-      <label for="mobile">Mobile #</label>
-      <input id="mobile" type="tel" autocomplete="tel" inputmode="tel" placeholder="Example: 09171234567" required>
-
-      <label for="civilStatus">Status</label>
-      <select id="civilStatus">
-        <option value="">Select status</option>
-        <option value="SINGLE">Single</option>
-        <option value="MARRIED">Married</option>
-        <option value="WIDOWED">Widowed</option>
-        <option value="SEPARATED">Separated</option>
-        <option value="PREFER_NOT_TO_SAY">Prefer not to say</option>
-      </select>
-
-      <label for="age">Age</label>
-      <input id="age" type="number" inputmode="numeric" min="1" max="120" placeholder="Age" required>
-
-      <label for="location">City Area</label>
-      <input id="location" autocomplete="address-level2" placeholder="Example: Quezon City" required>
-
-      <label for="ageDiagnosed">Age When Diagnosed</label>
-      <input id="ageDiagnosed" placeholder="Example: 31 years old" required>
-
-      <label for="yearsLivingPD">Years Living With PD</label>
-      <input id="yearsLivingPD" placeholder="Example: 8 years" required>
-
-      <label>PD Management</label>
-      <div class="check-group" id="pdManagement">
-        <div class="check-row">
-          <input id="mgmtMedication" type="checkbox" value="MEDICATIONS">
-          <label for="mgmtMedication">Medications like Levodopa, Ropinirole, Rasagiline, Safinamide, etc.</label>
-        </div>
-        <div class="check-row">
-          <input id="mgmtNaturopathic" type="checkbox" value="NATUROPATHIC">
-          <label for="mgmtNaturopathic">Naturopathic</label>
-        </div>
-        <div class="check-row">
-          <input id="mgmtVitamins" type="checkbox" value="VITAMINS">
-          <label for="mgmtVitamins">Vitamins like Mucuna, B1, etc.</label>
-        </div>
-        <div class="check-row">
-          <input id="mgmtOther" type="checkbox" value="OTHER">
-          <label for="mgmtOther">Other</label>
-        </div>
-      </div>
-
-      <label>Who will be participating in the event?</label>
-      <div class="check-group" id="participation">
-        <div class="check-row">
-          <input id="partPatient" type="checkbox" value="Patient" checked>
-          <label for="partPatient">Patient</label>
-        </div>
-        <div class="check-row">
-          <input id="partCare" type="checkbox" value="Care Partner">
-          <label for="partCare">Care Partner</label>
-        </div>
-        <div class="check-row">
-          <input id="partFamily" type="checkbox" value="Family Member">
-          <label for="partFamily">Family Member</label>
-        </div>
-        <div class="check-row">
-          <input id="partOther" type="checkbox" value="Other">
-          <label for="partOther">Other</label>
-        </div>
-      </div>
-
-      <h3>Companions</h3>
-      <span class="count-badge" id="companionCount">0 companions</span>
-      <p class="note">Each companion will receive a separate Companion ID and will be linked to this PD Warrior. Companions receive Snack + Lunch only and are not eligible for raffle.</p>
-
-      <div id="companions"></div>
-      <button type="button" class="secondary" id="addCompanion">+ ADD COMPANION</button>
-
-      <label for="email">Email Address <span class="note">(Optional)</span></label>
-      <input id="email" type="email" autocomplete="email" inputmode="email" placeholder="Email address">
-
-      <div class="check-row" style="margin-top:24px">
-        <input id="consent" type="checkbox">
-        <label for="consent">I confirm that the information provided is correct and may be used for event registration and attendance management.</label>
-      </div>
-
-      <button type="submit" id="go">REGISTER &amp; CONTINUE</button>
-
-      <p class="note">
-        Patient: Snack + Lunch + Raffle.<br>
-        Companion: Snack + Lunch only.
-      </p>
-
-      <p class="note">
-        <a href="./privacy.html" target="_blank" rel="noopener">Read Privacy Notice</a>
-      </p>
-    </form>
+    <p class="note">Only confirmation details are shown here. Your full registration record remains in the Master Database.</p>
   </section>
 
-  <section class="card confirmation hidden" id="confirmationCard" aria-live="polite">
-    <div class="success">Registration successful ✓</div>
-    <h2>Patient Participant ID</h2>
-    <div class="pid" id="participantId">—</div>
-    <p class="note" id="confirmationName"></p>
-    <p class="note">Patient entitlement: Snack + Lunch + Raffle</p>
-    <div class="id-list hidden" id="companionIds"></div>
-    <button id="continueBio">CONTINUE TO BIOMETRIC</button>
-  </section>
-
-  <div class="footer">Step 1 of 3 • Registration only</div>
+  <div class="footer">Step 1 of 3 • Search & Confirm</div>
 </main>
 
-<script src="./app-core.js?v=11"></script>
+<script src="./app-core.js?v=12"></script>
 <script>
-const companionsEl=document.querySelector('#companions');
-const companionCountEl=document.querySelector('#companionCount');
-let companionSeq=0;
+const SHEET_ID='1l8Xk4B5EkniJq3hVoES6blYPIFCEl1-rnmXmxWEJLgI';
+const SHEET_NAME='Form Responses 1';
+const searchInput=document.querySelector('#searchName');
+const searchBtn=document.querySelector('#searchBtn');
+const statusEl=document.querySelector('#status');
+const resultsEl=document.querySelector('#results');
 
-function updateCompanionCount(){
-  const n=companionsEl.querySelectorAll('.companion-card').length;
-  companionCountEl.textContent=n+' companion'+(n===1?'':'s');
+function maskMobile(v){
+  const digits=String(v||'').replace(/\D/g,'');
+  if(!digits)return 'Not shown';
+  return '•••••••'+digits.slice(-4);
 }
-function addCompanion(){
-  companionSeq++;
-  const wrap=document.createElement('div');
-  wrap.className='companion-card';
-  wrap.dataset.companion=String(companionSeq);
-  wrap.innerHTML=
-    '<h3>Companion '+companionSeq+'</h3>'+
-    '<label>Full Name</label>'+
-    '<input class="c-name" placeholder="Companion full name" required>'+
-    '<label>Nickname</label>'+
-    '<input class="c-nickname" placeholder="Nickname">'+
-    '<label>Age</label>'+
-    '<input class="c-age" type="number" inputmode="numeric" min="1" max="120" placeholder="Age" required>'+
-    '<button type="button" class="remove">REMOVE COMPANION</button>';
-  wrap.querySelector('.remove').onclick=()=>{wrap.remove();renumberCompanions();updateCompanionCount()};
-  companionsEl.appendChild(wrap);
-  updateCompanionCount();
+function safeText(v){
+  return String(v==null?'':v);
 }
-function renumberCompanions(){
-  [...companionsEl.querySelectorAll('.companion-card')].forEach((card,i)=>{
-    card.querySelector('h3').textContent='Companion '+(i+1);
+function setStatus(msg,error=false){
+  statusEl.classList.remove('hidden');
+  statusEl.textContent=msg;
+  statusEl.style.color=error?'#8c2630':'#17221c';
+}
+function clearStatus(){
+  statusEl.classList.add('hidden');
+  statusEl.textContent='';
+}
+function normalizeQuery(v){
+  return v.toLowerCase().replace(/[^a-z0-9ñÑáéíóúü .-]/gi,' ').replace(/\s+/g,' ').trim();
+}
+function cell(row,i){
+  const c=row&&row.c?row.c[i]:null;
+  if(!c)return '';
+  return c.f!=null?c.f:(c.v!=null?c.v:'');
+}
+function renderResults(rows){
+  resultsEl.innerHTML='';
+  if(!rows.length){
+    setStatus('No matching name found. Check the spelling or ask event staff for assistance.',true);
+    return;
+  }
+  clearStatus();
+  rows.forEach(row=>{
+    const record={
+      sourceKey:safeText(cell(row,0)),
+      name:safeText(cell(row,1)).trim(),
+      nickname:safeText(cell(row,2)).trim(),
+      mobile:safeText(cell(row,3)).trim(),
+      location:safeText(cell(row,4)).trim()
+    };
+    if(!record.name)return;
+    const box=document.createElement('div');
+    box.className='result';
+    const h=document.createElement('h3');
+    h.textContent=record.name;
+    const p=document.createElement('p');
+    const parts=[];
+    if(record.nickname)parts.push('Nickname: '+record.nickname);
+    if(record.location)parts.push('City: '+record.location);
+    parts.push('Mobile: '+maskMobile(record.mobile));
+    p.textContent=parts.join(' • ');
+    const b=document.createElement('button');
+    b.textContent='THIS IS ME';
+    b.onclick=()=>{
+      PDW.selectMasterRecord(record);
+      location.href='./biometric.html?v=12';
+    };
+    box.append(h,p,b);
+    resultsEl.appendChild(box);
   });
 }
-document.querySelector('#addCompanion').onclick=addCompanion;
-
-function checkedValues(container){
-  return [...container.querySelectorAll('input[type="checkbox"]:checked')].map(x=>x.value);
+function searchGoogleSheet(query){
+  return new Promise((resolve,reject)=>{
+    const cb='pdwSheetSearch_'+Date.now();
+    const clean=normalizeQuery(query);
+    if(clean.length<2){reject(new Error('SHORT'));return}
+    const qSafe=clean.replace(/'/g,'');
+    const tq="select A,B,C,E,H where lower(B) contains '"+qSafe+"' or lower(C) contains '"+qSafe+"' limit 10";
+    const script=document.createElement('script');
+    let finished=false;
+    const timer=setTimeout(()=>{
+      if(finished)return;
+      finished=true;
+      delete window[cb];
+      script.remove();
+      reject(new Error('TIMEOUT'));
+    },9000);
+    window[cb]=(payload)=>{
+      if(finished)return;
+      finished=true;
+      clearTimeout(timer);
+      delete window[cb];
+      script.remove();
+      if(!payload||payload.status==='error'||!payload.table){
+        reject(new Error('SHEET'));
+        return;
+      }
+      resolve(payload.table.rows||[]);
+    };
+    const tqx='out:json;responseHandler:'+cb;
+    script.onerror=()=>{
+      if(finished)return;
+      finished=true;
+      clearTimeout(timer);
+      delete window[cb];
+      script.remove();
+      reject(new Error('NETWORK'));
+    };
+    script.src='https://docs.google.com/spreadsheets/d/'+SHEET_ID+'/gviz/tq?sheet='+encodeURIComponent(SHEET_NAME)+'&tqx='+encodeURIComponent(tqx)+'&tq='+encodeURIComponent(tq);
+    document.head.appendChild(script);
+  });
 }
-function cleanPhone(value){return value.replace(/[^0-9+]/g,'')}
-function validPhone(value){
-  const digits=value.replace(/\D/g,'');
-  return digits.length>=10&&digits.length<=13;
-}
-function getCompanions(){
-  return [...companionsEl.querySelectorAll('.companion-card')].map(card=>({
-    name:card.querySelector('.c-name').value.trim(),
-    nickname:card.querySelector('.c-nickname').value.trim(),
-    age:card.querySelector('.c-age').value.trim()
-  }));
-}
-
-document.querySelector('#registrationForm').addEventListener('submit',(e)=>{
-  e.preventDefault();
-
-  const patient={
-    name:document.querySelector('#name').value.trim(),
-    nickname:document.querySelector('#nickname').value.trim(),
-    facebookName:document.querySelector('#facebookName').value.trim(),
-    mobile:cleanPhone(document.querySelector('#mobile').value.trim()),
-    civilStatus:document.querySelector('#civilStatus').value,
-    age:document.querySelector('#age').value.trim(),
-    location:document.querySelector('#location').value.trim(),
-    ageDiagnosed:document.querySelector('#ageDiagnosed').value.trim(),
-    yearsLivingPD:document.querySelector('#yearsLivingPD').value.trim(),
-    pdManagement:checkedValues(document.querySelector('#pdManagement')),
-    participation:checkedValues(document.querySelector('#participation')),
-    email:document.querySelector('#email').value.trim(),
-    consent:document.querySelector('#consent').checked
-  };
-  const companions=getCompanions();
-
-  if(!patient.name)return alert("Please enter the patient's full name.");
-  if(!validPhone(patient.mobile))return alert('Please enter a valid mobile number.');
-  if(!patient.age)return alert('Please enter the patient age.');
-  if(!patient.location)return alert('Please enter the City Area.');
-  if(!patient.ageDiagnosed)return alert('Please enter the age when diagnosed.');
-  if(!patient.yearsLivingPD)return alert('Please enter years living with PD.');
-  if(!patient.pdManagement.length)return alert('Please select at least one PD Management option.');
-  if(!patient.participation.length)return alert('Please select who will be participating in the event.');
-  if(companions.some(c=>!c.name||!c.age))return alert('Please complete the Full Name and Age for every companion.');
-  if(patient.email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(patient.email))return alert('Please enter a valid email address.');
-  if(!patient.consent)return alert('Please confirm the registration consent before continuing.');
-
-  const ids=PDW.registerPatientGroup(patient,companions);
-
-  document.querySelector('#participantId').textContent=ids.patientId;
-  document.querySelector('#confirmationName').textContent=patient.name+' • PD Warrior';
-
-  const idList=document.querySelector('#companionIds');
-  if(ids.companionIds.length){
-    idList.classList.remove('hidden');
-    idList.innerHTML='<h3>Companion IDs</h3>'+
-      companions.map((c,i)=>'<div class="id-row"><span>'+c.name+'</span><strong>'+ids.companionIds[i]+'</strong></div>').join('')+
-      '<p class="note">Companion entitlement: Snack + Lunch only • No Raffle</p>';
-  }else{
-    idList.classList.add('hidden');
-    idList.innerHTML='';
+async function doSearch(){
+  const q=searchInput.value.trim();
+  resultsEl.innerHTML='';
+  if(q.length<2){
+    setStatus('Please enter at least 2 letters of your name.',true);
+    return;
   }
-
-  document.querySelector('#registrationCard').classList.add('hidden');
-  document.querySelector('#confirmationCard').classList.remove('hidden');
-  window.scrollTo({top:0,behavior:'smooth'});
-});
-
-document.querySelector('#continueBio').addEventListener('click',()=>{
-  location.href='./biometric.html?v=11';
-});
+  searchBtn.disabled=true;
+  searchBtn.textContent='SEARCHING…';
+  setStatus('Searching the Master Database…');
+  try{
+    const rows=await searchGoogleSheet(q);
+    renderResults(rows);
+  }catch(e){
+    setStatus('The Master Database could not be reached from this device. Please check the name again or ask event staff for assistance.',true);
+  }finally{
+    searchBtn.disabled=false;
+    searchBtn.textContent='SEARCH MASTER DATABASE';
+  }
+}
+searchBtn.onclick=doSearch;
+searchInput.addEventListener('keydown',e=>{if(e.key==='Enter')doSearch()});
 </script>
 </body>
 </html>
