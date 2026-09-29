@@ -1,0 +1,9 @@
+{
+  "name": "PD Warriors 2027 Biometric Master",
+  "short_name": "PDW 2027",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#fffaf0",
+  "theme_color": "#0f5132",
+  "description": "Biometric pass and offline master database workflow prototype for PD Warriors 2027"
+}
