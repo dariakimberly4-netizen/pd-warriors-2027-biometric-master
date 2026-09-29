@@ -183,16 +183,16 @@ button{
     <div id="status" class="status hidden" aria-live="polite"></div>
     <div id="results"></div>
 
-    <p class="note">The demo does not edit the Google Sheet. Only confirmation details are shown here; the demo uses the separate event database built from your Google Sheet.</p>
+    <p class="note">The demo does not edit the Google Sheet. The demo does not edit the Google Sheet. Only confirmation details are shown here; your full registration record remains in Google Sheets.</p>
   </section>
 
   <div class="footer">Demo • Search Name → QR Event Pass</div>
 </main>
 
-<script src="./app-core.js?v=16"></script>
+<script src="./app-core.js?v=15"></script>
 <script>
-const SHEET_ID='1LD1aGhCaS2_RHZuwOxAZzdthr6qC7gW1YATIEXJJ5p0';
-const SHEET_NAME='DB_LOOKUP';
+const SHEET_ID='1l8Xk4B5EkniJq3hVoES6blYPIFCEl1-rnmXmxWEJLgI';
+const SHEET_NAME='Form Responses 1';
 const searchInput=document.querySelector('#searchName');
 const searchBtn=document.querySelector('#searchBtn');
 const statusEl=document.querySelector('#status');
@@ -232,14 +232,11 @@ function renderResults(rows){
   clearStatus();
   rows.forEach(row=>{
     const record={
-      id:safeText(cell(row,0)).trim(),
-      type:safeText(cell(row,1)).trim(),
-      name:safeText(cell(row,2)).trim(),
-      nickname:safeText(cell(row,3)).trim(),
-      location:safeText(cell(row,4)).trim(),
-      mobile:safeText(cell(row,5)).trim(),
-      patientId:safeText(cell(row,6)).trim(),
-      sourceKey:safeText(cell(row,0)).trim()
+      sourceKey:safeText(cell(row,0)),
+      name:safeText(cell(row,1)).trim(),
+      nickname:safeText(cell(row,2)).trim(),
+      mobile:safeText(cell(row,3)).trim(),
+      location:safeText(cell(row,4)).trim()
     };
     if(!record.name)return;
     const box=document.createElement('div');
@@ -255,8 +252,8 @@ function renderResults(rows){
     const b=document.createElement('button');
     b.textContent='THIS IS ME — CREATE QR EVENT PASS';
     b.onclick=()=>{
-      PDW.selectDatabaseRecord(record);
-      location.href='./pass.html?v=16';
+      PDW.selectMasterRecord(record);
+      location.href='./pass.html?v=15';
     };
     box.append(h,p,b);
     resultsEl.appendChild(box);
@@ -268,7 +265,7 @@ function searchGoogleSheet(query){
     const clean=normalizeQuery(query);
     if(clean.length<2){reject(new Error('SHORT'));return}
     const qSafe=clean.replace(/'/g,'');
-    const tq="select A,B,C,D,E,F,G,H,I,J where lower(C) contains '"+qSafe+"' or lower(D) contains '"+qSafe+"' limit 10";
+    const tq="select A,B,C,E,H where lower(B) contains '"+qSafe+"' or lower(C) contains '"+qSafe+"' limit 10";
     const script=document.createElement('script');
     let finished=false;
     const timer=setTimeout(()=>{
