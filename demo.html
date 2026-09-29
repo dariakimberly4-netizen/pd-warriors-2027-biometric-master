@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f5132">
+<link rel="manifest" href="./manifest.webmanifest">
+<title>PD Warriors 2027 — Google Sheet Demo</title>
+<style>
+:root{
+  --green:#0f5132;
+  --cream:#fffaf0;
+  --ink:#17221c;
+  --muted:#59655f;
+  --line:#d8d0c0;
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;min-height:100%;overflow-x:hidden}
+body{
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  background:var(--cream);
+  color:var(--ink);
+  -webkit-text-size-adjust:100%;
+}
+.screen{
+  width:min(calc(100vw - 20px),1100px);
+  margin:0 auto;
+  padding:28px 0 22px;
+}
+.hero{
+  width:100%;
+  background:var(--green);
+  color:#fff;
+  border-radius:24px;
+  padding:clamp(24px,5vw,52px) 18px;
+  text-align:center;
+  box-shadow:0 10px 24px rgba(20,35,28,.10);
+}
+.hero h1{
+  margin:0;
+  font-size:clamp(34px,7vw,68px);
+  line-height:1.05;
+  font-weight:900;
+  letter-spacing:-.02em;
+}
+.hero p{
+  margin:10px 0 0;
+  font-size:clamp(20px,3.7vw,38px);
+  line-height:1.25;
+  font-weight:700;
+  opacity:.95;
+}
+.card{
+  width:100%;
+  margin-top:14px;
+  background:#fff;
+  border:1px solid #e8e0d2;
+  border-radius:24px;
+  padding:clamp(22px,4.5vw,44px);
+  box-shadow:0 10px 24px rgba(20,35,28,.08);
+}
+.card h2{
+  margin:0 0 clamp(18px,3vw,30px);
+  color:var(--green);
+  font-size:clamp(28px,5vw,48px);
+  line-height:1.12;
+  font-weight:900;
+}
+label{
+  display:block;
+  margin:clamp(18px,3vw,28px) 0 10px;
+  font-size:clamp(20px,4vw,40px);
+  line-height:1.2;
+  font-weight:900;
+}
+input{
+  display:block;
+  width:100%;
+  min-height:clamp(66px,10vw,100px);
+  border:2px solid var(--line);
+  border-radius:18px;
+  padding:14px 18px;
+  background:#fff;
+  color:var(--ink);
+  font:inherit;
+  font-size:clamp(20px,4vw,40px);
+  line-height:1.2;
+}
+input::placeholder{color:#707873;opacity:1}
+button{
+  display:block;
+  width:100%;
+  min-height:clamp(68px,10vw,104px);
+  margin-top:clamp(20px,3.5vw,34px);
+  border:0;
+  border-radius:18px;
+  padding:14px 18px;
+  background:var(--green);
+  color:#fff;
+  font-size:clamp(20px,4vw,40px);
+  line-height:1.2;
+  font-weight:900;
+  cursor:pointer;
+}
+.note{
+  margin:clamp(16px,2.5vw,26px) 0 0;
+  color:var(--muted);
+  font-size:clamp(17px,3.4vw,34px);
+  line-height:1.5;
+  font-weight:650;
+}
+.footer{
+  width:100%;
+  padding:16px 8px 4px;
+  text-align:center;
+  color:var(--muted);
+  font-size:clamp(16px,3vw,30px);
+  line-height:1.4;
+  font-weight:650;
+}
+.status{
+  margin-top:16px;
+  padding:15px 16px;
+  border:2px solid var(--line);
+  border-radius:18px;
+  background:#fffdf8;
+  font-size:clamp(17px,3.4vw,30px);
+  line-height:1.45;
+  font-weight:750;
+}
+.result{
+  margin-top:14px;
+  padding:18px;
+  border:2px solid var(--line);
+  border-radius:20px;
+  background:#fffdf8;
+}
+.result h3{
+  margin:0;
+  color:var(--green);
+  font-size:clamp(22px,4.4vw,36px);
+  line-height:1.15;
+}
+.result p{
+  margin:8px 0 0;
+  color:var(--muted);
+  font-size:clamp(17px,3.3vw,28px);
+  line-height:1.5;
+  font-weight:650;
+}
+.result button{
+  margin-top:16px;
+}
+.hidden{display:none!important}
+@media (min-width:1200px){
+  .screen{padding-top:28px}
+  .hero h1{font-size:52px}
+  .hero p{font-size:24px}
+  .card h2{font-size:34px}
+  label{font-size:24px}
+  input,button{font-size:22px;min-height:68px}
+  .note,.footer{font-size:18px}
+}
+</style>
+</head>
+<body>
+<main class="screen">
+  <section class="hero">
+    <h1>PD Warriors 2027</h1>
+    <p>Home Biometric • Google Sheet Demo</p>
+  </section>
+
+  <section class="card">
+    <div style="display:inline-block;padding:8px 14px;border-radius:999px;background:#eef8f2;color:#0f5132;font-weight:900;font-size:clamp(15px,3vw,22px);margin-bottom:14px">DEMO ONLY • GOOGLE SHEET READ-ONLY</div>
+    <h2>Find Your Name</h2>
+    <p class="note">This demo searches the current Google Sheet directly in read-only mode. Search your name to continue to biometric verification.</p>
+
+    <label for="searchName">Search Name</label>
+    <input id="searchName" autocomplete="name" placeholder="Enter patient name or nickname">
+
+    <button id="searchBtn">SEARCH MASTER DATABASE</button>
+
+    <div id="status" class="status hidden" aria-live="polite"></div>
+    <div id="results"></div>
+
+    <p class="note">The demo does not edit the Google Sheet. Only confirmation details are shown here; your full registration record remains in Google Sheets.</p>
+  </section>
+
+  <div class="footer">Demo • Step 1 of 3 • Search & Confirm</div>
+</main>
+
+<script src="./app-core.js?v=12"></script>
+<script>
+const SHEET_ID='1l8Xk4B5EkniJq3hVoES6blYPIFCEl1-rnmXmxWEJLgI';
+const SHEET_NAME='Form Responses 1';
+const searchInput=document.querySelector('#searchName');
+const searchBtn=document.querySelector('#searchBtn');
+const statusEl=document.querySelector('#status');
+const resultsEl=document.querySelector('#results');
+
+function maskMobile(v){
+  const digits=String(v||'').replace(/\D/g,'');
+  if(!digits)return 'Not shown';
+  return '•••••••'+digits.slice(-4);
+}
+function safeText(v){
+  return String(v==null?'':v);
+}
+function setStatus(msg,error=false){
+  statusEl.classList.remove('hidden');
+  statusEl.textContent=msg;
+  statusEl.style.color=error?'#8c2630':'#17221c';
+}
+function clearStatus(){
+  statusEl.classList.add('hidden');
+  statusEl.textContent='';
+}
+function normalizeQuery(v){
+  return v.toLowerCase().replace(/[^a-z0-9ñÑáéíóúü .-]/gi,' ').replace(/\s+/g,' ').trim();
+}
+function cell(row,i){
+  const c=row&&row.c?row.c[i]:null;
+  if(!c)return '';
+  return c.f!=null?c.f:(c.v!=null?c.v:'');
+}
+function renderResults(rows){
+  resultsEl.innerHTML='';
+  if(!rows.length){
+    setStatus('No matching name found. Check the spelling or ask event staff for assistance.',true);
+    return;
+  }
+  clearStatus();
+  rows.forEach(row=>{
+    const record={
+      sourceKey:safeText(cell(row,0)),
+      name:safeText(cell(row,1)).trim(),
+      nickname:safeText(cell(row,2)).trim(),
+      mobile:safeText(cell(row,3)).trim(),
+      location:safeText(cell(row,4)).trim()
+    };
+    if(!record.name)return;
+    const box=document.createElement('div');
+    box.className='result';
+    const h=document.createElement('h3');
+    h.textContent=record.name;
+    const p=document.createElement('p');
+    const parts=[];
+    if(record.nickname)parts.push('Nickname: '+record.nickname);
+    if(record.location)parts.push('City: '+record.location);
+    parts.push('Mobile: '+maskMobile(record.mobile));
+    p.textContent=parts.join(' • ');
+    const b=document.createElement('button');
+    b.textContent='THIS IS ME';
+    b.onclick=()=>{
+      PDW.selectMasterRecord(record);
+      location.href='./biometric.html?v=13';
+    };
+    box.append(h,p,b);
+    resultsEl.appendChild(box);
+  });
+}
+function searchGoogleSheet(query){
+  return new Promise((resolve,reject)=>{
+    const cb='pdwSheetSearch_'+Date.now();
+    const clean=normalizeQuery(query);
+    if(clean.length<2){reject(new Error('SHORT'));return}
+    const qSafe=clean.replace(/'/g,'');
+    const tq="select A,B,C,E,H where lower(B) contains '"+qSafe+"' or lower(C) contains '"+qSafe+"' limit 10";
+    const script=document.createElement('script');
+    let finished=false;
+    const timer=setTimeout(()=>{
+      if(finished)return;
+      finished=true;
+      delete window[cb];
+      script.remove();
+      reject(new Error('TIMEOUT'));
+    },9000);
+    window[cb]=(payload)=>{
+      if(finished)return;
+      finished=true;
+      clearTimeout(timer);
+      delete window[cb];
+      script.remove();
+      if(!payload||payload.status==='error'||!payload.table){
+        reject(new Error('SHEET'));
+        return;
+      }
+      resolve(payload.table.rows||[]);
+    };
+    const tqx='out:json;responseHandler:'+cb;
+    script.onerror=()=>{
+      if(finished)return;
+      finished=true;
+      clearTimeout(timer);
+      delete window[cb];
+      script.remove();
+      reject(new Error('NETWORK'));
+    };
+    script.src='https://docs.google.com/spreadsheets/d/'+SHEET_ID+'/gviz/tq?sheet='+encodeURIComponent(SHEET_NAME)+'&tqx='+encodeURIComponent(tqx)+'&tq='+encodeURIComponent(tq);
+    document.head.appendChild(script);
+  });
+}
+async function doSearch(){
+  const q=searchInput.value.trim();
+  resultsEl.innerHTML='';
+  if(q.length<2){
+    setStatus('Please enter at least 2 letters of your name.',true);
+    return;
+  }
+  searchBtn.disabled=true;
+  searchBtn.textContent='SEARCHING…';
+  setStatus('Searching the Master Database…');
+  try{
+    const rows=await searchGoogleSheet(q);
+    renderResults(rows);
+  }catch(e){
+    setStatus('The Master Database could not be reached from this device. Please check the name again or ask event staff for assistance.',true);
+  }finally{
+    searchBtn.disabled=false;
+    searchBtn.textContent='SEARCH MASTER DATABASE';
+  }
+}
+searchBtn.onclick=doSearch;
+searchInput.addEventListener('keydown',e=>{if(e.key==='Enter')doSearch()});
+</script>
+</body>
+</html>
