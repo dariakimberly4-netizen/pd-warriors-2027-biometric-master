@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f5132">
+<link rel="manifest" href="./manifest.webmanifest">
+<title>PD Warriors 2027 — Biometric & Master Database</title>
+<style>
+:root{--green:#0f5132;--green2:#176c45;--cream:#fffaf0;--gold:#c6a15b;--ink:#17221c;--muted:#66736b;--red:#a8323e;--blue:#214e7a;--card:#fff;--line:#e7dfcf;--shadow:0 12px 30px rgba(20,35,28,.10)}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--cream);color:var(--ink);font-size:18px}
+button,input,select{font:inherit}.app{max-width:1160px;margin:auto;min-height:100vh;padding:16px}
+header{background:linear-gradient(135deg,var(--green),#0b3a25);color:white;border-radius:24px;padding:20px;box-shadow:var(--shadow);display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.brand h1{font-size:clamp(24px,4vw,38px);margin:0 0 6px}.brand p{margin:0;opacity:.9}.pill{background:#ffffff18;border:1px solid #ffffff40;padding:8px 12px;border-radius:999px;font-weight:800}
+nav{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}
+nav button,.btn{min-height:58px;border:0;border-radius:16px;padding:12px 16px;font-weight:800;cursor:pointer}
+nav button{background:white;color:var(--green);border:2px solid var(--line)}nav button.active{background:var(--green);color:white;border-color:var(--green)}
+.view{display:none}.view.active{display:block}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.card{grid-column:span 6;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:20px;box-shadow:var(--shadow)}
+.card.full{grid-column:1/-1}.card.third{grid-column:span 4}.card h2,.card h3{margin-top:0}.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.kpi div{background:#f6f2e8;border-radius:16px;padding:16px;text-align:center}.kpi b{display:block;font-size:30px;color:var(--green)}
+label{display:block;font-weight:800;margin:14px 0 7px}input,select{width:100%;min-height:54px;border:2px solid #d7cfbf;border-radius:14px;padding:10px 12px;background:white}
+.btn.primary{background:var(--green);color:white}.btn.gold{background:var(--gold);color:#1b1b1b}.btn.blue{background:var(--blue);color:white}.btn.red{background:var(--red);color:white}.btn.ghost{background:#f5f0e4;color:var(--green);border:2px solid #dcd2bd}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row .btn{flex:1;min-width:170px}.status{padding:12px 14px;border-radius:14px;background:#eef8f2;border:1px solid #cfe8d8;font-weight:800}.warn{background:#fff4e6;border-color:#efd6ae}.bad{background:#fff0f1;border-color:#efc8cc;color:#8c2630}
+.pass{max-width:360px;margin:auto;background:white;border:2px solid var(--gold);border-radius:26px;padding:22px;text-align:center}.pass .qr{width:180px;height:180px;margin:16px auto;border:10px solid white;box-shadow:0 0 0 2px #222;display:grid;grid-template-columns:repeat(9,1fr);gap:2px;background:white}.qr i{background:#111}.qr i.off{background:white}
+.small{font-size:14px;color:var(--muted)}table{width:100%;border-collapse:collapse;min-width:720px}th,td{padding:12px;border-bottom:1px solid #e8e1d3;text-align:left}th{color:var(--green)}.tablewrap{overflow:auto}
+.device{border:2px solid #d8cfbd;border-radius:18px;padding:14px;background:#fff}.dot{display:inline-block;width:11px;height:11px;border-radius:50%;background:#2fa05b;margin-right:7px}.station{font-size:28px;font-weight:900;color:var(--green)}
+.timeline{display:grid;gap:12px}.step{display:flex;gap:14px;align-items:flex-start}.num{min-width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--green);color:white;font-weight:900}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#14251c;color:white;padding:12px 18px;border-radius:14px;display:none;z-index:30;box-shadow:var(--shadow)}
+@media(max-width:820px){body{font-size:17px}.app{padding:10px}header{border-radius:18px}nav{grid-template-columns:1fr 1fr}.card,.card.third{grid-column:1/-1}.kpi{grid-template-columns:1fr 1fr}.btn{min-height:62px}.brand h1{font-size:28px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="brand"><h1>PD Warriors 2027</h1><p>Biometric Pass + Registration Master Database</p></div>
+  <div class="pill" id="netPill">Checking connection…</div>
+</header>
+
+<nav>
+<button class="active" data-view="home">1. HOME</button>
+<button data-view="master">2. MASTER</button>
+<button data-view="staff">3. STAFF</button>
+<button data-view="reports">4. REPORTS</button>
+</nav>
+
+<section id="home" class="view active">
+<div class="grid">
+<div class="card">
+<h2>At Home — Participant Registration</h2>
+<label>Full Name</label><input id="regName" placeholder="Participant full name">
+<label>Type</label><select id="regType"><option value="PATIENT">Patient / PD Warrior</option><option value="COMPANION">Companion</option></select>
+<div class="row" style="margin-top:16px"><button class="btn primary" id="registerBtn">REGISTER PARTICIPANT</button></div>
+<p class="small">A unique participant ID and event pass are created. Companion raffle access is always disabled.</p>
+</div>
+
+<div class="card">
+<h2>Activate Biometric Pass</h2>
+<div id="bioState" class="status warn">Register a participant first.</div>
+<div class="row" style="margin-top:14px"><button class="btn blue" id="bioBtn">USE DEVICE BIOMETRIC</button><button class="btn ghost" id="bioFallback">STAFF-ASSISTED FALLBACK</button></div>
+<p class="small">This demo asks the browser/device for user verification when WebAuthn is supported. The event database stores only the credential reference/status — never a fingerprint image or face scan.</p>
+</div>
+
+<div class="card full">
+<h2>Digital Event Pass</h2>
+<div class="pass" id="passCard">
+<div style="font-size:14px;font-weight:900;color:#0f5132">PARKINSON'S DISEASE WARRIORS PHILIPPINES</div>
+<h3 style="margin:8px 0">GET TOGETHER 2027</h3>
+<div id="passName" style="font-size:25px;font-weight:900">NO PARTICIPANT YET</div>
+<div id="passType">—</div>
+<div class="qr" id="fakeQr" aria-label="visual pass token"></div>
+<div id="passId" style="font-weight:900;font-size:22px">—</div>
+<div id="passBio" class="small">Biometric pass: Not activated</div>
+</div>
+</div>
+
+<div class="card full">
+<h2>Home → Event Flow</h2>
+<div class="timeline">
+<div class="step"><div class="num">1</div><div><b>Register at home</b><br><span class="small">Participant ID and entitlements are created.</span></div></div>
+<div class="step"><div class="num">2</div><div><b>Activate biometric pass on own phone</b><br><span class="small">Biometric remains on the participant's device.</span></div></div>
+<div class="step"><div class="num">3</div><div><b>Save event pass</b><br><span class="small">Participant keeps their ID/pass for event day.</span></div></div>
+<div class="step"><div class="num">4</div><div><b>Registration is the Master Database</b><br><span class="small">Master sends the latest participant database to staff devices before/during the event.</span></div></div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="master" class="view">
+<div class="grid">
+<div class="card full"><h2>Registration — Master Database</h2>
+<div class="kpi"><div><b id="kReg">0</b>Registered</div><div><b id="kArr">0</b>Arrived</div><div><b id="kPat">0</b>Patients</div><div><b id="kCom">0</b>Companions</div></div>
+</div>
+<div class="card">
+<h3>Offline Device Sync Center</h3>
+<div class="device"><span class="dot"></span><b>Registration Master</b><br><span class="small">Source of truth for attendee identity, type and entitlements</span></div>
+<div class="row" style="margin-top:12px"><button class="btn primary" id="syncAllBtn">SEND DATABASE TO STAFF</button></div>
+<div id="syncMessage" class="status warn" style="margin-top:12px">No sync performed yet.</div>
+</div>
+<div class="card">
+<h3>Master Rules</h3>
+<p>✓ Only Master may change participant name/type.</p><p>✓ Staff devices record transactions only.</p><p>✓ Companion raffle is always blocked.</p><p>✓ Every action receives time + station.</p>
+</div>
+<div class="card full"><h3>Attendee Database</h3><div class="tablewrap"><table><thead><tr><th>ID</th><th>Name</th><th>Type</th><th>Biometric</th><th>Arrival</th><th>Snack</th><th>Lunch</th><th>Raffle</th></tr></thead><tbody id="masterRows"></tbody></table></div></div>
+</div>
+</section>
+
+<section id="staff" class="view">
+<div class="grid">
+<div class="card full">
+<h2>Event Day — Staff Station</h2>
+<label>Select Station</label><select id="station"><option value="CHECKIN">Check-In</option><option value="SNACK">Snack</option><option value="LUNCH">Lunch</option><option value="RAFFLE">Raffle</option></select>
+<label>Scan / Enter Participant ID</label><input id="scanId" placeholder="e.g. PDW-0001">
+<div class="row" style="margin-top:14px"><button class="btn blue" id="findBtn">FIND PARTICIPANT</button></div>
+</div>
+<div class="card">
+<div class="station" id="stationTitle">CHECK-IN</div><div id="participantResult" class="status warn">No participant selected.</div>
+<div class="row" style="margin-top:14px"><button class="btn primary" id="actionBtn" disabled>PROCESS</button></div>
+</div>
+<div class="card">
+<h3>Current Device</h3>
+<div class="device"><span class="dot"></span><b id="deviceName">CHECKIN-01</b><br><span class="small">Local transactions stay available even when internet is unavailable.</span></div>
+<div id="pendingState" class="status" style="margin-top:12px">Pending master sync: 0</div>
+</div>
+<div class="card full"><h3>Recent Transactions</h3><div class="tablewrap"><table><thead><tr><th>Time</th><th>ID</th><th>Action</th><th>Station</th></tr></thead><tbody id="txRows"></tbody></table></div></div>
+</div>
+</section>
+
+<section id="reports" class="view">
+<div class="grid">
+<div class="card full"><h2>Final Event Report</h2>
+<div class="kpi"><div><b id="rArr">0</b>Arrivals</div><div><b id="rSnack">0</b>Snack</div><div><b id="rLunch">0</b>Lunch</div><div><b id="rRaffle">0</b>Raffle</div></div>
+<div class="row" style="margin-top:16px"><button class="btn primary" id="finalSync">FINAL SYNC</button><button class="btn gold" id="downloadReport">DOWNLOAD REPORT</button><button class="btn red" id="resetDemo">RESET DEMO DATA</button></div>
+</div>
+<div class="card full"><h3>Important Deployment Note</h3><p>This GitHub Pages version is a functional workflow prototype using local browser storage. True automatic phone-to-phone Nearby Connections sync and production biometric credential verification require a native Android app (or a trusted local server) because ordinary GitHub Pages cannot access Android Nearby Connections directly.</p></div>
+</div>
+</section>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const KEY='pdw2027BioDemoV1';
+const db=()=>JSON.parse(localStorage.getItem(KEY)||'{"people":[],"tx":[],"pending":0,"syncedAt":null}');
+const save=d=>{localStorage.setItem(KEY,JSON.stringify(d));render()};
+function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2200)}
+function idFor(type,n){return (type==='PATIENT'?'PDW-':'COM-')+String(n).padStart(4,'0')}
+function makePattern(id){const el=$('#fakeQr');el.innerHTML='';let seed=[...id].reduce((a,c)=>a+c.charCodeAt(0),0);for(let i=0;i<81;i++){const x=document.createElement('i');seed=(seed*9301+49297)%233280;if(seed/233280>.48)x.className='off';el.appendChild(x)}}
+function current(){const d=db();return d.people[d.people.length-1]||null}
+function updatePass(){const p=current();if(!p){$('#passName').textContent='NO PARTICIPANT YET';$('#passId').textContent='—';return}$('#passName').textContent=p.name;$('#passType').textContent=p.type==='PATIENT'?'PD WARRIOR':'COMPANION';$('#passId').textContent=p.id;$('#passBio').textContent='Biometric pass: '+(p.biometric?'Activated ✓':'Not activated');makePattern(p.id)}
+function render(){
+ const d=db(); const pat=d.people.filter(x=>x.type==='PATIENT').length, com=d.people.length-pat;
+ $('#kReg').textContent=d.people.length;$('#kArr').textContent=d.people.filter(x=>x.arrived).length;$('#kPat').textContent=pat;$('#kCom').textContent=com;
+ $('#masterRows').innerHTML=d.people.map(p=>`<tr><td><b>${p.id}</b></td><td>${p.name}</td><td>${p.type}</td><td>${p.biometric?'✓':'—'}</td><td>${p.arrived?'✓':'—'}</td><td>${p.snack?'✓':'—'}</td><td>${p.lunch?'✓':'—'}</td><td>${p.type==='COMPANION'?'NOT ELIGIBLE':p.raffle?'✓':'—'}</td></tr>`).join('')||'<tr><td colspan="8">No participants yet.</td></tr>';
+ $('#txRows').innerHTML=d.tx.slice().reverse().slice(0,20).map(t=>`<tr><td>${t.time}</td><td>${t.id}</td><td>${t.action}</td><td>${t.station}</td></tr>`).join('')||'<tr><td colspan="4">No transactions yet.</td></tr>';
+ $('#pendingState').textContent='Pending master sync: '+d.pending;
+ $('#rArr').textContent=d.people.filter(x=>x.arrived).length;$('#rSnack').textContent=d.people.filter(x=>x.snack).length;$('#rLunch').textContent=d.people.filter(x=>x.lunch).length;$('#rRaffle').textContent=d.people.filter(x=>x.raffle).length;
+ const p=current();$('#bioState').textContent=p?(p.biometric?'Biometric pass activated ✓':'Ready for biometric activation: '+p.name):'Register a participant first.';
+ updatePass();
+}
+$$('nav button').forEach(b=>b.onclick=()=>{$$('nav button').forEach(x=>x.classList.remove('active'));$$('.view').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('#'+b.dataset.view).classList.add('active');render()});
+$('#registerBtn').onclick=()=>{const name=$('#regName').value.trim();if(!name)return toast('Enter participant name');const d=db(),type=$('#regType').value,id=idFor(type,d.people.length+1);d.people.push({id,name,type,biometric:false,verifyMethod:null,arrived:false,snack:false,lunch:false,raffle:false});save(d);$('#regName').value='';toast('Participant registered: '+id)};
+$('#bioFallback').onclick=()=>{const d=db(),p=d.people[d.people.length-1];if(!p)return toast('Register participant first');p.biometric=false;p.verifyMethod='STAFF_ASSISTED';save(d);toast('Staff-assisted fallback selected')};
+$('#bioBtn').onclick=async()=>{const d=db(),p=d.people[d.people.length-1];if(!p)return toast('Register participant first');try{if(!window.PublicKeyCredential||!navigator.credentials)throw new Error('unsupported');const challenge=crypto.getRandomValues(new Uint8Array(32));const userId=crypto.getRandomValues(new Uint8Array(16));await navigator.credentials.create({publicKey:{challenge,rp:{name:'PD Warriors 2027'},user:{id:userId,name:p.id,displayName:p.name},pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],authenticatorSelection:{userVerification:'required',residentKey:'discouraged'},timeout:60000,attestation:'none'}});p.biometric=true;p.verifyMethod='DEVICE_BIOMETRIC';save(d);toast('Biometric pass activated')}catch(e){toast('Device biometric unavailable/cancelled — use fallback if needed')}};
+$('#syncAllBtn').onclick=()=>{const d=db();d.pending=0;d.syncedAt=new Date().toLocaleTimeString();save(d);$('#syncMessage').textContent='✓ Database sent to Check-In, Snack, Lunch and Raffle station copies at '+d.syncedAt;toast('Staff database copies updated')};
+$('#station').onchange=()=>{const s=$('#station').value;$('#stationTitle').textContent=s;$('#deviceName').textContent=s+'-01';$('#participantResult').textContent='No participant selected.';$('#actionBtn').disabled=true};
+let selectedId=null;
+$('#findBtn').onclick=()=>{const d=db(),id=$('#scanId').value.trim().toUpperCase(),p=d.people.find(x=>x.id===id);selectedId=p?.id||null;if(!p){$('#participantResult').className='status bad';$('#participantResult').textContent='Participant not found';$('#actionBtn').disabled=true;return}const s=$('#station').value;let text=p.name+' — '+p.type;let allowed=true;if(s==='CHECKIN')text+=' | '+(p.arrived?'ALREADY ARRIVED':'Ready for arrival confirmation');if(s==='SNACK')text+=' | '+(p.snack?'SNACK ALREADY CLAIMED':'Snack available');if(s==='LUNCH')text+=' | '+(p.lunch?'LUNCH ALREADY CLAIMED':'Lunch available');if(s==='RAFFLE'){if(p.type==='COMPANION'){text+=' | RAFFLE NOT ELIGIBLE';allowed=false}else text+=' | '+(p.raffle?'RAFFLE ALREADY CLAIMED':'Raffle available')}$('#participantResult').className=allowed?'status':'status bad';$('#participantResult').textContent=text;$('#actionBtn').disabled=!allowed;$('#actionBtn').textContent=s==='CHECKIN'?'CONFIRM ARRIVAL':'RELEASE '+s};
+$('#actionBtn').onclick=()=>{if(!selectedId)return;const d=db(),p=d.people.find(x=>x.id===selectedId),s=$('#station').value;let action;if(s==='CHECKIN'){if(p.arrived)return toast('Already arrived');p.arrived=true;action='ARRIVED'}if(s==='SNACK'){if(p.snack)return toast('Snack already claimed');p.snack=true;action='SNACK CLAIMED'}if(s==='LUNCH'){if(p.lunch)return toast('Lunch already claimed');p.lunch=true;action='LUNCH CLAIMED'}if(s==='RAFFLE'){if(p.type==='COMPANION')return toast('Companion is not raffle eligible');if(p.raffle)return toast('Raffle already claimed');p.raffle=true;action='RAFFLE CLAIMED'}d.tx.push({id:p.id,action,station:s+'-01',time:new Date().toLocaleTimeString()});d.pending++;save(d);toast(action);$('#findBtn').click()};
+$('#finalSync').onclick=()=>{const d=db();d.pending=0;d.syncedAt=new Date().toLocaleTimeString();save(d);toast('Final sync complete')};
+$('#downloadReport').onclick=()=>{const d=db();const rows=[['ID','Name','Type','Biometric','Arrived','Snack','Lunch','Raffle'],...d.people.map(p=>[p.id,p.name,p.type,p.biometric?'YES':'NO',p.arrived?'YES':'NO',p.snack?'YES':'NO',p.lunch?'YES':'NO',p.type==='COMPANION'?'NOT ELIGIBLE':p.raffle?'YES':'NO'])];const csv=rows.map(r=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='PDW2027-final-report.csv';a.click();URL.revokeObjectURL(a.href)};
+$('#resetDemo').onclick=()=>{if(confirm('Reset all demo data on this device?')){localStorage.removeItem(KEY);selectedId=null;render();toast('Demo reset')}};
+function net(){const on=navigator.onLine;$('#netPill').textContent=on?'ONLINE / READY':'OFFLINE MODE';$('#netPill').style.background=on?'#ffffff18':'#a8323e'}window.addEventListener('online',net);window.addEventListener('offline',net);net();
+if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+render();
+</script>
+</body></html>
