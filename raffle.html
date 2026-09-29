@@ -1,1 +1,64 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="./app.css"><title>PD Warriors 2027 — Raffle</title></head><body><div class="app"><div class="hero"><h1>Raffle</h1><p>Raffle Claim Station</p></div><a class="toplink" href="./admin.html">← Admin Menu</a><div class="card"><div class="station">RAFFLE</div><label>Scan / Enter Participant ID</label><input id="id" placeholder="PDW-0001 or COM-0001"><button class="blue" id="find">FIND PARTICIPANT</button><div id="result" class="status warn" style="margin-top:12px">No participant selected.</div><button class="primary" id="action" disabled>RELEASE RAFFLE</button></div><div class="card"><h2>Recent Raffle Transactions</h2><div class="tablewrap"><table><thead><tr><th>Time</th><th>ID</th><th>Action</th></tr></thead><tbody id="tx"></tbody></table></div></div></div><script src="./app-core.js"></script><script>let selected='';const KIND='RAFFLE',STATION='RAFFLE-01';function renderTx(){const d=PDW.db();document.querySelector('#tx').innerHTML=d.tx.filter(t=>t.station===STATION).slice().reverse().slice(0,20).map(t=>'<tr><td>'+t.time+'</td><td>'+t.id+'</td><td>'+t.action+'</td></tr>').join('')||'<tr><td colspan="3">No transactions yet.</td></tr>'}renderTx();document.querySelector('#find').onclick=()=>{const id=document.querySelector('#id').value.trim().toUpperCase(),p=PDW.person(id),r=document.querySelector('#result'),a=document.querySelector('#action');selected=p?p.id:'';if(!p){r.className='status bad';r.textContent='Participant not found';a.disabled=true;return}let msg=p.name+' — '+(p.type==='PATIENT'?'PD Warrior':'Companion');if(KIND==='RAFFLE'&&p.type==='COMPANION'){msg+=' — NOT ELIGIBLE FOR RAFFLE';r.className='status bad';a.disabled=true}else{r.className='status';r.textContent=msg;a.disabled=false}r.textContent=msg};document.querySelector('#action').onclick=()=>{if(!selected)return;const out=PDW.process(selected,KIND,STATION),r=document.querySelector('#result');r.className=out.ok?'status':'status bad';r.textContent=out.msg;renderTx();document.querySelector('#action').disabled=!out.ok};</script></body></html>
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="stylesheet" href="./app.css">
+<title>PD Warriors 2027 — Raffle</title>
+<style>
+.scanner-box{margin-top:14px;border:2px solid #d8d0c0;border-radius:20px;padding:12px;background:#fffdf8}
+.scanner-box video{display:block;width:100%;max-height:420px;object-fit:cover;border-radius:16px;background:#111}
+.scan-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.scan-actions button{margin-top:10px}
+.hidden{display:none!important}
+@media(max-width:560px){.scan-actions{grid-template-columns:1fr}}
+</style>
+</head>
+<body data-kind="RAFFLE" data-station="RAFFLE-01">
+<div class="app">
+  <div class="hero">
+    <h1>Raffle</h1>
+    <p>Raffle Claim Station</p>
+  </div>
+
+  <a class="toplink" href="./admin.html">← Admin Menu</a>
+
+  <div class="card">
+    <div class="station">RAFFLE</div>
+
+    <button class="blue" id="startScan">SCAN QR WITH CAMERA</button>
+
+    <div id="cameraBox" class="scanner-box hidden">
+      <video id="scannerVideo" playsinline muted></video>
+      <canvas id="scannerCanvas" class="hidden"></canvas>
+      <button class="ghost" id="stopScan" disabled>STOP CAMERA</button>
+    </div>
+
+    <label>Participant ID / QR Payload</label>
+    <input id="id" placeholder="Scan QR or enter Participant ID">
+
+    <button class="ghost" id="find">FIND PARTICIPANT</button>
+
+    <div id="result" class="status warn" style="margin-top:12px">
+      No participant selected.
+    </div>
+
+    <button class="primary" id="action" disabled>RELEASE RAFFLE</button>
+  </div>
+
+  <div class="card">
+    <h2>Recent Raffle Transactions</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Time</th><th>ID</th><th>Action</th></tr></thead>
+        <tbody id="tx"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="./app-core.js?v=15"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="./station-scanner.js?v=15"></script>
+</body>
+</html>
