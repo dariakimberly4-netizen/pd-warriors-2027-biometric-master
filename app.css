@@ -252,3 +252,81 @@ th{color:var(--green)}
   .app{padding-top:24px;padding-bottom:32px}
   .card{margin:18px 0}
 }
+
+/* Registration page: fill the phone screen proportionally without zooming */
+.registration-page .app{
+  width:min(100%,760px);
+}
+@media(max-width:700px){
+  .registration-page .app{
+    min-height:100svh;
+    display:grid;
+    grid-template-rows:auto minmax(0,1fr) auto;
+    gap:14px;
+    padding:12px 14px 16px;
+  }
+  .registration-page .hero{
+    margin:0;
+    min-height:118px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:20px 18px;
+    border-radius:22px;
+  }
+  .registration-page .hero h1{
+    font-size:clamp(30px,8vw,38px);
+  }
+  .registration-page .hero p{
+    font-size:17px;
+    margin-top:7px;
+  }
+  .registration-page .card{
+    margin:0;
+    min-height:0;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding:clamp(22px,6vw,30px) clamp(18px,5vw,24px);
+    border-radius:22px;
+  }
+  .registration-page .card h2{
+    font-size:clamp(25px,6.4vw,30px);
+    margin-bottom:18px;
+  }
+  .registration-page label{
+    font-size:18px;
+    margin:16px 0 8px;
+  }
+  .registration-page input,
+  .registration-page select{
+    min-height:64px;
+    font-size:18px;
+    border-radius:16px;
+    padding:14px 15px;
+  }
+  .registration-page button{
+    min-height:66px;
+    margin-top:18px;
+    font-size:18px;
+    border-radius:16px;
+  }
+  .registration-page .small{
+    margin:15px 0 0;
+    font-size:15px;
+    line-height:1.5;
+  }
+  .registration-page .footer{
+    padding:4px 6px 8px;
+    font-size:14px;
+  }
+}
+@media(max-width:390px){
+  .registration-page .app{padding:10px 10px 14px;gap:10px}
+  .registration-page .hero{min-height:104px}
+  .registration-page .card{padding:20px 16px}
+  .registration-page input,
+  .registration-page select{min-height:60px}
+  .registration-page button{min-height:62px}
+}
