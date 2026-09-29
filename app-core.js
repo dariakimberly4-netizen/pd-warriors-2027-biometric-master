@@ -6,34 +6,98 @@ const PDW={
   setActive(id){sessionStorage.setItem('pdwParticipantId',id)},
   person(id){const d=this.db();return d.people.find(p=>p.id===id)||null},
   active(){return this.person(this.activeId())},
-  newId(type,n){return(type==='PATIENT'?'PDW-':'COM-')+String(n).padStart(4,'0')},
+  nextId(type,d){
+    const prefix=type==='PATIENT'?'PDW-':'COM-';
+    const nums=d.people
+      .map(p=>String(p.id||''))
+      .filter(id=>id.startsWith(prefix))
+      .map(id=>parseInt(id.slice(prefix.length),10))
+      .filter(Number.isFinite);
+    const next=(nums.length?Math.max(...nums):0)+1;
+    return prefix+String(next).padStart(4,'0');
+  },
   register(name,type,extra={}){
     const d=this.db();
-    const id=this.newId(type,d.people.length+1);
+    const id=this.nextId(type,d);
     d.people.push({
-      id,
-      name,
-      type,
+      id,name,type,
+      nickname:extra.nickname||'',
+      facebookName:extra.facebookName||'',
       mobile:extra.mobile||'',
+      civilStatus:extra.civilStatus||'',
+      age:extra.age||'',
       location:extra.location||'',
-      companionOf:type==='COMPANION'?(extra.companionOf||''):'',
-      assistance:extra.assistance||'NONE',
-      emergencyName:extra.emergencyName||'',
-      emergencyMobile:extra.emergencyMobile||'',
-      idStatus:extra.idStatus||'NONE',
-      authorization:extra.authorization||'NO',
+      ageDiagnosed:extra.ageDiagnosed||'',
+      yearsLivingPD:extra.yearsLivingPD||'',
+      pdManagement:extra.pdManagement||[],
+      participation:extra.participation||[],
+      email:extra.email||'',
+      linkedPatientId:extra.linkedPatientId||'',
+      companionOf:extra.companionOf||'',
       consent:extra.consent===true,
       registeredAt:new Date().toISOString(),
-      biometric:false,
-      verifyMethod:null,
-      arrived:false,
-      snack:false,
-      lunch:false,
-      raffle:false
+      biometric:false,verifyMethod:null,arrived:false,snack:false,lunch:false,raffle:false
     });
     this.save(d);
     this.setActive(id);
     return id;
+  },
+  registerPatientGroup(patient,companions=[]){
+    const d=this.db();
+    const patientId=this.nextId('PATIENT',d);
+    const base={
+      biometric:false,verifyMethod:null,arrived:false,
+      snack:false,lunch:false,raffle:false,
+      registeredAt:new Date().toISOString()
+    };
+    d.people.push({
+      ...base,
+      id:patientId,
+      type:'PATIENT',
+      name:patient.name,
+      nickname:patient.nickname||'',
+      facebookName:patient.facebookName||'',
+      mobile:patient.mobile||'',
+      civilStatus:patient.civilStatus||'',
+      age:patient.age||'',
+      location:patient.location||'',
+      ageDiagnosed:patient.ageDiagnosed||'',
+      yearsLivingPD:patient.yearsLivingPD||'',
+      pdManagement:patient.pdManagement||[],
+      participation:patient.participation||[],
+      email:patient.email||'',
+      companionCount:companions.length,
+      consent:patient.consent===true
+    });
+    const companionIds=[];
+    for(const c of companions){
+      const cid=this.nextId('COMPANION',d);
+      d.people.push({
+        ...base,
+        id:cid,
+        type:'COMPANION',
+        name:c.name,
+        nickname:c.nickname||'',
+        age:c.age||'',
+        linkedPatientId:patientId,
+        companionOf:patient.name,
+        mobile:'',
+        facebookName:'',
+        civilStatus:'',
+        location:patient.location||'',
+        ageDiagnosed:'',
+        yearsLivingPD:'',
+        pdManagement:[],
+        participation:['Companion'],
+        email:'',
+        consent:patient.consent===true,
+        raffle:false
+      });
+      companionIds.push(cid);
+    }
+    this.save(d);
+    this.setActive(patientId);
+    return {patientId,companionIds};
   },
   updatePerson(id,fn){const d=this.db();const p=d.people.find(x=>x.id===id);if(!p)return null;fn(p,d);this.save(d);return p},
   addTx(id,action,station){const d=this.db();d.tx.push({id,action,station,time:new Date().toLocaleTimeString()});d.pending=(d.pending||0)+1;this.save(d)},
@@ -51,12 +115,7 @@ const PDW={
   qr(el,id){
     el.innerHTML='';
     let seed=[...id].reduce((a,c)=>a+c.charCodeAt(0),0);
-    for(let i=0;i<81;i++){
-      const x=document.createElement('i');
-      seed=(seed*9301+49297)%233280;
-      if(seed/233280>.48)x.className='off';
-      el.appendChild(x)
-    }
+    for(let i=0;i<81;i++){const x=document.createElement('i');seed=(seed*9301+49297)%233280;if(seed/233280>.48)x.className='off';el.appendChild(x)}
   }
 };
 if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
