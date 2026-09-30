@@ -34,16 +34,15 @@
   function syncFromRegistration(){
     const d=PDW.db();
     const registrationNames=uniqueNames(
-      (d.people||[])
-        .filter(p=>p.registrationStatus!=='CANCELLED'&&p.registrationStatus!=='NO SHOW')
-        .map(p=>p.name)
+      (d.people||[]).map(p=>p.name)
     );
-    const existing=roster();
-    const merged=uniqueNames([...registrationNames,...existing]);
-    write(ROSTER_KEY,merged);
+
+    // The Check-In roster mirrors ALL names currently stored in Registration.
+    // No filtering by attendee type or registration status.
+    write(ROSTER_KEY,registrationNames);
     localStorage.setItem(ROSTER_KEY+':updatedAt',new Date().toISOString());
-    localStorage.setItem(ROSTER_KEY+':source','REGISTRATION AUTO-SYNC');
-    return {registration:registrationNames.length,total:merged.length};
+    localStorage.setItem(ROSTER_KEY+':source','REGISTRATION ALL NAMES AUTO-SYNC');
+    return {registration:registrationNames.length,total:registrationNames.length};
   }
 
   function inject(){
@@ -56,7 +55,7 @@
     card.id='receivedNamesCheckin';
     card.innerHTML=`
       <h2>Registration Names Check-In</h2>
-      <div class="status" id="namesRosterSummary">0 Registration names loaded.</div>
+      <div class="status" id="namesRosterSummary">Loading all Registration names…</div>
 
       <label for="namesSearch">Search Registration Name</label>
       <input id="namesSearch" type="search" autocomplete="off" placeholder="Type first name or last name">
@@ -70,7 +69,7 @@
       <button class="primary" id="confirmNameArrival">CONFIRM ARRIVAL BY NAME</button>
 
       <div class="status warn" style="margin-top:12px">
-        <b>Auto-synced from Registration:</b> names on this device appear here automatically. QR/Participant ID remains available for verified check-in.
+        <b>ALL NAMES AUTO-IMPORTED:</b> every name in Registration appears here automatically, including Patients and Companions. QR/Participant ID remains available for verified check-in.
       </div>
     `;
     recent.parentNode.insertBefore(card,recent);
@@ -107,7 +106,7 @@
     const summary=document.querySelector('#namesRosterSummary');
     if(summary){
       const arrived=names.filter(n=>states[n]?.arrived).length;
-      summary.textContent=names.length+' Registration names • '+arrived+' arrived • '+(names.length-arrived)+' waiting';
+      summary.textContent=names.length+' total Registration names • '+arrived+' arrived • '+(names.length-arrived)+' waiting';
     }
 
     const list=document.querySelector('#namesList');
