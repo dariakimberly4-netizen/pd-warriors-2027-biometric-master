@@ -1,4 +1,4 @@
-const CACHE='pdw2027-biometric-mobile-fixed-v59';
+const CACHE='pdw2027-biometric-app-v63';
 const ASSETS=[
   './vendor/jsQR.js',
   './vendor/qrcode.min.js',
@@ -6,7 +6,7 @@ const ASSETS=[
   './',
   './login.html',
   './index.html',
-  './biometric.html','./biometric-mobile-v59.html','./biometric-large-v58.html','./biometric-v57.html',
+  './biometric.html','./biometric-app-v63.html','./biometric-mobile-v59.html','./biometric-large-v58.html','./biometric-v57.html',
   './pass.html',
   './admin.html',
   './master.html',
