@@ -94,6 +94,8 @@ const PDW={
       companionOf:extra.companionOf||'',
       consent:extra.consent===true,
       registeredAt:new Date().toISOString(),
+      registrationStatus:'CONFIRMED',
+      documents:{seniorId:'NOT REQUIRED',pwdId:'NOT REQUIRED',authorization:'NOT REQUIRED'},
       biometric:false,verifyMethod:null,arrived:false,snack:false,lunch:false,raffle:false
     });
     this.save(d);
@@ -106,6 +108,8 @@ const PDW={
     const base={
       biometric:false,verifyMethod:null,arrived:false,
       snack:false,lunch:false,raffle:false,
+      registrationStatus:'CONFIRMED',
+      documents:{seniorId:'NOT REQUIRED',pwdId:'NOT REQUIRED',authorization:'NOT REQUIRED'},
       registeredAt:new Date().toISOString()
     };
     d.people.push({
@@ -230,6 +234,8 @@ const PDW={
   process(id,kind,station){
     let result={ok:false,msg:'Participant not found'};
     this.updatePerson(id,(p,d)=>{
+      if(p.registrationStatus==='CANCELLED'){result={ok:false,msg:'REGISTRATION CANCELLED'};return}
+      if(p.registrationStatus==='NO SHOW'){result={ok:false,msg:'REGISTRATION MARKED NO SHOW'};return}
       if(kind==='ARRIVAL'){if(p.arrived){result={ok:false,msg:'ALREADY ARRIVED'};return}p.arrived=true;result={ok:true,msg:'ARRIVAL CONFIRMED'}}
       if(kind==='SNACK'){if(p.snack){result={ok:false,msg:'SNACK ALREADY CLAIMED'};return}p.snack=true;result={ok:true,msg:'SNACK CLAIMED'}}
       if(kind==='LUNCH'){if(p.lunch){result={ok:false,msg:'LUNCH ALREADY CLAIMED'};return}p.lunch=true;result={ok:true,msg:'LUNCH CLAIMED'}}
