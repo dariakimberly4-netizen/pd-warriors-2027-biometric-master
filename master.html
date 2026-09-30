@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <link rel="manifest" href="./manifest.webmanifest">
-<link rel="stylesheet" href="./app.css?v=42">
+<link rel="stylesheet" href="./app.css?v=43">
 <title>PD Warriors 2027 — Registration</title>
 <style>
 .actions{display:flex;gap:7px;flex-wrap:wrap}.actions button{width:auto;min-height:42px;margin:0;padding:8px 11px;font-size:14px;border-radius:11px}
@@ -18,7 +18,7 @@
 (function(){
   const ok=sessionStorage.getItem('pdwStaffSession')==='1';
   const role=sessionStorage.getItem('pdwStaffRole')||'';
-  if(!ok || !(role==='ADMIN'||role==='REGISTRATION')) location.replace('./login.html?v=42');
+  if(!ok || !(role==='ADMIN'||role==='REGISTRATION')) location.replace('./login.html?v=43');
 })();
 </script>
 
@@ -28,7 +28,7 @@
     <p>Master Database / Source of Truth</p>
   </div>
 
-  <a class="toplink" href="./admin.html?v=42">← Staff Menu</a>
+  <a class="toplink" href="./admin.html?v=43">← Staff Menu</a>
 
   <div class="card">
     <div id="staffWho" class="status"></div>
@@ -65,7 +65,7 @@
       <button class="ghost" id="cancelImport">CANCEL PREVIEW</button>
     </div>
 
-    <a class="btn primary" id="openBioBtn" href="./index.html?v=42" style="display:none">OPEN BIOMETRIC SEARCH</a>
+    <a class="btn primary" id="openBioBtn" href="./index.html?v=43" style="display:none">OPEN BIOMETRIC SEARCH</a>
     <p class="small">Preview first, then confirm. Existing arrival and claim status is preserved when IDs match.</p>
   </div>
 
@@ -105,8 +105,8 @@
   </div>
 </div>
 
-<script src="./app-core.js?v=42"></script>
-<script src="./vendor/xlsx.full.min.js?v=42"></script>
+<script src="./app-core.js?v=43"></script>
+<script src="./vendor/xlsx.full.min.js?v=43"></script>
 <script>
 const csvFile=document.querySelector('#csvFile');
 const previewBtn=document.querySelector('#previewBtn');
@@ -396,7 +396,7 @@ document.querySelector('#cancelImport').onclick=()=>{
 document.querySelector('#registrationSearch').addEventListener('input',render);
 render();
 </script>
-<script src="./registration-enhancements.js?v=42"></script>
-<script src="./feature-highlights.js?v=42"></script>
+<script src="./registration-enhancements.js?v=43"></script>
+<script src="./feature-highlights.js?v=43"></script>
 </body>
 </html>
