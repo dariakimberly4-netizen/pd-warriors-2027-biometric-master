@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<link rel="stylesheet" href="./app.css?v=30">
+<link rel="stylesheet" href="./app.css?v=31">
 <title>PD Warriors 2027 — Staff Login</title>
 <style>
 .staff-login-highlight{
@@ -61,6 +61,19 @@
       Show password
     </label>
 
+    <div class="quick-demo" id="quickDemo">
+      <b style="color:#0f5132">Quick Demo Account</b>
+      <p class="small" style="margin:5px 0 0">Tap a role to auto-fill the username and password, then tap LOGIN.</p>
+      <div class="quick-demo-grid">
+        <button class="ghost demoFill" data-user="registration">REGISTRATION</button>
+        <button class="ghost demoFill" data-user="checkin">CHECK-IN</button>
+        <button class="ghost demoFill" data-user="snack">SNACK</button>
+        <button class="ghost demoFill" data-user="lunch">LUNCH</button>
+        <button class="ghost demoFill" data-user="raffle">RAFFLE</button>
+        <button class="ghost demoFill" data-user="admin">ADMIN</button>
+      </div>
+    </div>
+
     <button class="primary" id="loginBtn">LOGIN</button>
     <div id="loginStatus" class="status hidden" style="margin-top:12px" aria-live="polite"></div>
 
@@ -91,23 +104,29 @@
 </div>
 
 <script>
-const STAFF_LOGIN_HIGHLIGHT_KEY='pdw2027SeenStaffLoginV30';
+const STAFF_LOGIN_HIGHLIGHT_KEY='pdw2027SeenStaffLoginV31';
 const staffLoginCard=document.querySelector('#staffLoginCard');
 const username=document.querySelector('#username');
 const password=document.querySelector('#password');
 const loginStatus=document.querySelector('#loginStatus');
+const quickDemo=document.querySelector('#quickDemo');
+const QUICK_DEMO_HIGHLIGHT_KEY='pdw2027SeenQuickDemoV31';
+
+if(quickDemo && localStorage.getItem(QUICK_DEMO_HIGHLIGHT_KEY)!=='1'){
+  quickDemo.classList.add('new-demo');
+}
 
 if(localStorage.getItem(STAFF_LOGIN_HIGHLIGHT_KEY)!=='1'){
   staffLoginCard.classList.add('staff-login-highlight');
 }
 
 const ACCOUNTS={
-  registration:{password:'PDW2027!',role:'REGISTRATION',name:'Registration Staff',go:'./master.html?v=30'},
-  checkin:{password:'PDW2027!',role:'CHECKIN',name:'Check-In Staff',go:'./checkin.html?v=30'},
-  snack:{password:'PDW2027!',role:'SNACK',name:'Snack Staff',go:'./snack.html?v=30'},
-  lunch:{password:'PDW2027!',role:'LUNCH',name:'Lunch Staff',go:'./lunch.html?v=30'},
-  raffle:{password:'PDW2027!',role:'RAFFLE',name:'Raffle Staff',go:'./raffle.html?v=30'},
-  admin:{password:'PDW2027!',role:'ADMIN',name:'Administrator',go:'./admin.html?v=30'}
+  registration:{password:'PDW2027!',role:'REGISTRATION',name:'Registration Staff',go:'./master.html?v=31'},
+  checkin:{password:'PDW2027!',role:'CHECKIN',name:'Check-In Staff',go:'./checkin.html?v=31'},
+  snack:{password:'PDW2027!',role:'SNACK',name:'Snack Staff',go:'./snack.html?v=31'},
+  lunch:{password:'PDW2027!',role:'LUNCH',name:'Lunch Staff',go:'./lunch.html?v=31'},
+  raffle:{password:'PDW2027!',role:'RAFFLE',name:'Raffle Staff',go:'./raffle.html?v=31'},
+  admin:{password:'PDW2027!',role:'ADMIN',name:'Administrator',go:'./admin.html?v=31'}
 };
 
 function showStatus(message,bad=false){
@@ -140,6 +159,20 @@ function doLogin(){
   showStatus('Login successful. Opening '+account.name+'…');
   setTimeout(()=>location.href=account.go,250);
 }
+
+document.querySelectorAll('.demoFill').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const u=btn.dataset.user;
+    const account=ACCOUNTS[u];
+    if(!account)return;
+    username.value=u;
+    password.value=account.password;
+    localStorage.setItem(QUICK_DEMO_HIGHLIGHT_KEY,'1');
+    if(quickDemo)quickDemo.classList.remove('new-demo');
+    showStatus(account.name+' demo account filled. Tap LOGIN to continue.');
+    username.focus();
+  });
+});
 
 document.querySelector('#loginBtn').onclick=doLogin;
 username.addEventListener('keydown',e=>{if(e.key==='Enter')password.focus()});
