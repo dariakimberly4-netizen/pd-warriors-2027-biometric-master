@@ -219,8 +219,8 @@ button{
   <div class="footer">Step 1 of 3 • Search & Confirm</div>
 </main>
 
-<script src="./app-core.js?v=63"></script>
-<script src="./vendor/xlsx.full.min.js?v=63"></script>
+<script src="./app-core.js?v=75"></script>
+<script src="./vendor/xlsx.full.min.js?v=75"></script>
 <script>
 const SHEET_ID='1l8Xk4B5EkniJq3hVoES6blYPIFCEl1-rnmXmxWEJLgI';
 const SHEET_NAME='Form Responses 1';
@@ -415,7 +415,7 @@ function renderLocalResults(list){
     if(p.mobile)parts.push('Mobile: '+maskMobile(p.mobile));
     meta.textContent=parts.join(' • ');
     const b=document.createElement('button');b.textContent='THIS IS ME';
-    b.onclick=()=>{PDW.setActive(p.id);location.href='./biometric-app-v63.html?v=63'};
+    b.onclick=()=>{PDW.setActive(p.id);location.href='./biometric-app-v63.html?v=75'};
     box.append(h,meta,b);resultsEl.appendChild(box);
   });
   return true;
@@ -446,6 +446,59 @@ function cell(row,i){
   if(!c)return '';
   return c.f!=null?c.f:(c.v!=null?c.v:'');
 }
+function ensureSheetCompanionGroup(record,patientId){
+  const d=PDW.db();
+  const list=parseCompanions(record.companionRaw||'');
+  const declaredRaw=String(record.companionCount??'').trim();
+  const m=declaredRaw.match(/\d+/);
+  const declared=m?Math.max(0,parseInt(m[0],10)):0;
+  const mismatch=declared!==list.length;
+  const patient=d.people.find(p=>p.id===patientId);
+
+  if(patient){
+    patient.companionCountDeclared=declared;
+    patient.companionCountNamed=list.length;
+    patient.companionCountMismatch=mismatch;
+    patient.needsReview=mismatch;
+    patient.registrationStatus=mismatch?'NEEDS REVIEW':(patient.registrationStatus||'CONFIRMED');
+    patient.reviewReason=mismatch
+      ? 'Google Sheet says '+declared+' companion'+(declared===1?'':'s')+' but '+list.length+' named companion'+(list.length===1?' is':'s are')+' provided.'
+      : '';
+  }
+
+  list.forEach(comp=>{
+    const id=stableCompanionId(record.sourceKey,record.name,comp.raw,comp.index);
+    const incoming={
+      id,
+      type:'COMPANION',
+      name:comp.name,
+      nickname:comp.nickname||'',
+      age:comp.age||'',
+      linkedPatientId:patientId,
+      companionOf:record.name,
+      location:record.location||'',
+      sourceKey:record.sourceKey||'',
+      fromMaster:true,
+      companionNumber:comp.index,
+      biometric:false,
+      verifyMethod:null,
+      arrived:false,
+      snack:false,
+      lunch:false,
+      raffle:false,
+      eventPassCreated:true,
+      passCreatedAt:new Date().toISOString(),
+      registrationStatus:'CONFIRMED',
+      documents:{seniorId:'NOT REQUIRED',pwdId:'NOT REQUIRED',authorization:'NOT REQUIRED'},
+      registeredAt:new Date().toISOString()
+    };
+    mergeLocalPerson(d,incoming);
+  });
+
+  PDW.save(d);
+  return {declared,named:list.length,mismatch};
+}
+
 function renderResults(rows){
   resultsEl.innerHTML='';
   if(!rows.length){
@@ -459,7 +512,9 @@ function renderResults(rows){
       name:safeText(cell(row,1)).trim(),
       nickname:safeText(cell(row,2)).trim(),
       mobile:safeText(cell(row,3)).trim(),
-      location:safeText(cell(row,4)).trim()
+      location:safeText(cell(row,4)).trim(),
+      companionCount:safeText(cell(row,5)).trim(),
+      companionRaw:safeText(cell(row,6)).trim()
     };
     if(!record.name)return;
     const box=document.createElement('div');
@@ -471,12 +526,16 @@ function renderResults(rows){
     if(record.nickname)parts.push('Nickname: '+record.nickname);
     if(record.location)parts.push('City: '+record.location);
     parts.push('Mobile: '+maskMobile(record.mobile));
+    const cc=String(record.companionCount||'').trim();
+    if(cc)parts.push('Companions: '+cc);
     p.textContent=parts.join(' • ');
     const b=document.createElement('button');
     b.textContent='THIS IS ME';
     b.onclick=()=>{
-      PDW.selectMasterRecord(record);
-      location.href='./biometric-app-v63.html?v=63';
+      const patientId=PDW.selectMasterRecord(record);
+      ensureSheetCompanionGroup(record,patientId);
+      PDW.setActive(patientId);
+      location.href='./biometric-app-v63.html?v=75';
     };
     box.append(h,p,b);
     resultsEl.appendChild(box);
@@ -488,7 +547,7 @@ function searchGoogleSheet(query){
     const clean=normalizeQuery(query);
     if(clean.length<2){reject(new Error('SHORT'));return}
     const qSafe=clean.replace(/'/g,'');
-    const tq="select A,B,C,E,H where lower(B) contains '"+qSafe+"' or lower(C) contains '"+qSafe+"' limit 10";
+    const tq="select A,B,C,E,H,M,N where lower(B) contains '"+qSafe+"' or lower(C) contains '"+qSafe+"' limit 10";
     const script=document.createElement('script');
     let finished=false;
     const timer=setTimeout(()=>{
