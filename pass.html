@@ -13,7 +13,7 @@
     <p>Digital QR Event Pass</p>
   </div>
 
-  <a class="toplink" href="./demo.html?v=18">← Back to Name Search</a>
+  <a class="toplink" href="./demo.html?v=15">← Back to Name Search</a>
 
   <div class="card">
     <div class="pass">
@@ -33,22 +33,18 @@
     </p>
 
     <button class="primary" id="bioBtn" style="display:none">ACTIVATE DEVICE BIOMETRIC</button>
-    <button class="ghost" id="skipBioBtn" style="display:none">SKIP BIOMETRIC — STAFF VERIFY AT EVENT</button>
-    <p class="small" id="companionNote" style="display:none;text-align:center;font-size:16px;line-height:1.5">
-      Companion biometric is optional. Your own QR Event Pass remains valid for Snack and Lunch. Companions are not eligible for raffle.
-    </p>
   </div>
 
   <div class="footer">Digital QR Event Pass</div>
 </div>
 
-<script src="./app-core.js?v=18"></script>
+<script src="./app-core.js?v=15"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
 const p=PDW.active();
 
 if(!p){
-  location.href='./demo.html?v=18';
+  location.href='./demo.html?v=15';
 }else{
   document.querySelector('#name').textContent=p.name;
   document.querySelector('#type').textContent=p.type==='PATIENT'?'PD WARRIOR':'COMPANION';
@@ -56,22 +52,13 @@ if(!p){
 
   const badge=document.querySelector('#verify');
   const bioBtn=document.querySelector('#bioBtn');
-  const skipBioBtn=document.querySelector('#skipBioBtn');
-  const companionNote=document.querySelector('#companionNote');
 
   if(p.biometric){
     badge.textContent='Biometric Verified ✓';
   }else if(p.verifyMethod==='STAFF_ASSISTED'){
-    badge.textContent=p.type==='COMPANION'?'Companion Pass • Staff Verification':'Staff-Assisted Verification ✓';
-  }else if(p.type==='COMPANION'){
-    badge.textContent='Companion Pass Ready • Biometric Optional';
-    bioBtn.textContent='ACTIVATE OPTIONAL BIOMETRIC';
-    bioBtn.style.display='flex';
-    skipBioBtn.style.display='flex';
-    companionNote.style.display='block';
+    badge.textContent='Staff-Assisted Verification ✓';
   }else{
     badge.textContent='Digital Event Pass Ready ✓';
-    bioBtn.textContent='ACTIVATE DEVICE BIOMETRIC';
     bioBtn.style.display='flex';
   }
 
@@ -92,17 +79,7 @@ if(!p){
   }
 
   bioBtn.onclick=()=>{
-    location.href='./biometric.html?v=18';
-  };
-
-  skipBioBtn.onclick=()=>{
-    PDW.updatePerson(p.id,x=>{
-      x.biometric=false;
-      x.verifyMethod='STAFF_ASSISTED';
-    });
-    badge.textContent='Companion Pass • Staff Verification';
-    bioBtn.style.display='none';
-    skipBioBtn.style.display='none';
+    location.href='./biometric.html?v=15';
   };
 }
 </script>
