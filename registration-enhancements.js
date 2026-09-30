@@ -61,7 +61,7 @@
         <button class="primary" id="addWalkinBtn" data-new-feature="walk-in-v37">+ ADD WALK-IN ATTENDEE</button>
         <button class="ghost" id="showReviewBtn" data-new-feature="needs-review-v37">SHOW NEEDS REVIEW</button>
         <button class="gold" id="exportRegistrationBtn" data-new-feature="registration-export-v37">EXPORT REGISTRATION CSV</button>
-        <a class="btn primary" id="namesQuickShareBtn" data-new-feature="names-quickshare-registration-v37" href="./staff-names-share.html?v=41">NAMES QUICK SHARE</a>
+        <a class="btn primary" id="namesQuickShareBtn" data-new-feature="names-quickshare-registration-v37" href="./staff-names-share.html?v=42">NAMES QUICK SHARE</a>
       </div>
       <div class="status" style="margin-top:10px"><b>Names Quick Share transfers names only.</b> No Registration details or claim data are sent.</div>
     `;
