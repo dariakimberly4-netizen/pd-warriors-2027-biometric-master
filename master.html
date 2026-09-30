@@ -50,7 +50,12 @@
 
   <div class="card">
     <h2>Registration Database</h2>
-    <div class="tablewrap">
+
+    <label for="registrationSearch">Search Name or Last Name</label>
+    <input id="registrationSearch" type="search" autocomplete="off" placeholder="Example: Dela Cruz or Juan">
+    <div id="searchCount" class="small" style="margin-top:8px"></div>
+
+    <div class="tablewrap" style="margin-top:12px">
       <table>
         <thead>
           <tr>
@@ -79,17 +84,43 @@ function esc(v){
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+function normalizeSearch(v){
+  return String(v||'')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .replace(/\s+/g,' ')
+    .trim();
+}
+
 function render(){
   const d=PDW.db();
   const openBioBtn=document.querySelector('#openBioBtn');
   if(openBioBtn)openBioBtn.style.display=d.people.some(x=>x.type==='PATIENT')?'flex':'none';
+
   const pat=d.people.filter(x=>x.type==='PATIENT').length;
   document.querySelector('#reg').textContent=d.people.length;
   document.querySelector('#arr').textContent=d.people.filter(x=>x.arrived).length;
   document.querySelector('#pat').textContent=pat;
   document.querySelector('#com').textContent=d.people.length-pat;
 
-  document.querySelector('#rows').innerHTML=d.people.map(p=>
+  const searchEl=document.querySelector('#registrationSearch');
+  const q=normalizeSearch(searchEl?searchEl.value:'');
+  const filtered=!q ? d.people : d.people.filter(p=>{
+    const fullName=normalizeSearch(p.name);
+    const nickname=normalizeSearch(p.nickname);
+    const companionOf=normalizeSearch(p.companionOf);
+    return fullName.includes(q) || nickname.includes(q) || companionOf.includes(q);
+  });
+
+  const countEl=document.querySelector('#searchCount');
+  if(countEl){
+    countEl.textContent=q
+      ? filtered.length+' matching record'+(filtered.length===1?'':'s')
+      : d.people.length+' total record'+(d.people.length===1?'':'s');
+  }
+
+  document.querySelector('#rows').innerHTML=filtered.map(p=>
     '<tr>'+
     '<td><b>'+esc(p.id)+'</b></td>'+
     '<td>'+esc(p.name)+'</td>'+
@@ -100,7 +131,7 @@ function render(){
     '<td>'+(p.lunch?'✓':'—')+'</td>'+
     '<td>'+(p.type==='COMPANION'?'NOT ELIGIBLE':p.raffle?'✓':'—')+'</td>'+
     '</tr>'
-  ).join('') || '<tr><td colspan="8">No participants yet.</td></tr>';
+  ).join('') || '<tr><td colspan="8">'+(q?'No matching name or last name found.':'No participants yet.')+'</td></tr>';
 }
 
 function parseCSV(text){
@@ -304,6 +335,10 @@ importBtn.addEventListener('click',async()=>{
   }
 });
 
+const registrationSearch=document.querySelector('#registrationSearch');
+if(registrationSearch){
+  registrationSearch.addEventListener('input',render);
+}
 render();
 </script>
 </body>
