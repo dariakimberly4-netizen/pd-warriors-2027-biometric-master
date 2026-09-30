@@ -1,1 +1,81 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="./app.css"><title>PD Warriors 2027 — Reports</title></head><body><div class="app"><div class="hero"><h1>Reports</h1><p>Final Event Summary</p></div><a class="toplink" href="./admin.html">← Admin Menu</a><div class="card"><div class="kpi"><div><b id="arr">0</b>Arrivals</div><div><b id="snack">0</b>Snack</div><div><b id="lunch">0</b>Lunch</div><div><b id="raffle">0</b>Raffle</div></div><button class="primary" id="sync">FINAL SYNC</button><button class="gold" id="download">DOWNLOAD REPORT</button></div></div><script src="./app-core.js"></script><script>function r(){const d=PDW.db();document.querySelector('#arr').textContent=d.people.filter(x=>x.arrived).length;document.querySelector('#snack').textContent=d.people.filter(x=>x.snack).length;document.querySelector('#lunch').textContent=d.people.filter(x=>x.lunch).length;document.querySelector('#raffle').textContent=d.people.filter(x=>x.raffle).length}r();document.querySelector('#sync').onclick=()=>{const d=PDW.db();d.pending=0;d.syncedAt=new Date().toLocaleTimeString();PDW.save(d);alert('Final sync complete')};document.querySelector('#download').onclick=()=>{const d=PDW.db(),rows=[['ID','Name','Type','Biometric','Arrived','Snack','Lunch','Raffle'],...d.people.map(p=>[p.id,p.name,p.type,p.biometric?'YES':'NO',p.arrived?'YES':'NO',p.snack?'YES':'NO',p.lunch?'YES':'NO',p.type==='COMPANION'?'NOT ELIGIBLE':p.raffle?'YES':'NO'])],csv=rows.map(r=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='PDW2027-final-report.csv';a.click()};</script></body></html>
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="stylesheet" href="./app.css"><title>PD Warriors 2027 — Reports</title>
+<style>.reportgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.reportgrid div{background:#f6f2e8;border-radius:16px;padding:14px 8px;text-align:center}.reportgrid b{display:block;font-size:30px;color:#0f5132}.reportgrid span{font-size:14px;font-weight:800}@media(max-width:650px){.reportgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}</style>
+</head><body>
+<script>(function(){const ok=sessionStorage.getItem('pdwStaffSession')==='1',r=sessionStorage.getItem('pdwStaffRole')||'';if(!ok||!(r==='ADMIN'||r==='REGISTRATION'))location.replace('./login.html?v=26')})();</script>
+<div class="app">
+<div class="hero"><h1>Reports</h1><p>Event Summary & Audit</p></div>
+<a class="toplink" href="./admin.html?v=26">← Staff Menu</a>
+<div class="card">
+  <div id="staffWho" class="status"></div>
+  <div class="reportgrid" style="margin-top:12px">
+    <div><b id="registered">0</b><span>Registered</span></div>
+    <div><b id="patients">0</b><span>Patients</span></div>
+    <div><b id="companions">0</b><span>Companions</span></div>
+    <div><b id="arrived">0</b><span>Arrived</span></div>
+    <div><b id="snack">0</b><span>Snack Claimed</span></div>
+    <div><b id="lunch">0</b><span>Lunch Claimed</span></div>
+    <div><b id="raffle">0</b><span>Raffle Claimed</span></div>
+    <div><b id="txCount">0</b><span>Transactions</span></div>
+  </div>
+  <button class="gold" id="download">DOWNLOAD CSV REPORT</button>
+</div>
+
+<div class="card">
+  <h2>Remaining Entitlements</h2>
+  <div class="reportgrid">
+    <div><b id="snackRemaining">0</b><span>Snack Remaining</span></div>
+    <div><b id="lunchRemaining">0</b><span>Lunch Remaining</span></div>
+    <div><b id="raffleRemaining">0</b><span>Raffle Remaining</span></div>
+    <div><b id="reviewNeeded">0</b><span>Records to Review</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Recent Audit Trail</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Time</th><th>Participant</th><th>Action</th><th>Station</th><th>Staff</th></tr></thead>
+    <tbody id="audit"></tbody>
+  </table></div>
+</div>
+</div>
+<script src="./app-core.js?v=26"></script>
+<script>
+document.querySelector('#staffWho').textContent=(sessionStorage.getItem('pdwStaffName')||'Staff')+' • '+(sessionStorage.getItem('pdwStaffRole')||'');
+function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function render(){
+  const d=PDW.db(),patients=d.people.filter(x=>x.type==='PATIENT'),companions=d.people.filter(x=>x.type==='COMPANION');
+  document.querySelector('#registered').textContent=d.people.length;
+  document.querySelector('#patients').textContent=patients.length;
+  document.querySelector('#companions').textContent=companions.length;
+  document.querySelector('#arrived').textContent=d.people.filter(x=>x.arrived).length;
+  document.querySelector('#snack').textContent=d.people.filter(x=>x.snack).length;
+  document.querySelector('#lunch').textContent=d.people.filter(x=>x.lunch).length;
+  document.querySelector('#raffle').textContent=patients.filter(x=>x.raffle).length;
+  document.querySelector('#txCount').textContent=d.tx.length;
+  document.querySelector('#snackRemaining').textContent=d.people.filter(x=>!x.snack).length;
+  document.querySelector('#lunchRemaining').textContent=d.people.filter(x=>!x.lunch).length;
+  document.querySelector('#raffleRemaining').textContent=patients.filter(x=>!x.raffle).length;
+  document.querySelector('#reviewNeeded').textContent=d.people.filter(x=>x.needsReview).length;
+
+  const recent=d.tx.slice().reverse().slice(0,50);
+  document.querySelector('#audit').innerHTML=recent.map(t=>{
+    const p=d.people.find(x=>x.id===t.id);
+    return '<tr><td>'+esc(t.time||'—')+'</td><td>'+esc(p?p.name:t.id)+'</td><td>'+esc(t.action)+'</td><td>'+esc(t.station||'—')+'</td><td>'+esc(t.staffName||'Staff')+'</td></tr>'
+  }).join('')||'<tr><td colspan="5">No transactions yet.</td></tr>';
+}
+document.querySelector('#download').onclick=()=>{
+  const d=PDW.db();
+  const rows=[['ID','Name','Type','Nickname','City','Biometric','Arrived','Arrival Time','Snack','Snack Time','Lunch','Lunch Time','Raffle','Raffle Time','Needs Review'],
+    ...d.people.map(p=>[
+      p.id,p.name,p.type,p.nickname||'',p.location||'',
+      p.biometric?'YES':'NO',p.arrived?'YES':'NO',p.arrivalAt||'',
+      p.snack?'YES':'NO',p.snackAt||'',p.lunch?'YES':'NO',p.lunchAt||'',
+      p.type==='COMPANION'?'NOT ELIGIBLE':p.raffle?'YES':'NO',p.raffleAt||'',p.needsReview?'YES':'NO'
+    ])
+  ];
+  const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='PDW2027-event-report.csv';a.click();URL.revokeObjectURL(a.href);
+};
+render();
+</script></body></html>
