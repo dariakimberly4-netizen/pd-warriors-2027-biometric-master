@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="manifest" href="./manifest.webmanifest">
-<link rel="stylesheet" href="./app.css?v=54"><title>PD Warriors 2027 — Staff</title></head>
+<link rel="stylesheet" href="./app.css?v=68"><title>PD Warriors 2027 — Staff</title></head>
 <body><div class="app">
 <div class="hero"><h1>PD Warriors 2027</h1><p>Staff Menu</p></div>
 <div class="card">
@@ -13,6 +13,7 @@
     <a class="btn blue" data-role="RAFFLE,ADMIN" href="./raffle.html?v=51">RAFFLE DRAW</a>
     <a class="btn gold" data-new-feature="reports-upgrade" data-role="REGISTRATION,ADMIN" href="./reports.html?v=34">REPORTS</a>
     <a class="btn primary" data-new-feature="biometric-file-tools" data-role="REGISTRATION,ADMIN" href="./index.html?v=54">BIOMETRICS AT HOME / ADD FILE</a>
+    <a class="btn red" data-role="REGISTRATION,ADMIN" href="./clear-demo.html?v=68">CLEAR DEMO DATA</a>
     <a class="btn gold" data-new-feature="names-quickshare-menu-v36" data-role="REGISTRATION,CHECKIN,SNACK,LUNCH,RAFFLE,ADMIN" href="./staff-names-share.html?v=44">NAMES QUICK SHARE</a>
   </div>
   <button class="ghost" id="logout">LOG OUT</button>
@@ -21,7 +22,7 @@
 </div>
 <script>
 const ok=sessionStorage.getItem('pdwStaffSession')==='1';
-if(!ok){location.replace('./login.html?v=52')}
+if(!ok){location.replace('./login.html?v=68')}
 const role=sessionStorage.getItem('pdwStaffRole')||'';
 const name=sessionStorage.getItem('pdwStaffName')||'Staff';
 document.querySelector('#who').textContent=name+' • '+role;
@@ -31,6 +32,6 @@ document.querySelectorAll('[data-role]').forEach(el=>{
 });
 document.querySelector('#logout').onclick=()=>{
   ['pdwStaffSession','pdwStaffRole','pdwStaffName','pdwStaffLoginAt'].forEach(k=>sessionStorage.removeItem(k));
-  location.replace('./login.html?v=52');
+  location.replace('./login.html?v=68');
 };
-</script><script src="./feature-highlights.js?v=52"></script></body></html>
+</script><script src="./feature-highlights.js?v=68"></script></body></html>
