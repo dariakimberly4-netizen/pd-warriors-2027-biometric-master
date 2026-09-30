@@ -27,6 +27,7 @@
     card.innerHTML=`
       <h2>Received Names Check-In</h2>
       <div class="status" id="namesRosterSummary">0 names received for CHECK-IN.</div>
+      <a class="btn blue" href="./staff-names-share.html?v=40">OPEN NAMES QUICK SHARE / RECEIVE NAMES</a>
 
       <label for="namesSearch">Search Received Name</label>
       <input id="namesSearch" type="search" autocomplete="off" placeholder="Type first name or last name">
