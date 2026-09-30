@@ -1,5 +1,5 @@
 (()=>{
-  const NEW_VERSION='44';
+  const NEW_VERSION='52';
   let activeFilter='ALL';
   let currentProfileId='';
   let addCompanionPatientId='';
@@ -58,10 +58,10 @@
     card.innerHTML=`
       <h2>Registration Tools</h2>
       <div class="reg-tools-grid">
-        <button class="primary" id="addWalkinBtn" data-new-feature="walk-in-v37">+ ADD WALK-IN ATTENDEE</button>
-        <button class="ghost" id="showReviewBtn" data-new-feature="needs-review-v37">SHOW NEEDS REVIEW</button>
-        <button class="gold" id="exportRegistrationBtn" data-new-feature="registration-export-v37">EXPORT REGISTRATION CSV</button>
-        <a class="btn primary" id="namesQuickShareBtn" data-new-feature="names-quickshare-registration-v37" href="./staff-names-share.html?v=44">NAMES QUICK SHARE</a>
+        <button class="primary" id="addWalkinBtn" data-new-feature="walk-in-v52">+ ADD WALK-IN ATTENDEE</button>
+        <button class="ghost" id="showReviewBtn" data-new-feature="needs-review-v52">SHOW NEEDS REVIEW</button>
+        <button class="gold" id="exportRegistrationBtn" data-new-feature="registration-export-v52">EXPORT REGISTRATION CSV</button>
+        <a class="btn primary" id="namesQuickShareBtn" data-new-feature="names-quickshare-registration-v52" href="./staff-names-share.html?v=52">NAMES QUICK SHARE</a>
       </div>
       <div class="status" style="margin-top:10px"><b>Names Quick Share transfers names only.</b> No Registration details or claim data are sent.</div>
     `;
@@ -181,14 +181,14 @@
     bar.className='reg-filterbar';
     bar.id='regFilterBar';
     bar.innerHTML=`
-      <button class="ghost active regFilterBtn" data-filter="ALL" data-new-feature="registration-filters-v37">ALL</button>
-      <button class="ghost regFilterBtn" data-filter="PATIENT" data-new-feature="registration-filters-v37">PATIENTS</button>
-      <button class="ghost regFilterBtn" data-filter="COMPANION" data-new-feature="registration-filters-v37">COMPANIONS</button>
-      <button class="ghost regFilterBtn" data-filter="NOT_ARRIVED" data-new-feature="registration-filters-v37">NOT ARRIVED</button>
-      <button class="ghost regFilterBtn" data-filter="REVIEW" data-new-feature="registration-filters-v37">NEEDS REVIEW</button>
-      <button class="ghost regFilterBtn" data-filter="CONFIRMED" data-new-feature="registration-status-filter-v37">CONFIRMED</button>
-      <button class="ghost regFilterBtn" data-filter="CANCELLED" data-new-feature="registration-status-filter-v37">CANCELLED</button>
-      <button class="ghost regFilterBtn" data-filter="DOCS_PENDING" data-new-feature="document-filter-v37">DOCS PENDING</button>
+      <button class="ghost active regFilterBtn" data-filter="ALL" data-new-feature="registration-filters-v52">ALL</button>
+      <button class="ghost regFilterBtn" data-filter="PATIENT" data-new-feature="registration-filters-v52">PATIENTS</button>
+      <button class="ghost regFilterBtn" data-filter="COMPANION" data-new-feature="registration-filters-v52">COMPANIONS</button>
+      <button class="ghost regFilterBtn" data-filter="NOT_ARRIVED" data-new-feature="registration-filters-v52">NOT ARRIVED</button>
+      <button class="ghost regFilterBtn" data-filter="REVIEW" data-new-feature="registration-filters-v52">NEEDS REVIEW</button>
+      <button class="ghost regFilterBtn" data-filter="CONFIRMED" data-new-feature="registration-status-filter-v52">CONFIRMED</button>
+      <button class="ghost regFilterBtn" data-filter="CANCELLED" data-new-feature="registration-status-filter-v52">CANCELLED</button>
+      <button class="ghost regFilterBtn" data-filter="DOCS_PENDING" data-new-feature="document-filter-v52">DOCS PENDING</button>
     `;
     count.parentNode.insertBefore(bar,count);
     bar.querySelectorAll('.regFilterBtn').forEach(btn=>btn.onclick=()=>setFilter(btn.dataset.filter));
@@ -234,7 +234,7 @@
         btn.className='ghost profileBtn';
         btn.textContent='PROFILE';
         btn.dataset.id=id;
-        if(index===0)btn.setAttribute('data-new-feature','full-profile-v37');
+        if(index===0)btn.setAttribute('data-new-feature','full-profile-v52');
         btn.onclick=()=>openProfile(id);
         actions.insertBefore(btn,actions.firstChild);
       }
@@ -272,7 +272,7 @@
       <h2>Full Attendee Profile</h2>
       <div id="profileDetails" class="reg-profile-grid"></div>
       <div class="status" style="margin-top:16px"><b>Registration & Document Verification</b></div>
-      <div class="reg-verify-grid" data-new-feature="document-verification-v37">
+      <div class="reg-verify-grid" data-new-feature="document-verification-v52">
         <div><label for="profileRegStatus">Registration Status</label><select id="profileRegStatus">
           <option value="CONFIRMED">CONFIRMED</option>
           <option value="NEEDS REVIEW">NEEDS REVIEW</option>
@@ -289,12 +289,12 @@
           <option>NOT REQUIRED</option><option>PENDING</option><option>RECEIVED</option><option>VERIFIED</option>
         </select></div>
       </div>
-      <button class="primary" id="saveVerification" data-new-feature="save-verification-v37">SAVE STATUS / DOCUMENTS</button>
+      <button class="primary" id="saveVerification" data-new-feature="save-verification-v52">SAVE STATUS / DOCUMENTS</button>
       <div id="verificationMsg" class="status hidden" style="margin-top:10px"></div>
       <div id="companionManager" class="hidden" style="margin-top:18px">
         <h3>Companion Management</h3>
         <div id="companionList"></div>
-        <button class="primary" id="profileAddCompanion" data-new-feature="companion-management-v37">+ ADD COMPANION</button>
+        <button class="primary" id="profileAddCompanion" data-new-feature="companion-management-v52">+ ADD COMPANION</button>
       </div>
       <div class="reg-tools-grid" style="margin-top:12px">
         <button class="ghost" id="profileEdit">EDIT PROFILE</button>
