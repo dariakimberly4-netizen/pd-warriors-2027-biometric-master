@@ -106,7 +106,9 @@ function cleanNames(list){
 }
 
 function sourceNames(){
-  return cleanNames(PDW.db().people.map(p=>p.name));
+  const registrationNames=PDW.db().people.map(p=>p.name);
+  const receivedNames=loadRoster();
+  return cleanNames([...registrationNames,...receivedNames]);
 }
 
 function rosterKey(){return ROSTER_PREFIX+currentRole}
