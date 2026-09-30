@@ -4,16 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <link rel="stylesheet" href="./app.css">
-<title>PD Warriors 2027 — Digital QR Event Pass</title>
+<title>PD Warriors 2027 — Generated QR Code</title>
 </head>
 <body>
 <div class="app">
   <div class="hero">
     <h1>PD Warriors 2027</h1>
-    <p>Digital QR Event Pass</p>
+    <p>Generated QR Code</p>
   </div>
 
-  <a class="toplink" id="backLink" href="./demo.html?v=32">← Back</a>
+  <a class="toplink" id="backLink" href="./index.html?v=54">← Back</a>
 
   <div class="card">
     <div class="pass">
@@ -25,7 +25,7 @@
       <div id="qr" style="width:230px;min-height:230px;margin:20px auto;padding:8px;background:#fff;display:flex;align-items:center;justify-content:center"></div>
 
       <div class="pid" id="id">—</div>
-      <div class="badge" id="verify">Digital Event Pass Ready ✓</div>
+      <div class="badge" id="verify">QR Code Ready ✓</div>
     </div>
 
     <p class="small" style="text-align:center;font-size:16px;line-height:1.5">
@@ -35,32 +35,32 @@
     <button class="primary" id="bioBtn" style="display:none">ACTIVATE DEVICE BIOMETRIC</button>
   </div>
 
-  <div class="footer">Digital QR Event Pass</div>
+  <div class="footer">Generated QR Code</div>
 </div>
 
-<script src="./app-core.js?v=32"></script>
-<script src="./vendor/qrcode.min.js?v=32"></script>
+<script src="./app-core.js?v=54"></script>
+<script src="./vendor/qrcode.min.js?v=54"></script>
 <script>
 const p=PDW.active();
 const staffMode=new URLSearchParams(location.search).get('staff')==='1';
 const backLink=document.querySelector('#backLink');
 if(staffMode){
-  backLink.href='./master.html?v=32';
+  backLink.href='./master.html?v=54';
   backLink.textContent='← Back to Registration';
 }else{
-  backLink.href='./index.html?v=32';
+  backLink.href='./index.html?v=54';
   backLink.textContent='← Back to Search';
 }
 
 if(!p){
-  location.href='./demo.html?v=15';
+  location.href='./index.html?v=54';
 }else{
   document.querySelector('#name').textContent=p.name;
   document.querySelector('#type').textContent=p.type==='PATIENT'?'PD WARRIOR':'COMPANION';
   document.querySelector('#id').textContent=p.id;
   document.querySelector('#entitlementText').textContent=p.type==='COMPANION'
-    ? 'Companion Event Pass • Snack ✓ • Lunch ✓ • Raffle ✕'
-    : 'PD Warrior Event Pass • Snack ✓ • Lunch ✓ • Raffle ✓';
+    ? 'Companion QR Code • Snack ✓ • Lunch ✓ • Raffle ✕'
+    : 'PD Warrior QR Code • Snack ✓ • Lunch ✓ • Raffle ✓';
 
   const badge=document.querySelector('#verify');
   const bioBtn=document.querySelector('#bioBtn');
@@ -91,7 +91,7 @@ if(!p){
   }
 
   bioBtn.onclick=()=>{
-    location.href='./biometric.html?v=32';
+    location.href='./biometric.html?v=54';
   };
 }
 </script>
