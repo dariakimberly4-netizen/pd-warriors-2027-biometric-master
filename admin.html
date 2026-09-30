@@ -10,8 +10,8 @@
     <a class="btn blue" data-role="SNACK,ADMIN" href="./snack.html?v=26">SNACK</a>
     <a class="btn blue" data-role="LUNCH,ADMIN" href="./lunch.html?v=26">LUNCH</a>
     <a class="btn blue" data-role="RAFFLE,ADMIN" href="./raffle.html?v=26">RAFFLE</a>
-    <a class="btn gold" data-role="REGISTRATION,ADMIN" href="./reports.html?v=26">REPORTS</a>
-    <a class="btn primary" data-role="REGISTRATION,ADMIN" href="./index.html?v=26">BIOMETRIC / ADD FILE</a>
+    <a class="btn gold" data-new-feature="reports-upgrade" data-role="REGISTRATION,ADMIN" href="./reports.html?v=26">REPORTS</a>
+    <a class="btn primary" data-new-feature="biometric-file-tools" data-role="REGISTRATION,ADMIN" href="./index.html?v=26">BIOMETRIC / ADD FILE</a>
   </div>
   <button class="ghost" id="logout">LOG OUT</button>
 </div>
@@ -31,4 +31,4 @@ document.querySelector('#logout').onclick=()=>{
   ['pdwStaffSession','pdwStaffRole','pdwStaffName','pdwStaffLoginAt'].forEach(k=>sessionStorage.removeItem(k));
   location.replace('./login.html?v=26');
 };
-</script></body></html>
+</script><script src="./feature-highlights.js?v=27"></script></body></html>
