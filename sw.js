@@ -1,4 +1,4 @@
-const CACHE='pdw2027-biometric-qr-v54';
+const CACHE='pdw2027-home-biometric-larger-v55';
 const ASSETS=[
   './vendor/jsQR.js',
   './vendor/qrcode.min.js',
