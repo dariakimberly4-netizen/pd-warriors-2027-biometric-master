@@ -238,7 +238,11 @@ function mergePerson(d,incoming){
       arrived:!!old.arrived,snack:!!old.snack,lunch:!!old.lunch,raffle:!!old.raffle,
       arrivalAt:old.arrivalAt||null,snackAt:old.snackAt||null,lunchAt:old.lunchAt||null,raffleAt:old.raffleAt||null,
       registeredAt:old.registeredAt||incoming.registeredAt,
-      registrationStatus:old.registrationStatus||incoming.registrationStatus||'CONFIRMED',
+      registrationStatus:incoming.registrationStatus==='NEEDS REVIEW'
+        ? 'NEEDS REVIEW'
+        : (old.registrationStatus||incoming.registrationStatus||'CONFIRMED'),
+      needsReview:!!incoming.needsReview||!!old.needsReview,
+      reviewReason:incoming.reviewReason||old.reviewReason||'',
       documents:old.documents||incoming.documents||{seniorId:'NOT REQUIRED',pwdId:'NOT REQUIRED',authorization:'NOT REQUIRED'},
       mobile:old.mobile||incoming.mobile||'',
       walkIn:!!old.walkIn||!!incoming.walkIn
