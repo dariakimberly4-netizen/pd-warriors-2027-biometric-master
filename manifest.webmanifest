@@ -1,9 +1,25 @@
 {
-  "name": "PD Warriors 2027 Biometric Master",
+  "name": "PD Warriors 2027 Offline Event System",
   "short_name": "PDW 2027",
-  "start_url": "./",
+  "start_url": "./login.html?v=42",
   "display": "standalone",
   "background_color": "#fffaf0",
   "theme_color": "#0f5132",
-  "description": "Biometric pass and offline master database workflow prototype for PD Warriors 2027"
+  "description": "Offline event system for PD Warriors 2027",
+  "share_target": {
+    "action": "./receive-shared-names.html",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "files": [
+        {
+          "name": "namesfile",
+          "accept": [
+            "text/plain",
+            ".txt"
+          ]
+        }
+      ]
+    }
+  }
 }
