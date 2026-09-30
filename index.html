@@ -173,6 +173,7 @@ button{
   <section class="card hidden" id="staffFiles">
     <div style="display:inline-block;padding:8px 14px;border-radius:999px;background:#eef8f2;color:#0f5132;font-weight:900;margin-bottom:12px">STAFF ONLY</div>
     <h2>Add Registration File</h2>
+    <div id="localDbStatus" class="status" style="margin-bottom:14px">Checking Registration database…</div>
     <p class="note">Upload the latest Registration Excel or CSV file. The file is stored only in this browser's local event database.</p>
 
     <label for="staffFile">Excel or CSV File</label>
@@ -200,7 +201,7 @@ button{
   <div class="footer">Step 1 of 3 • Search & Confirm</div>
 </main>
 
-<script src="./app-core.js?v=22"></script>
+<script src="./app-core.js?v=23"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 const SHEET_ID='1l8Xk4B5EkniJq3hVoES6blYPIFCEl1-rnmXmxWEJLgI';
@@ -218,6 +219,22 @@ let selectedStaffFile=null;
 
 if(sessionStorage.getItem('pdwStaffSession')==='1'){
   staffFiles.classList.remove('hidden');
+}
+
+function refreshLocalDbStatus(){
+  const el=document.querySelector('#localDbStatus');
+  if(!el)return;
+  const d=PDW.db();
+  const patients=d.people.filter(p=>p.type==='PATIENT').length;
+  const companions=d.people.filter(p=>p.type==='COMPANION').length;
+  const updated=localStorage.getItem('pdw2027RegistrationUpdatedAt');
+  if(!patients&&!companions){
+    el.className='status warn';
+    el.textContent='No imported Registration database found on this browser/device.';
+  }else{
+    el.className='status';
+    el.textContent='Registration Database Loaded: '+patients+' patients • '+companions+' companions'+(updated?' • Ready for biometric search':'');
+  }
 }
 
 function parseCSV(text){
@@ -346,13 +363,17 @@ staffImportBtn.addEventListener('click',async()=>{
       rows=XLSX.utils.sheet_to_json(wb.Sheets[first],{header:1,defval:'',raw:false});
     }else rows=parseCSV(await selectedStaffFile.text());
     const r=importStaffRows(rows);
-    staffImportStatus.textContent='Imported / merged '+r.patients+' patients and '+r.companions+' companions.';
+    localStorage.setItem('pdw2027RegistrationUpdatedAt',new Date().toISOString());
+    staffImportStatus.textContent='Imported / merged '+r.patients+' patients and '+r.companions+' companions. Ready for biometric search.';
+    refreshLocalDbStatus();
   }catch(e){
     staffImportStatus.textContent='Import failed: '+(e&&e.message?e.message:'Please check the file.');
   }finally{
     staffImportBtn.disabled=false;
   }
 });
+
+refreshLocalDbStatus();
 
 function localMatches(query){
   const q=normalizeQuery(query);
@@ -375,7 +396,7 @@ function renderLocalResults(list){
     if(p.mobile)parts.push('Mobile: '+maskMobile(p.mobile));
     meta.textContent=parts.join(' • ');
     const b=document.createElement('button');b.textContent='THIS IS ME';
-    b.onclick=()=>{PDW.setActive(p.id);location.href='./biometric.html?v=22'};
+    b.onclick=()=>{PDW.setActive(p.id);location.href='./biometric.html?v=23'};
     box.append(h,meta,b);resultsEl.appendChild(box);
   });
   return true;
@@ -436,7 +457,7 @@ function renderResults(rows){
     b.textContent='THIS IS ME';
     b.onclick=()=>{
       PDW.selectMasterRecord(record);
-      location.href='./biometric.html?v=22';
+      location.href='./biometric.html?v=23';
     };
     box.append(h,p,b);
     resultsEl.appendChild(box);
@@ -494,9 +515,16 @@ async function doSearch(){
   searchBtn.textContent='SEARCHING…';
   setStatus('Searching registration…');
   try{
+    const d=PDW.db();
+    const importedPatients=d.people.filter(p=>p.type==='PATIENT');
     const local=localMatches(q);
-    if(local.length){
-      renderLocalResults(local);
+
+    if(importedPatients.length){
+      if(local.length){
+        renderLocalResults(local);
+      }else{
+        setStatus('No matching patient found in the imported Registration database.',true);
+      }
     }else{
       const rows=await searchGoogleSheet(q);
       renderResults(rows);
