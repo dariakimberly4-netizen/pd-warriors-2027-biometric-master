@@ -1,4 +1,4 @@
-const CACHE='pdw2027-checkin-row-ui-v47';
+const CACHE='pdw2027-checkin-hard-bust-v48';
 const ASSETS=[
   './vendor/jsQR.js',
   './vendor/qrcode.min.js',
@@ -25,7 +25,7 @@ const ASSETS=[
   './registration-enhancements.js',
   './staff-names-share.html',
   './station-scanner.js',
-  './checkin-names-roster.js',
+  './checkin-names-roster.js','./checkin-names-roster-v48.js',
   './manifest.webmanifest',
   './pdw-icon.svg'
 ];
