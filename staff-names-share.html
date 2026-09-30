@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<link rel="stylesheet" href="./app.css?v=39">
+<link rel="stylesheet" href="./app.css?v=41">
 <title>PD Warriors 2027 — Names Quick Share</title>
 <style>
 .sharegrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -19,7 +19,7 @@
 <script>
 (function(){
   const ok=sessionStorage.getItem('pdwStaffSession')==='1';
-  if(!ok)location.replace('./login.html?v=39');
+  if(!ok)location.replace('./login.html?v=41');
 })();
 </script>
 
@@ -29,7 +29,7 @@
     <p>Offline Staff-to-Staff Transfer</p>
   </div>
 
-  <a class="toplink" href="./admin.html?v=39">← Staff Menu</a>
+  <a class="toplink" href="./admin.html?v=41">← Staff Menu</a>
 
   <div class="card">
     <div id="who" class="status"></div>
@@ -54,24 +54,16 @@
 
     <div id="selectedRole" class="status warn" style="margin-top:12px">Select destination role.</div>
     <div id="shareCapability" class="status warn" style="margin-top:12px"></div>
-    <button class="primary" id="sendNamesBtn" data-new-feature="names-quickshare-v39" disabled>SEND NAMES WITH QUICK SHARE</button>
+    <button class="primary" id="sendNamesBtn" data-new-feature="names-quickshare-v41" disabled>SEND NAMES WITH QUICK SHARE</button>
     <button class="ghost hidden" id="desktopNamesBtn">PREPARE NAMES FILE FOR QUICK SHARE</button>
     <div id="sendStatus" class="status hidden" style="margin-top:12px"></div>
   </div>
 
   <div class="card">
     <h2>Receive Names</h2>
-    <p class="small">On the receiving phone, select the names-only text file received through Quick Share, AirDrop, Bluetooth, or another nearby transfer method.</p>
-    <button class="blue" id="receiveNamesBtn" data-new-feature="receive-names-v39">RECEIVE NAMES FILE</button>
+    <p class="small">Select the names-only file received through Quick Share, AirDrop, Bluetooth, or another nearby transfer method. Names are imported immediately into this role.</p>
+    <button class="blue" id="receiveNamesBtn" data-new-feature="receive-names-v41">RECEIVE & IMPORT NAMES</button>
     <input id="receiveNamesFile" type="file" accept=".txt,text/plain" class="hidden">
-
-    <div id="previewCard" class="hidden" style="margin-top:14px">
-      <div class="status"><b id="previewCount">0</b> names received</div>
-      <div class="namebox" id="previewNames" style="margin-top:10px"></div>
-      <button class="primary" id="confirmNames">CONFIRM IMPORT TO THIS ROLE</button>
-      <button class="ghost" id="cancelNames">CANCEL</button>
-    </div>
-
     <div id="receiveStatus" class="status hidden" style="margin-top:12px"></div>
   </div>
 
@@ -85,13 +77,12 @@
   <div class="footer">PD Warriors 2027 • Names-Only Offline Transfer</div>
 </div>
 
-<script src="./app-core.js?v=39"></script>
+<script src="./app-core.js?v=41"></script>
 <script>
 const currentRole=sessionStorage.getItem('pdwStaffRole')||'';
 const currentName=sessionStorage.getItem('pdwStaffName')||'Staff';
 const ROSTER_PREFIX='pdw2027NamesRoster:';
 let destinationRole='';
-let pendingNames=[];
 let shareInProgress=false;
 
 document.querySelector('#who').textContent=currentName+' • '+currentRole;
@@ -290,44 +281,32 @@ document.querySelector('#receiveNamesBtn').onclick=()=>document.querySelector('#
 document.querySelector('#receiveNamesFile').onchange=async e=>{
   const file=e.target.files&&e.target.files[0];
   if(!file)return;
-  try{
-    pendingNames=cleanNames((await file.text()).split(/\r?\n/));
-    if(!pendingNames.length)throw new Error('No names were found in this file.');
 
-    document.querySelector('#previewCount').textContent=pendingNames.length;
-    const box=document.querySelector('#previewNames');
-    box.innerHTML=pendingNames.map(()=>'<div class="nameitem"></div>').join('');
-    box.querySelectorAll('.nameitem').forEach((el,i)=>el.textContent=pendingNames[i]);
-    document.querySelector('#previewCard').classList.remove('hidden');
-    document.querySelector('#receiveStatus').className='status warn';
-    document.querySelector('#receiveStatus').textContent='Preview only. Nothing has been imported yet.';
+  const status=document.querySelector('#receiveStatus');
+
+  try{
+    const incoming=cleanNames((await file.text()).split(/\r?\n/));
+    if(!incoming.length)throw new Error('No names were found in this file.');
+
+    const existing=loadRoster();
+    const merged=cleanNames([...existing,...incoming]);
+    const added=merged.length-existing.length;
+
+    saveRoster(merged);
+    renderRoster();
+
+    status.className='status';
+    status.textContent=
+      incoming.length+' name'+(incoming.length===1?'':'s')+' received • '+
+      added+' new name'+(added===1?'':'s')+' imported directly to '+currentRole+'.';
+
+    if(navigator.vibrate)navigator.vibrate(80);
   }catch(err){
-    pendingNames=[];
-    document.querySelector('#previewCard').classList.add('hidden');
-    document.querySelector('#receiveStatus').className='status bad';
-    document.querySelector('#receiveStatus').textContent=(err&&err.message)||'Unable to read names file.';
+    status.className='status bad';
+    status.textContent=(err&&err.message)||'Unable to import names file.';
   }finally{
     e.target.value='';
   }
-};
-
-document.querySelector('#confirmNames').onclick=()=>{
-  const existing=loadRoster();
-  const merged=cleanNames([...existing,...pendingNames]);
-  saveRoster(merged);
-  const added=merged.length-existing.length;
-  pendingNames=[];
-  document.querySelector('#previewCard').classList.add('hidden');
-  document.querySelector('#receiveStatus').className='status';
-  document.querySelector('#receiveStatus').textContent=added+' new name'+(added===1?'':'s')+' added to '+currentRole+' roster.';
-  renderRoster();
-};
-
-document.querySelector('#cancelNames').onclick=()=>{
-  pendingNames=[];
-  document.querySelector('#previewCard').classList.add('hidden');
-  document.querySelector('#receiveStatus').className='status warn';
-  document.querySelector('#receiveStatus').textContent='Import cancelled. No names were added.';
 };
 
 document.querySelector('#clearRoster').onclick=()=>{
@@ -339,6 +318,6 @@ document.querySelector('#clearRoster').onclick=()=>{
 
 renderRoster();
 </script>
-<script src="./feature-highlights.js?v=39"></script>
+<script src="./feature-highlights.js?v=41"></script>
 </body>
 </html>
