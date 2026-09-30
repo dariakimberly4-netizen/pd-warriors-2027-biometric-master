@@ -59,8 +59,8 @@ html,body{margin:0;width:100%;min-height:100%;background:#fffaf0;color:#17221c;f
 <div class="footer">Save each QR code on your phone before the event.</div>
 </main>
 
-<script src="./app-core.js?v=75"></script>
-<script src="./vendor/qrcode.min.js?v=75"></script>
+<script src="./app-core.js?v=76"></script>
+<script src="./vendor/qrcode.min.js?v=76"></script>
 <script>
 const active=PDW.active();
 const container=document.getElementById('passes');
@@ -117,8 +117,8 @@ if(!active){
       '<div class="badge">'+esc(badge)+'</div>'+
       '<div class="entitlement">'+
         (companion
-          ? 'Snack ✓ &nbsp;•&nbsp; Lunch ✓<span class="no-raffle">Raffle ✕ — NOT ELIGIBLE</span>'
-          : 'Snack ✓ &nbsp;•&nbsp; Lunch ✓ &nbsp;•&nbsp; Raffle Draw Eligible ✓')+
+          ? 'After Check-In: Snack ✓ &nbsp;•&nbsp; Lunch ✓<span class="no-raffle">Raffle ✕ — NOT ELIGIBLE</span>'
+          : 'After Check-In: Snack ✓ &nbsp;•&nbsp; Lunch ✓ &nbsp;•&nbsp; Raffle Draw Eligible ✓')+
       '</div>'+
     '</article>';
   }).join('');
