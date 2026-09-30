@@ -34,27 +34,17 @@ button{width:100%;min-height:88px;margin-top:16px;border-radius:18px;padding:18p
 <section class="card">
 <h2>Verify on Your Own Phone</h2>
 <div id="who" class="who">Loading participant…</div>
-<button id="bio" class="primary">GENERATE QR CODE</button>
+
 <button id="fallback" class="secondary">STAFF-ASSISTED GENERATE QR CODE</button>
 <p class="privacy">Your fingerprint or face stays on your own device. The event system does not store fingerprint images, face images, or biometric templates.</p>
 </section>
-<div class="footer">Step 2 of 3 • Generate QR Code</div>
+<div class="footer">Step 2 of 3 • Biometric Verification</div>
 </main>
 <script src="./app-core.js?v=61"></script>
 <script>
 const p=PDW.active();
 if(!p){location.replace('./index.html?v=61')}
 else document.getElementById('who').textContent=p.name+' — '+(p.type==='PATIENT'?'PD Warrior':'Companion');
-document.getElementById('bio').onclick=async()=>{
- const p=PDW.active();
- try{
-  if(!window.PublicKeyCredential||!navigator.credentials)throw new Error('unsupported');
-  const challenge=crypto.getRandomValues(new Uint8Array(32)),userId=crypto.getRandomValues(new Uint8Array(16));
-  await navigator.credentials.create({publicKey:{challenge,rp:{name:'PD Warriors 2027'},user:{id:userId,name:p.id,displayName:p.name},pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],authenticatorSelection:{userVerification:'required'},timeout:60000,attestation:'none'}});
-  PDW.updatePerson(p.id,x=>{x.biometric=true;x.verifyMethod='DEVICE_BIOMETRIC';x.biometricVerifiedAt=new Date().toISOString()});
-  location.href='./pass.html?v=61';
- }catch(e){alert('Biometric was unavailable or cancelled. Please try again or use staff-assisted verification.')}
-};
 document.getElementById('fallback').onclick=()=>{
  const p=PDW.active();
  PDW.updatePerson(p.id,x=>{x.biometric=false;x.verifyMethod='STAFF_ASSISTED';x.biometricVerifiedAt=null});
