@@ -1,4 +1,4 @@
-const CACHE='pdw2027-clear-demo-v68';
+const CACHE='pdw2027-dual-admin-v69';
 const ASSETS=[
   './vendor/jsQR.js',
   './vendor/qrcode.min.js',
