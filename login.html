@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <link rel="manifest" href="./manifest.webmanifest">
-<link rel="stylesheet" href="./app.css?v=71">
+<link rel="stylesheet" href="./app.css?v=72">
 <title>PD Warriors 2027 — Staff Login</title>
 <style>
 .staff-login-highlight{
@@ -73,6 +73,7 @@
         <button class="ghost demoFill" data-user="raffle">RAFFLE</button>
         <button class="ghost demoFill" data-user="gen">ADMIN 1 — GEN</button>
         <button class="ghost demoFill" data-user="bot">ADMIN 2 — BOT</button>
+        <button class="ghost demoFill" data-user="kim">ADMIN 3 — KIM</button>
       </div>
     </div>
 
@@ -93,6 +94,7 @@
             <tr><td>raffle</td><td>Raffle</td></tr>
             <tr><td>Gen</td><td>Admin 1 — Gen</td></tr>
             <tr><td>Bot</td><td>Admin 2 — Bot</td></tr>
+            <tr><td>Kim</td><td>Admin 3 — Kim</td></tr>
           </tbody>
         </table>
       </div>
@@ -130,8 +132,9 @@ const ACCOUNTS={
   snack:{password:'PDW2027!',role:'SNACK',name:'Snack Staff',go:'./snack.html?v=50'},
   lunch:{password:'PDW2027!',role:'LUNCH',name:'Lunch Staff',go:'./lunch.html?v=50'},
   raffle:{password:'PDW2027!',role:'RAFFLE',name:'Raffle Staff',go:'./raffle.html?v=51'},
-  gen:{password:'PDW2027!',role:'ADMIN',name:'Admin 1 — Gen',go:'./admin.html?v=71'},
-  bot:{password:'PDW2027!',role:'ADMIN',name:'Admin 2 — Bot',go:'./admin.html?v=71'}
+  gen:{password:'PDW2027!',role:'ADMIN',name:'Admin 1 — Gen',go:'./admin.html?v=72'},
+  bot:{password:'PDW2027!',role:'ADMIN',name:'Admin 2 — Bot',go:'./admin.html?v=72'},
+  kim:{password:'PDW2027!',role:'ADMIN',name:'Admin 3 — Kim',go:'./admin.html?v=72'}
 };
 
 function showStatus(message,bad=false){
