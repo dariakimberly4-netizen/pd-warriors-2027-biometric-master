@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<link rel="stylesheet" href="./app.css?v=29">
+<link rel="stylesheet" href="./app.css?v=30">
 <title>PD Warriors 2027 — Staff Login</title>
 <style>
 .staff-login-highlight{
@@ -27,9 +27,17 @@
   font-weight:1000;
   letter-spacing:.05em;
 }
-.staff-login-highlight .staffLogin{
-  box-shadow:0 0 0 3px rgba(198,161,91,.28);
+.demo-accounts{
+  margin-top:16px;
+  padding:14px;
+  border:1px solid #e7dfcf;
+  border-radius:15px;
+  background:#fffdf8;
 }
+.demo-accounts table{min-width:0}
+.demo-accounts th,.demo-accounts td{padding:7px 6px;font-size:14px}
+.showpass{display:flex;align-items:center;gap:9px;margin-top:10px;font-weight:800}
+.showpass input{width:22px;height:22px;min-height:0;margin:0}
 </style>
 </head>
 <body>
@@ -40,20 +48,42 @@
   </div>
 
   <div class="card" id="staffLoginCard">
-    <h2>Select Staff Role</h2>
-    <p class="small">Demo one-tap login. Each role opens only the station assigned to it.</p>
+    <h2>Staff Username & Password</h2>
 
-    <div class="hub">
-      <button class="primary staffLogin" data-name="Registration Staff" data-role="REGISTRATION" data-go="./master.html?v=29">REGISTRATION</button>
-      <button class="blue staffLogin" data-name="Check-In Staff" data-role="CHECKIN" data-go="./checkin.html?v=29">CHECK-IN</button>
-      <button class="blue staffLogin" data-name="Snack Staff" data-role="SNACK" data-go="./snack.html?v=29">SNACK</button>
-      <button class="blue staffLogin" data-name="Lunch Staff" data-role="LUNCH" data-go="./lunch.html?v=29">LUNCH</button>
-      <button class="blue staffLogin" data-name="Raffle Staff" data-role="RAFFLE" data-go="./raffle.html?v=29">RAFFLE</button>
-      <button class="gold staffLogin" data-name="Administrator" data-role="ADMIN" data-go="./admin.html?v=29">ADMIN</button>
+    <label for="username">Username</label>
+    <input id="username" autocomplete="username" autocapitalize="none" placeholder="Enter staff username">
+
+    <label for="password">Password</label>
+    <input id="password" type="password" autocomplete="current-password" placeholder="Enter password">
+
+    <label class="showpass">
+      <input id="showPassword" type="checkbox">
+      Show password
+    </label>
+
+    <button class="primary" id="loginBtn">LOGIN</button>
+    <div id="loginStatus" class="status hidden" style="margin-top:12px" aria-live="polite"></div>
+
+    <div class="demo-accounts">
+      <b style="color:#0f5132">Demo Staff Accounts</b>
+      <p class="small" style="margin:6px 0 8px">Common password for all demo accounts: <b>PDW2027!</b></p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Username</th><th>Role</th></tr></thead>
+          <tbody>
+            <tr><td>registration</td><td>Registration</td></tr>
+            <tr><td>checkin</td><td>Check-In</td></tr>
+            <tr><td>snack</td><td>Snack</td></tr>
+            <tr><td>lunch</td><td>Lunch</td></tr>
+            <tr><td>raffle</td><td>Raffle</td></tr>
+            <tr><td>admin</td><td>Administrator</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <div class="status warn" style="margin-top:14px">
-      This is a demo login for GitHub Pages. It is not a production password/security system.
+      Demo login only. Because this site is hosted on GitHub Pages, these credentials are not production-grade security.
     </div>
   </div>
 
@@ -61,25 +91,62 @@
 </div>
 
 <script>
-const STAFF_LOGIN_HIGHLIGHT_KEY='pdw2027SeenStaffLoginV29';
+const STAFF_LOGIN_HIGHLIGHT_KEY='pdw2027SeenStaffLoginV30';
 const staffLoginCard=document.querySelector('#staffLoginCard');
+const username=document.querySelector('#username');
+const password=document.querySelector('#password');
+const loginStatus=document.querySelector('#loginStatus');
 
 if(localStorage.getItem(STAFF_LOGIN_HIGHLIGHT_KEY)!=='1'){
   staffLoginCard.classList.add('staff-login-highlight');
 }
 
-document.querySelectorAll('.staffLogin').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    localStorage.setItem(STAFF_LOGIN_HIGHLIGHT_KEY,'1');
-    staffLoginCard.classList.remove('staff-login-highlight');
+const ACCOUNTS={
+  registration:{password:'PDW2027!',role:'REGISTRATION',name:'Registration Staff',go:'./master.html?v=30'},
+  checkin:{password:'PDW2027!',role:'CHECKIN',name:'Check-In Staff',go:'./checkin.html?v=30'},
+  snack:{password:'PDW2027!',role:'SNACK',name:'Snack Staff',go:'./snack.html?v=30'},
+  lunch:{password:'PDW2027!',role:'LUNCH',name:'Lunch Staff',go:'./lunch.html?v=30'},
+  raffle:{password:'PDW2027!',role:'RAFFLE',name:'Raffle Staff',go:'./raffle.html?v=30'},
+  admin:{password:'PDW2027!',role:'ADMIN',name:'Administrator',go:'./admin.html?v=30'}
+};
 
-    sessionStorage.setItem('pdwStaffSession','1');
-    sessionStorage.setItem('pdwStaffRole',btn.dataset.role);
-    sessionStorage.setItem('pdwStaffName',btn.dataset.name);
-    sessionStorage.setItem('pdwStaffLoginAt',new Date().toISOString());
-    location.href=btn.dataset.go;
-  });
-});
+function showStatus(message,bad=false){
+  loginStatus.className='status'+(bad?' bad':'');
+  loginStatus.textContent=message;
+}
+function doLogin(){
+  const u=username.value.trim().toLowerCase();
+  const p=password.value;
+  const account=ACCOUNTS[u];
+
+  if(!u||!p){
+    showStatus('Enter both username and password.',true);
+    return;
+  }
+  if(!account || account.password!==p){
+    showStatus('Invalid username or password.',true);
+    return;
+  }
+
+  localStorage.setItem(STAFF_LOGIN_HIGHLIGHT_KEY,'1');
+  staffLoginCard.classList.remove('staff-login-highlight');
+
+  sessionStorage.setItem('pdwStaffSession','1');
+  sessionStorage.setItem('pdwStaffRole',account.role);
+  sessionStorage.setItem('pdwStaffName',account.name);
+  sessionStorage.setItem('pdwStaffUsername',u);
+  sessionStorage.setItem('pdwStaffLoginAt',new Date().toISOString());
+
+  showStatus('Login successful. Opening '+account.name+'…');
+  setTimeout(()=>location.href=account.go,250);
+}
+
+document.querySelector('#loginBtn').onclick=doLogin;
+username.addEventListener('keydown',e=>{if(e.key==='Enter')password.focus()});
+password.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+document.querySelector('#showPassword').onchange=e=>{
+  password.type=e.target.checked?'text':'password';
+};
 </script>
 </body>
 </html>
