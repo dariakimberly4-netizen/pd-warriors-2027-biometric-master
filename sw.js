@@ -1,4 +1,4 @@
-const CACHE='pdw2027-all-names-checkin-v46';
+const CACHE='pdw2027-checkin-row-ui-v47';
 const ASSETS=[
   './vendor/jsQR.js',
   './vendor/qrcode.min.js',
