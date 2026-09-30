@@ -237,8 +237,8 @@ const PDW={
       if(p.registrationStatus==='CANCELLED'){result={ok:false,msg:'REGISTRATION CANCELLED'};return}
       if(p.registrationStatus==='NO SHOW'){result={ok:false,msg:'REGISTRATION MARKED NO SHOW'};return}
       if(kind==='ARRIVAL'){if(p.arrived){result={ok:false,msg:'ALREADY ARRIVED'};return}p.arrived=true;result={ok:true,msg:'ARRIVAL CONFIRMED'}}
-      if(kind==='SNACK'){if(p.snack){result={ok:false,msg:'SNACK ALREADY CLAIMED'};return}p.snack=true;result={ok:true,msg:'SNACK CLAIMED'}}
-      if(kind==='LUNCH'){if(p.lunch){result={ok:false,msg:'LUNCH ALREADY CLAIMED'};return}p.lunch=true;result={ok:true,msg:'LUNCH CLAIMED'}}
+      if(kind==='SNACK'){if(!p.arrived){result={ok:false,msg:'CHECK-IN REQUIRED FIRST'};return}if(p.snack){result={ok:false,msg:'SNACK ALREADY CLAIMED'};return}p.snack=true;result={ok:true,msg:'SNACK CLAIMED'}}
+      if(kind==='LUNCH'){if(!p.arrived){result={ok:false,msg:'CHECK-IN REQUIRED FIRST'};return}if(p.lunch){result={ok:false,msg:'LUNCH ALREADY CLAIMED'};return}p.lunch=true;result={ok:true,msg:'LUNCH CLAIMED'}}
       if(kind==='RAFFLE'){if(p.type==='COMPANION'){result={ok:false,msg:'COMPANION — NOT ELIGIBLE FOR RAFFLE'};return}if(p.raffle){result={ok:false,msg:'RAFFLE ALREADY CLAIMED'};return}p.raffle=true;result={ok:true,msg:'RAFFLE CLAIMED'}}
       if(result.ok){
         const s=this.staff(),now=new Date();
