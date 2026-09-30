@@ -1,5 +1,5 @@
-const CACHE='pdw2027-full-offline-v32';
-const ASSETS=['./vendor/jsQR.js','./vendor/qrcode.min.js','./vendor/xlsx.full.min.js','./','./login.html','./index.html','./biometric.html','./pass.html','./admin.html','./master.html','./checkin.html','./snack.html','./lunch.html','./raffle.html','./reports.html','./privacy.html','./registration.html','./demo.html','./app.css','./app-core.js','./feature-highlights.js','./station-scanner.js','./manifest.webmanifest'];
+const CACHE='pdw2027-registration-tools-v33';
+const ASSETS=['./vendor/jsQR.js','./vendor/qrcode.min.js','./vendor/xlsx.full.min.js','./','./login.html','./index.html','./biometric.html','./pass.html','./admin.html','./master.html','./checkin.html','./snack.html','./lunch.html','./raffle.html','./reports.html','./privacy.html','./registration.html','./demo.html','./app.css','./app-core.js','./feature-highlights.js','./registration-enhancements.js','./station-scanner.js','./manifest.webmanifest'];
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)))});
 self.addEventListener('activate',e=>e.waitUntil(Promise.all([self.clients.claim(),caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))])));
 self.addEventListener('fetch',e=>{
