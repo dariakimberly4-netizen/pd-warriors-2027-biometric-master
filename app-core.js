@@ -6,6 +6,17 @@ const PDW={
   setActive(id){sessionStorage.setItem('pdwParticipantId',id)},
   person(id){const d=this.db();return d.people.find(p=>p.id===id)||null},
   active(){return this.person(this.activeId())},
+  staff(){
+    return {
+      active:sessionStorage.getItem('pdwStaffSession')==='1',
+      role:sessionStorage.getItem('pdwStaffRole')||'',
+      name:sessionStorage.getItem('pdwStaffName')||'Staff'
+    };
+  },
+  staffAllowed(...roles){
+    const s=this.staff();
+    return s.active && (s.role==='ADMIN' || roles.includes(s.role));
+  },
   nextId(type,d){
     const prefix=type==='PATIENT'?'PDW-':'COM-';
     const nums=d.people
@@ -204,7 +215,18 @@ const PDW={
     return p;
   },
   updatePerson(id,fn){const d=this.db();const p=d.people.find(x=>x.id===id);if(!p)return null;fn(p,d);this.save(d);return p},
-  addTx(id,action,station){const d=this.db();d.tx.push({id,action,station,time:new Date().toLocaleTimeString()});d.pending=(d.pending||0)+1;this.save(d)},
+  addTx(id,action,station){
+    const d=this.db(),s=this.staff(),now=new Date();
+    d.tx.push({
+      id,action,station,
+      time:now.toLocaleTimeString(),
+      timestamp:now.toISOString(),
+      staffName:s.name,
+      staffRole:s.role
+    });
+    d.pending=(d.pending||0)+1;
+    this.save(d)
+  },
   process(id,kind,station){
     let result={ok:false,msg:'Participant not found'};
     this.updatePerson(id,(p,d)=>{
@@ -212,7 +234,22 @@ const PDW={
       if(kind==='SNACK'){if(p.snack){result={ok:false,msg:'SNACK ALREADY CLAIMED'};return}p.snack=true;result={ok:true,msg:'SNACK CLAIMED'}}
       if(kind==='LUNCH'){if(p.lunch){result={ok:false,msg:'LUNCH ALREADY CLAIMED'};return}p.lunch=true;result={ok:true,msg:'LUNCH CLAIMED'}}
       if(kind==='RAFFLE'){if(p.type==='COMPANION'){result={ok:false,msg:'COMPANION — NOT ELIGIBLE FOR RAFFLE'};return}if(p.raffle){result={ok:false,msg:'RAFFLE ALREADY CLAIMED'};return}p.raffle=true;result={ok:true,msg:'RAFFLE CLAIMED'}}
-      if(result.ok){d.tx.push({id:p.id,action:result.msg,station,time:new Date().toLocaleTimeString()});d.pending=(d.pending||0)+1}
+      if(result.ok){
+        const s=this.staff(),now=new Date();
+        d.tx.push({
+          id:p.id,action:result.msg,station,
+          time:now.toLocaleTimeString(),
+          timestamp:now.toISOString(),
+          staffName:s.name,
+          staffRole:s.role
+        });
+        p.lastActionAt=now.toISOString();
+        if(kind==='ARRIVAL')p.arrivalAt=now.toISOString();
+        if(kind==='SNACK')p.snackAt=now.toISOString();
+        if(kind==='LUNCH')p.lunchAt=now.toISOString();
+        if(kind==='RAFFLE')p.raffleAt=now.toISOString();
+        d.pending=(d.pending||0)+1
+      }
     });
     return result
   },
