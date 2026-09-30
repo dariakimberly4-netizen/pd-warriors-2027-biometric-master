@@ -1,5 +1,5 @@
 (()=>{
-  const NEW_VERSION='33';
+  const NEW_VERSION='34';
   let activeFilter='ALL';
   let currentProfileId='';
   let addCompanionPatientId='';
@@ -35,8 +35,11 @@
       .reg-companion-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid #e8e1d3}
       .reg-companion-row:last-child{border-bottom:0}
       .reg-actions{display:flex;gap:7px;flex-wrap:wrap}.reg-actions button{width:auto;min-height:42px;margin:0;padding:8px 11px;font-size:14px;border-radius:11px}
+      .reg-verify-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+      .reg-verify-grid label{margin-top:0}
+      .reg-tools-note{margin-top:10px}
       @media(max-width:650px){
-        .reg-tools-grid,.reg-profile-grid{grid-template-columns:1fr}
+        .reg-tools-grid,.reg-profile-grid,.reg-verify-grid{grid-template-columns:1fr}
         .reg-filterbar{display:grid;grid-template-columns:1fr 1fr}
         .reg-filterbar button{width:100%}
         .reg-companion-row{align-items:flex-start;flex-direction:column}
@@ -55,9 +58,14 @@
     card.innerHTML=`
       <h2>Registration Tools</h2>
       <div class="reg-tools-grid">
-        <button class="primary" id="addWalkinBtn" data-new-feature="walk-in-v33">+ ADD WALK-IN ATTENDEE</button>
-        <button class="ghost" id="showReviewBtn" data-new-feature="needs-review-v33">SHOW NEEDS REVIEW</button>
+        <button class="primary" id="addWalkinBtn" data-new-feature="walk-in-v34">+ ADD WALK-IN ATTENDEE</button>
+        <button class="ghost" id="showReviewBtn" data-new-feature="needs-review-v34">SHOW NEEDS REVIEW</button>
+        <button class="gold" id="exportRegistrationBtn" data-new-feature="registration-export-v34">EXPORT REGISTRATION CSV</button>
+        <button class="ghost" id="backupRegistrationBtn" data-new-feature="offline-backup-v34">BACKUP DATABASE</button>
+        <button class="ghost" id="restoreRegistrationBtn" data-new-feature="offline-restore-v34">RESTORE BACKUP</button>
+        <input id="restoreRegistrationFile" class="hidden" type="file" accept=".json,application/json">
       </div>
+      <div id="backupRestoreStatus" class="status hidden reg-tools-note"></div>
     `;
     uploadCard.parentNode.insertBefore(card,uploadCard);
 
@@ -72,6 +80,7 @@
         <div><label for="walkType">Type</label><select id="walkType"><option value="PATIENT">PATIENT / PD WARRIOR</option><option value="COMPANION">COMPANION</option></select></div>
         <div><label for="walkAge">Age</label><input id="walkAge" inputmode="numeric" placeholder="Optional"></div>
         <div><label for="walkLocation">City / Area</label><input id="walkLocation" placeholder="Optional"></div>
+        <div><label for="walkMobile">Mobile #</label><input id="walkMobile" inputmode="tel" placeholder="Optional"></div>
         <div class="full hidden" id="walkLinkedWrap"><label for="walkLinkedPatient">Linked Patient</label><select id="walkLinkedPatient"></select></div>
       </div>
       <button class="primary" id="saveWalkin">SAVE WALK-IN</button>
@@ -91,6 +100,10 @@
       document.querySelector('#walkLinkedWrap').classList.toggle('hidden',e.target.value!=='COMPANION');
     };
     document.querySelector('#saveWalkin').onclick=saveWalkin;
+    document.querySelector('#exportRegistrationBtn').onclick=exportRegistrationCSV;
+    document.querySelector('#backupRegistrationBtn').onclick=backupRegistrationDatabase;
+    document.querySelector('#restoreRegistrationBtn').onclick=()=>document.querySelector('#restoreRegistrationFile').click();
+    document.querySelector('#restoreRegistrationFile').onchange=restoreRegistrationDatabase;
     document.querySelector('#showReviewBtn').onclick=()=>{
       setFilter('REVIEW');
       scrollToEl(document.querySelector('#registrationSearch'));
@@ -104,10 +117,31 @@
     sel.innerHTML='<option value="">Select patient</option>'+patients.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.name)+'</option>').join('');
   }
 
+  function duplicateMatches(name,mobile,type,excludeId=''){
+    const n=norm(name),m=String(mobile||'').replace(/\D/g,'');
+    return PDW.db().people.filter(p=>{
+      if(excludeId&&p.id===excludeId)return false;
+      if(type&&p.type!==type)return false;
+      const sameName=n&&norm(p.name)===n;
+      const pm=String(p.mobile||'').replace(/\D/g,'');
+      const sameMobile=m.length>=7&&pm.length>=7&&m===pm;
+      return sameName||sameMobile;
+    });
+  }
+
+  function confirmDuplicate(name,mobile,type){
+    const matches=duplicateMatches(name,mobile,type);
+    if(!matches.length)return true;
+    const list=matches.slice(0,4).map(p=>p.name+' • '+p.id).join('\n');
+    return confirm('POSSIBLE DUPLICATE FOUND:\n\n'+list+'\n\nSave this record anyway?');
+  }
+
   function saveWalkin(){
     const name=document.querySelector('#walkName').value.trim();
     const type=document.querySelector('#walkType').value;
+    const mobile=document.querySelector('#walkMobile').value.trim();
     if(!name){alert('Full Name is required.');return}
+    if(!confirmDuplicate(name,mobile,type))return;
 
     const d=PDW.db();
     const id=PDW.nextId(type,d);
@@ -126,8 +160,11 @@
       nickname:document.querySelector('#walkNickname').value.trim(),
       age:document.querySelector('#walkAge').value.trim(),
       location:document.querySelector('#walkLocation').value.trim(),
+      mobile,
       linkedPatientId,companionOf,walkIn:true,sourceKey:'WALKIN-'+Date.now(),
       biometric:false,verifyMethod:null,arrived:false,snack:false,lunch:false,raffle:false,
+      registrationStatus:'CONFIRMED',
+      documents:{seniorId:'NOT REQUIRED',pwdId:'NOT REQUIRED',authorization:'NOT REQUIRED'},
       needsReview:false,registeredAt:now
     });
     PDW.save(d);
@@ -136,7 +173,7 @@
     const msg=document.querySelector('#walkinMsg');
     msg.className='status';
     msg.textContent='Walk-in saved: '+name+' • '+id;
-    ['walkName','walkNickname','walkAge','walkLocation'].forEach(x=>document.querySelector('#'+x).value='');
+    ['walkName','walkNickname','walkAge','walkLocation','walkMobile'].forEach(x=>document.querySelector('#'+x).value='');
     fillPatientSelect();
     if(typeof render==='function')render();
     enhanceRowsAndFilter();
@@ -149,11 +186,14 @@
     bar.className='reg-filterbar';
     bar.id='regFilterBar';
     bar.innerHTML=`
-      <button class="ghost active regFilterBtn" data-filter="ALL" data-new-feature="registration-filters-v33">ALL</button>
-      <button class="ghost regFilterBtn" data-filter="PATIENT" data-new-feature="registration-filters-v33">PATIENTS</button>
-      <button class="ghost regFilterBtn" data-filter="COMPANION" data-new-feature="registration-filters-v33">COMPANIONS</button>
-      <button class="ghost regFilterBtn" data-filter="NOT_ARRIVED" data-new-feature="registration-filters-v33">NOT ARRIVED</button>
-      <button class="ghost regFilterBtn" data-filter="REVIEW" data-new-feature="registration-filters-v33">NEEDS REVIEW</button>
+      <button class="ghost active regFilterBtn" data-filter="ALL" data-new-feature="registration-filters-v34">ALL</button>
+      <button class="ghost regFilterBtn" data-filter="PATIENT" data-new-feature="registration-filters-v34">PATIENTS</button>
+      <button class="ghost regFilterBtn" data-filter="COMPANION" data-new-feature="registration-filters-v34">COMPANIONS</button>
+      <button class="ghost regFilterBtn" data-filter="NOT_ARRIVED" data-new-feature="registration-filters-v34">NOT ARRIVED</button>
+      <button class="ghost regFilterBtn" data-filter="REVIEW" data-new-feature="registration-filters-v34">NEEDS REVIEW</button>
+      <button class="ghost regFilterBtn" data-filter="CONFIRMED" data-new-feature="registration-status-filter-v34">CONFIRMED</button>
+      <button class="ghost regFilterBtn" data-filter="CANCELLED" data-new-feature="registration-status-filter-v34">CANCELLED</button>
+      <button class="ghost regFilterBtn" data-filter="DOCS_PENDING" data-new-feature="document-filter-v34">DOCS PENDING</button>
     `;
     count.parentNode.insertBefore(bar,count);
     bar.querySelectorAll('.regFilterBtn').forEach(btn=>btn.onclick=()=>setFilter(btn.dataset.filter));
@@ -169,7 +209,13 @@
     if(activeFilter==='PATIENT')return p.type==='PATIENT';
     if(activeFilter==='COMPANION')return p.type==='COMPANION';
     if(activeFilter==='NOT_ARRIVED')return !p.arrived;
-    if(activeFilter==='REVIEW')return !!p.needsReview;
+    if(activeFilter==='REVIEW')return !!p.needsReview || p.registrationStatus==='NEEDS REVIEW';
+    if(activeFilter==='CONFIRMED')return (p.registrationStatus||'CONFIRMED')==='CONFIRMED';
+    if(activeFilter==='CANCELLED')return p.registrationStatus==='CANCELLED';
+    if(activeFilter==='DOCS_PENDING'){
+      const docs=p.documents||{};
+      return ['seniorId','pwdId','authorization'].some(k=>docs[k]==='PENDING'||docs[k]==='RECEIVED');
+    }
     return true;
   }
 
@@ -193,7 +239,7 @@
         btn.className='ghost profileBtn';
         btn.textContent='PROFILE';
         btn.dataset.id=id;
-        if(index===0)btn.setAttribute('data-new-feature','full-profile-v33');
+        if(index===0)btn.setAttribute('data-new-feature','full-profile-v34');
         btn.onclick=()=>openProfile(id);
         actions.insertBefore(btn,actions.firstChild);
       }
@@ -230,10 +276,30 @@
     profile.innerHTML=`
       <h2>Full Attendee Profile</h2>
       <div id="profileDetails" class="reg-profile-grid"></div>
+      <div class="status" style="margin-top:16px"><b>Registration & Document Verification</b></div>
+      <div class="reg-verify-grid" data-new-feature="document-verification-v34">
+        <div><label for="profileRegStatus">Registration Status</label><select id="profileRegStatus">
+          <option value="CONFIRMED">CONFIRMED</option>
+          <option value="NEEDS REVIEW">NEEDS REVIEW</option>
+          <option value="CANCELLED">CANCELLED</option>
+          <option value="NO SHOW">NO SHOW</option>
+        </select></div>
+        <div><label for="profileSeniorId">Senior ID</label><select id="profileSeniorId">
+          <option>NOT REQUIRED</option><option>PENDING</option><option>RECEIVED</option><option>VERIFIED</option>
+        </select></div>
+        <div><label for="profilePwdId">PWD ID</label><select id="profilePwdId">
+          <option>NOT REQUIRED</option><option>PENDING</option><option>RECEIVED</option><option>VERIFIED</option>
+        </select></div>
+        <div><label for="profileAuthorization">Authorization Letter</label><select id="profileAuthorization">
+          <option>NOT REQUIRED</option><option>PENDING</option><option>RECEIVED</option><option>VERIFIED</option>
+        </select></div>
+      </div>
+      <button class="primary" id="saveVerification" data-new-feature="save-verification-v34">SAVE STATUS / DOCUMENTS</button>
+      <div id="verificationMsg" class="status hidden" style="margin-top:10px"></div>
       <div id="companionManager" class="hidden" style="margin-top:18px">
         <h3>Companion Management</h3>
         <div id="companionList"></div>
-        <button class="primary" id="profileAddCompanion" data-new-feature="companion-management-v33">+ ADD COMPANION</button>
+        <button class="primary" id="profileAddCompanion" data-new-feature="companion-management-v34">+ ADD COMPANION</button>
       </div>
       <div class="reg-tools-grid" style="margin-top:12px">
         <button class="ghost" id="profileEdit">EDIT PROFILE</button>
@@ -263,6 +329,7 @@
     document.querySelector('#profileEdit').onclick=()=>{if(currentProfileId&&typeof openEdit==='function')openEdit(currentProfileId)};
     document.querySelector('#profileQr').onclick=()=>{if(currentProfileId){PDW.setActive(currentProfileId);location.href='./pass.html?staff=1&v='+NEW_VERSION}};
     document.querySelector('#profileAddCompanion').onclick=()=>{if(currentProfileId)openAddCompanion(currentProfileId)};
+    document.querySelector('#saveVerification').onclick=saveProfileVerification;
     document.querySelector('#closeProfile').onclick=()=>{profile.classList.add('hidden');currentProfileId=''};
     document.querySelector('#saveCompanion').onclick=saveCompanion;
     document.querySelector('#cancelCompanion').onclick=()=>add.classList.add('hidden');
@@ -297,8 +364,15 @@
       '<div class="reg-profile-item"><b>Lunch</b>'+(p.lunch?'CLAIMED ✓ • '+esc(fmtTime(p.lunchAt)):'AVAILABLE')+'</div>'+
       '<div class="reg-profile-item"><b>Raffle</b>'+esc(raffleText)+'</div>'+
       '<div class="reg-profile-item"><b>Registered</b>'+esc(fmtTime(p.registeredAt))+'</div>'+
+      '<div class="reg-profile-item"><b>Registration Status</b>'+esc(p.registrationStatus||'CONFIRMED')+'</div>'+
       '<div class="reg-profile-item"><b>Needs Review</b>'+(p.needsReview?'YES ⚠':'NO')+'</div>'+
       '<div class="reg-profile-item"><b>Last Updated</b>'+esc(fmtTime(p.updatedAt))+'</div>';
+
+    const docs=p.documents||{seniorId:'NOT REQUIRED',pwdId:'NOT REQUIRED',authorization:'NOT REQUIRED'};
+    document.querySelector('#profileRegStatus').value=p.registrationStatus||'CONFIRMED';
+    document.querySelector('#profileSeniorId').value=docs.seniorId||'NOT REQUIRED';
+    document.querySelector('#profilePwdId').value=docs.pwdId||'NOT REQUIRED';
+    document.querySelector('#profileAuthorization').value=docs.authorization||'NOT REQUIRED';
 
     const manager=document.querySelector('#companionManager');
     if(p.type==='PATIENT'){
@@ -335,6 +409,7 @@
     const name=document.querySelector('#newCompanionName').value.trim();
     if(!patient||patient.type!=='PATIENT'){alert('Linked patient was not found.');return}
     if(!name){alert('Companion full name is required.');return}
+    if(!confirmDuplicate(name,'','COMPANION'))return;
 
     const d=PDW.db();
     const id=PDW.nextId('COMPANION',d);
@@ -346,6 +421,8 @@
       linkedPatientId:patient.id,companionOf:patient.name,location:patient.location||'',
       sourceKey:'COMPANION-'+Date.now(),manualCompanion:true,
       biometric:false,verifyMethod:null,arrived:false,snack:false,lunch:false,raffle:false,
+      registrationStatus:'CONFIRMED',
+      documents:{seniorId:'NOT REQUIRED',pwdId:'NOT REQUIRED',authorization:'NOT REQUIRED'},
       needsReview:false,registeredAt:now
     });
     PDW.save(d);
@@ -368,6 +445,7 @@
       x.linkedPatientId='';
       x.companionOf='';
       x.needsReview=true;
+      x.registrationStatus='NEEDS REVIEW';
       x.updatedAt=new Date().toISOString();
     });
     PDW.addTx(id,'COMPANION UNLINKED','REGISTRATION');
@@ -376,12 +454,147 @@
     renderProfile();
   }
 
+  function saveProfileVerification(){
+    if(!currentProfileId)return;
+    const status=document.querySelector('#profileRegStatus').value;
+    PDW.updatePerson(currentProfileId,p=>{
+      p.registrationStatus=status;
+      p.needsReview=status==='NEEDS REVIEW';
+      p.documents={
+        seniorId:document.querySelector('#profileSeniorId').value,
+        pwdId:document.querySelector('#profilePwdId').value,
+        authorization:document.querySelector('#profileAuthorization').value
+      };
+      p.updatedAt=new Date().toISOString();
+    });
+    PDW.addTx(currentProfileId,'REGISTRATION / DOCUMENT STATUS UPDATED','REGISTRATION');
+    const msg=document.querySelector('#verificationMsg');
+    msg.className='status';
+    msg.textContent='Registration status and document verification saved.';
+    if(typeof render==='function')render();
+    enhanceRowsAndFilter();
+    renderProfile();
+  }
+
+  function downloadBlob(filename,type,content){
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([content],{type}));
+    a.download=filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},0);
+  }
+
+  function exportRegistrationCSV(){
+    const d=PDW.db();
+    const rows=[[
+      'ID','Full Name','Nickname','Type','Age','Mobile','City / Area','Linked Patient',
+      'Registration Status','Needs Review','Senior ID','PWD ID','Authorization Letter',
+      'Biometric','Arrived','Snack','Lunch','Raffle','Walk-In','Registered At','Updated At'
+    ]];
+    d.people.forEach(p=>{
+      const docs=p.documents||{};
+      rows.push([
+        p.id,p.name,p.nickname||'',p.type,p.age||'',p.mobile||'',p.location||'',p.companionOf||'',
+        p.registrationStatus||'CONFIRMED',p.needsReview?'YES':'NO',
+        docs.seniorId||'NOT REQUIRED',docs.pwdId||'NOT REQUIRED',docs.authorization||'NOT REQUIRED',
+        p.biometric?'YES':'NO',p.arrived?'YES':'NO',p.snack?'YES':'NO',p.lunch?'YES':'NO',
+        p.type==='COMPANION'?'NOT ELIGIBLE':p.raffle?'YES':'NO',
+        p.walkIn?'YES':'NO',p.registeredAt||'',p.updatedAt||''
+      ]);
+    });
+    const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(',')).join('\n');
+    downloadBlob('PDW2027-registration-export.csv','text/csv;charset=utf-8',csv);
+    showBackupStatus('Registration CSV exported.');
+  }
+
+  function backupRegistrationDatabase(){
+    const payload={
+      format:'PDW2027_OFFLINE_BACKUP',
+      version:1,
+      exportedAt:new Date().toISOString(),
+      data:PDW.db()
+    };
+    downloadBlob('PDW2027-offline-backup.json','application/json',JSON.stringify(payload,null,2));
+    showBackupStatus('Offline database backup created.');
+  }
+
+  async function restoreRegistrationDatabase(e){
+    const file=e.target.files&&e.target.files[0];
+    if(!file)return;
+    try{
+      const payload=JSON.parse(await file.text());
+      if(!payload||payload.format!=='PDW2027_OFFLINE_BACKUP'||!payload.data||!Array.isArray(payload.data.people)){
+        throw new Error('This is not a valid PD Warriors 2027 backup file.');
+      }
+      const current=PDW.db();
+      if(current.people.length&&!confirm('Restore this backup and replace the current local Registration database on this device?'))return;
+      PDW.save(payload.data);
+      localStorage.setItem('pdw2027RegistrationUpdatedAt',new Date().toISOString());
+      showBackupStatus('Backup restored: '+payload.data.people.length+' attendee records loaded.');
+      if(typeof render==='function')render();
+      fillPatientSelect();
+      enhanceRowsAndFilter();
+    }catch(err){
+      showBackupStatus('Restore failed: '+(err.message||'Invalid backup file.'),true);
+    }finally{
+      e.target.value='';
+    }
+  }
+
+  function showBackupStatus(message,bad=false){
+    const el=document.querySelector('#backupRestoreStatus');
+    if(!el)return;
+    el.className='status'+(bad?' bad':'');
+    el.textContent=message;
+  }
+
   function hookExistingEdit(){
     const save=document.querySelector('#saveEdit');
     if(!save)return;
+
+    const grid=document.querySelector('#editCard .editgrid');
+    if(grid&&!document.querySelector('#editRegistrationStatus')){
+      grid.insertAdjacentHTML('beforeend',
+        '<div><label for="editRegistrationStatus">Registration Status</label><select id="editRegistrationStatus">'+
+        '<option value="CONFIRMED">CONFIRMED</option><option value="NEEDS REVIEW">NEEDS REVIEW</option><option value="CANCELLED">CANCELLED</option><option value="NO SHOW">NO SHOW</option></select></div>'+
+        '<div><label for="editSeniorId">Senior ID</label><select id="editSeniorId"><option>NOT REQUIRED</option><option>PENDING</option><option>RECEIVED</option><option>VERIFIED</option></select></div>'+
+        '<div><label for="editPwdId">PWD ID</label><select id="editPwdId"><option>NOT REQUIRED</option><option>PENDING</option><option>RECEIVED</option><option>VERIFIED</option></select></div>'+
+        '<div><label for="editAuthorization">Authorization Letter</label><select id="editAuthorization"><option>NOT REQUIRED</option><option>PENDING</option><option>RECEIVED</option><option>VERIFIED</option></select></div>'
+      );
+    }
+
+    const originalOpen=window.openEdit;
+    if(typeof originalOpen==='function'){
+      window.openEdit=function(id){
+        originalOpen(id);
+        const p=PDW.person(id);if(!p)return;
+        const docs=p.documents||{};
+        document.querySelector('#editRegistrationStatus').value=p.registrationStatus||'CONFIRMED';
+        document.querySelector('#editSeniorId').value=docs.seniorId||'NOT REQUIRED';
+        document.querySelector('#editPwdId').value=docs.pwdId||'NOT REQUIRED';
+        document.querySelector('#editAuthorization').value=docs.authorization||'NOT REQUIRED';
+      };
+    }
+
     save.addEventListener('click',()=>{
+      const id=document.querySelector('#editId').value;
+      if(id){
+        PDW.updatePerson(id,p=>{
+          p.registrationStatus=document.querySelector('#editRegistrationStatus').value;
+          p.needsReview=p.registrationStatus==='NEEDS REVIEW';
+          p.documents={
+            seniorId:document.querySelector('#editSeniorId').value,
+            pwdId:document.querySelector('#editPwdId').value,
+            authorization:document.querySelector('#editAuthorization').value
+          };
+          p.updatedAt=new Date().toISOString();
+        });
+        PDW.addTx(id,'ATTENDEE PROFILE UPDATED','REGISTRATION');
+      }
       setTimeout(()=>{
         if(currentProfileId)renderProfile();
+        if(typeof render==='function')render();
         enhanceRowsAndFilter();
       },0);
     });
