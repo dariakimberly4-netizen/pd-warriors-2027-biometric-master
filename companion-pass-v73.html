@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#0f5132">
+<link rel="manifest" href="./manifest.webmanifest?v=73">
+<title>PD Warriors 2027 — Companion QR Code</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;min-height:100%;background:#fffaf0;color:#17221c;font-family:Arial,Helvetica,sans-serif;-webkit-text-size-adjust:100%}
+.page{width:100%;min-height:100vh;padding:10px 4px 28px}
+.hero{width:100%;background:#0f5132;color:#fff;border-radius:22px;padding:34px 14px;text-align:center;box-shadow:0 8px 22px rgba(20,35,28,.10)}
+.hero h1{margin:0;font-size:40px;line-height:1.04;font-weight:900}
+.hero p{margin:9px 0 0;font-size:23px;font-weight:700}
+.back{display:flex;align-items:center;min-height:54px;padding:0 6px;color:#0f5132;text-decoration:none;font-size:20px;font-weight:900}
+.outer{width:100%;background:#fff;border:1px solid #e7dfcf;border-radius:22px;padding:8px 4px 16px;box-shadow:0 8px 22px rgba(20,35,28,.08)}
+.pass{width:100%;margin:0 auto;background:#fff;border:2px solid #c6a15b;border-radius:24px;padding:24px 8px 22px;text-align:center}
+.org{font-size:19px;font-weight:900;color:#0f5132;line-height:1.25}
+.event{margin:6px 0 12px;color:#0f5132;font-size:30px;line-height:1.1;font-weight:900}
+.name{font-size:40px;line-height:1.06;font-weight:900;color:#111}
+.type{margin-top:6px;font-size:21px;color:#555;font-weight:800}
+.linked{margin:12px auto 0;padding:12px 14px;max-width:92%;border-radius:16px;background:#fff7e9;border:1px solid #efd9ad;color:#5f4b22;font-size:18px;line-height:1.35;font-weight:800}
+#qr{width:min(94vw,430px);min-height:min(94vw,430px);margin:20px auto 16px;padding:8px;background:#fff;display:flex;align-items:center;justify-content:center}
+#qr img,#qr canvas{width:min(90vw,414px)!important;height:min(90vw,414px)!important;max-width:100%!important}
+.pid{font-size:32px;font-weight:900;letter-spacing:.01em}
+.badge{display:inline-block;margin-top:13px;padding:11px 16px;border-radius:999px;background:#e9f6ee;color:#0f5132;font-size:18px;font-weight:900}
+.entitlement{margin:18px 0 0;text-align:center;color:#4e5d55;font-size:20px;line-height:1.5;font-weight:900}
+.no-raffle{display:block;margin-top:7px;color:#8c2630;font-weight:900}
+.footer{text-align:center;color:#707873;font-size:17px;font-weight:700;padding:22px 8px 8px}
+@media(max-width:390px){
+  .hero h1{font-size:36px}.hero p{font-size:21px}.org{font-size:17px}.event{font-size:28px}
+  .name{font-size:36px}.type{font-size:19px}.linked{font-size:17px}.pid{font-size:30px}
+  .badge{font-size:18px}.entitlement{font-size:18px}
+}
+@media(min-width:700px){.page{max-width:900px;margin:auto;padding:24px}.pass{max-width:620px;padding:30px 22px}}
+</style>
+</head>
+<body>
+<main class="page">
+  <header class="hero"><h1>PD Warriors 2027</h1><p>Companion QR Code</p></header>
+  <a class="back" href="./master.html?v=73">← Back to Registration</a>
+
+  <section class="outer">
+    <div class="pass">
+      <div class="org">PARKINSON'S DISEASE WARRIORS PHILIPPINES</div>
+      <div class="event">GET TOGETHER 2027</div>
+      <div class="name" id="name">—</div>
+      <div class="type">COMPANION</div>
+      <div class="linked" id="linked">Linked PD Warrior: —</div>
+
+      <div id="qr"></div>
+
+      <div class="pid" id="id">—</div>
+      <div class="badge" id="verify">Companion QR Code Ready ✓</div>
+      <div class="entitlement">
+        Snack ✓ &nbsp;•&nbsp; Lunch ✓
+        <span class="no-raffle">Raffle ✕ — NOT ELIGIBLE</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="footer">One Companion = One Unique QR Code</div>
+</main>
+
+<script src="./app-core.js?v=73"></script>
+<script src="./vendor/qrcode.min.js?v=73"></script>
+<script>
+const p=PDW.active();
+
+if(!p){
+  location.replace('./master.html?v=73');
+}else if(p.type!=='COMPANION'){
+  location.replace('./pass-max-v67.html?staff=1&v=73');
+}else{
+  document.getElementById('name').textContent=p.name;
+  document.getElementById('id').textContent=p.id;
+  document.getElementById('linked').textContent='Linked PD Warrior: '+(p.companionOf||'Not linked');
+
+  const badge=document.getElementById('verify');
+  if(p.verifyMethod==='STAFF_ASSISTED'){
+    badge.textContent='Staff-Assisted Verification ✓';
+  }else{
+    badge.textContent='Companion QR Code Ready ✓';
+  }
+
+  const q=document.getElementById('qr');
+  if(window.QRCode){
+    new QRCode(q,{
+      text:PDW.eventPassPayload(p),
+      width:414,
+      height:414,
+      colorDark:'#000000',
+      colorLight:'#ffffff',
+      correctLevel:QRCode.CorrectLevel.M
+    });
+  }else{
+    q.textContent='QR generator unavailable. Please reload the app.';
+  }
+}
+</script>
+</body>
+</html>
