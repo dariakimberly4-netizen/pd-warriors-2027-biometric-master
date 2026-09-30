@@ -415,7 +415,7 @@ function renderLocalResults(list){
     if(p.mobile)parts.push('Mobile: '+maskMobile(p.mobile));
     meta.textContent=parts.join(' • ');
     const b=document.createElement('button');b.textContent='THIS IS ME';
-    b.onclick=()=>{PDW.setActive(p.id);location.href='./biometric-mobile-v59.html?v=59'};
+    b.onclick=()=>{PDW.setActive(p.id);location.href='./biometric-fullscreen-v60.html?v=60'};
     box.append(h,meta,b);resultsEl.appendChild(box);
   });
   return true;
@@ -476,7 +476,7 @@ function renderResults(rows){
     b.textContent='THIS IS ME';
     b.onclick=()=>{
       PDW.selectMasterRecord(record);
-      location.href='./biometric-mobile-v59.html?v=59';
+      location.href='./biometric-fullscreen-v60.html?v=60';
     };
     box.append(h,p,b);
     resultsEl.appendChild(box);
