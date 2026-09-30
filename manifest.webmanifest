@@ -1,27 +1,11 @@
 {
-  "name": "PD Warriors 2027 Offline Event System",
+  "name": "PD Warriors 2027",
   "short_name": "PDW 2027",
-  "start_url": "./login.html?v=42",
+  "start_url": "./index.html?v=63",
   "display": "standalone",
   "background_color": "#fffaf0",
-  "theme_color": "#0f5132",
-  "description": "Offline event system for PD Warriors 2027",
-  "share_target": {
-    "action": "./receive-shared-names.html",
-    "method": "POST",
-    "enctype": "multipart/form-data",
-    "params": {
-      "files": [
-        {
-          "name": "namesfile",
-          "accept": [
-            "text/plain",
-            ".txt"
-          ]
-        }
-      ]
-    }
-  },
+  "theme_color": "#0f6342",
+  "description": "PD Warriors 2027 biometric verification and event QR system",
   "id": "./",
   "scope": "./",
   "icons": [
@@ -31,5 +15,9 @@
       "type": "image/svg+xml",
       "purpose": "any maskable"
     }
+  ],
+  "display_override": [
+    "standalone",
+    "minimal-ui"
   ]
 }
