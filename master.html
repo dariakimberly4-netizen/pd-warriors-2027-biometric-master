@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <link rel="manifest" href="./manifest.webmanifest">
-<link rel="stylesheet" href="./app.css?v=52">
+<link rel="stylesheet" href="./app.css?v=73">
 <title>PD Warriors 2027 — Registration</title>
 <style>
 .actions{display:flex;gap:7px;flex-wrap:wrap}.actions button{width:auto;min-height:42px;margin:0;padding:8px 11px;font-size:14px;border-radius:11px}
@@ -18,7 +18,7 @@
 (function(){
   const ok=sessionStorage.getItem('pdwStaffSession')==='1';
   const role=sessionStorage.getItem('pdwStaffRole')||'';
-  if(!ok || !(role==='ADMIN'||role==='REGISTRATION')) location.replace('./login.html?v=52');
+  if(!ok || !(role==='ADMIN'||role==='REGISTRATION')) location.replace('./login.html?v=73');
 })();
 </script>
 
@@ -28,7 +28,7 @@
     <p>Master Database / Source of Truth</p>
   </div>
 
-  <a class="toplink" href="./admin.html?v=52">← Staff Menu</a>
+  <a class="toplink" href="./admin.html?v=73">← Staff Menu</a>
 
   <div class="card">
     <div id="staffWho" class="status"></div>
@@ -105,7 +105,7 @@
   </div>
 </div>
 
-<script src="./app-core.js?v=52"></script>
+<script src="./app-core.js?v=73"></script>
 <script src="./vendor/xlsx.full.min.js?v=52"></script>
 <script>
 const csvFile=document.querySelector('#csvFile');
@@ -314,7 +314,7 @@ function render(){
       '<td>'+(p.type==='COMPANION'?'NOT ELIGIBLE':p.raffle?'✓':'—')+'</td>'+
       '<td><div class="actions">'+
         '<button class="ghost editBtn" '+(i===0?'data-new-feature="edit-attendee" ':'')+'data-id="'+esc(p.id)+'">EDIT</button>'+
-        '<button class="primary qrBtn" '+(i===0?'data-new-feature="qr-pass" ':'')+'data-id="'+esc(p.id)+'">QR PASS</button>'+
+        '<button class="primary qrBtn" '+(i===0?'data-new-feature="qr-pass" ':'')+'data-type="'+esc(p.type)+'" data-id="'+esc(p.id)+'">'+(p.type==='COMPANION'?'COMPANION QR':'PD WARRIOR QR')+'</button>'+
       '</div></td>'+
     '</tr>'
   ).join('')||'<tr><td colspan="11">'+(q?'No matching record found.':'No participants yet.')+'</td></tr>';
@@ -322,7 +322,7 @@ function render(){
   document.querySelectorAll('.editBtn').forEach(b=>b.onclick=()=>openEdit(b.dataset.id));
   document.querySelectorAll('.qrBtn').forEach(b=>b.onclick=()=>{
     PDW.setActive(b.dataset.id);
-    location.href='./pass.html?staff=1&v=35';
+    const person=PDW.person(b.dataset.id); location.href=person&&person.type==='COMPANION'?'./companion-pass-v73.html?v=73':'./pass-max-v67.html?staff=1&v=73';
   });
 }
 function openEdit(id){
@@ -398,6 +398,6 @@ render();
 </script>
 <script src="./registration-enhancements.js?v=52"></script>
 <script src="./registration-admin-v52.js"></script>
-<script src="./feature-highlights.js?v=52"></script>
+<script src="./feature-highlights.js?v=73"></script>
 </body>
 </html>
