@@ -1,0 +1,239 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="stylesheet" href="./app.css?v=36">
+<title>PD Warriors 2027 — Names Quick Share</title>
+<style>
+.sharegrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.rolegrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.rolegrid button{margin:0;min-height:52px}
+.namebox{max-height:320px;overflow:auto;border:1px solid #e7dfcf;border-radius:14px;background:#fffdf8;padding:10px}
+.nameitem{padding:10px 8px;border-bottom:1px solid #ece5d8;font-weight:800}
+.nameitem:last-child{border-bottom:0}
+@media(max-width:650px){.sharegrid,.rolegrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<script>
+(function(){
+  const ok=sessionStorage.getItem('pdwStaffSession')==='1';
+  if(!ok)location.replace('./login.html?v=36');
+})();
+</script>
+
+<div class="app">
+  <div class="hero">
+    <h1>Names Quick Share</h1>
+    <p>Offline Staff-to-Staff Transfer</p>
+  </div>
+
+  <a class="toplink" href="./admin.html?v=36">← Staff Menu</a>
+
+  <div class="card">
+    <div id="who" class="status"></div>
+    <div class="status warn" style="margin-top:12px">
+      <b>NAMES ONLY</b><br>
+      This transfer does not include IDs, attendee type, age, mobile number, documents, biometric data, QR data, food/raffle claims, or any other Registration details.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Send Names to Another Role</h2>
+    <p class="small">Choose the receiving staff role. The transferred file itself contains only attendee names, one name per line.</p>
+
+    <div class="rolegrid" id="roleGrid">
+      <button class="ghost roleBtn" data-role="REGISTRATION">REGISTRATION</button>
+      <button class="ghost roleBtn" data-role="CHECKIN">CHECK-IN</button>
+      <button class="ghost roleBtn" data-role="SNACK">SNACK</button>
+      <button class="ghost roleBtn" data-role="LUNCH">LUNCH</button>
+      <button class="ghost roleBtn" data-role="RAFFLE">RAFFLE</button>
+      <button class="ghost roleBtn" data-role="REPORTS">REPORTS</button>
+    </div>
+
+    <div id="selectedRole" class="status warn" style="margin-top:12px">Select destination role.</div>
+    <button class="primary" id="sendNamesBtn" data-new-feature="names-quickshare-v36" disabled>SEND NAMES WITH QUICK SHARE</button>
+    <div id="sendStatus" class="status hidden" style="margin-top:12px"></div>
+  </div>
+
+  <div class="card">
+    <h2>Receive Names</h2>
+    <p class="small">On the receiving phone, select the names-only text file received through Quick Share, AirDrop, Bluetooth, or another nearby transfer method.</p>
+    <button class="blue" id="receiveNamesBtn" data-new-feature="receive-names-v36">RECEIVE NAMES FILE</button>
+    <input id="receiveNamesFile" type="file" accept=".txt,text/plain" class="hidden">
+
+    <div id="previewCard" class="hidden" style="margin-top:14px">
+      <div class="status"><b id="previewCount">0</b> names received</div>
+      <div class="namebox" id="previewNames" style="margin-top:10px"></div>
+      <button class="primary" id="confirmNames">CONFIRM IMPORT TO THIS ROLE</button>
+      <button class="ghost" id="cancelNames">CANCEL</button>
+    </div>
+
+    <div id="receiveStatus" class="status hidden" style="margin-top:12px"></div>
+  </div>
+
+  <div class="card">
+    <h2>This Role's Received Names</h2>
+    <div id="roleRosterInfo" class="small"></div>
+    <div id="roleRoster" class="namebox" style="margin-top:10px"></div>
+    <button class="ghost" id="clearRoster">CLEAR THIS ROLE'S NAMES</button>
+  </div>
+
+  <div class="footer">PD Warriors 2027 • Names-Only Offline Transfer</div>
+</div>
+
+<script src="./app-core.js?v=36"></script>
+<script>
+const currentRole=sessionStorage.getItem('pdwStaffRole')||'';
+const currentName=sessionStorage.getItem('pdwStaffName')||'Staff';
+const ROSTER_PREFIX='pdw2027NamesRoster:';
+let destinationRole='';
+let pendingNames=[];
+
+document.querySelector('#who').textContent=currentName+' • '+currentRole;
+
+function cleanNames(list){
+  const seen=new Set();
+  return list.map(x=>String(x||'').replace(/\s+/g,' ').trim())
+    .filter(Boolean)
+    .filter(name=>{
+      const key=name.toLowerCase();
+      if(seen.has(key))return false;
+      seen.add(key);
+      return true;
+    });
+}
+
+function sourceNames(){
+  return cleanNames(PDW.db().people.map(p=>p.name));
+}
+
+function rosterKey(){return ROSTER_PREFIX+currentRole}
+
+function loadRoster(){
+  try{return JSON.parse(localStorage.getItem(rosterKey())||'[]')}catch(e){return []}
+}
+
+function saveRoster(names){
+  localStorage.setItem(rosterKey(),JSON.stringify(cleanNames(names)));
+  localStorage.setItem(rosterKey()+':updatedAt',new Date().toISOString());
+}
+
+function renderRoster(){
+  const names=loadRoster();
+  const updated=localStorage.getItem(rosterKey()+':updatedAt');
+  document.querySelector('#roleRosterInfo').textContent=
+    names.length+' name'+(names.length===1?'':'s')+
+    (updated?' • Updated '+new Date(updated).toLocaleString():'');
+  document.querySelector('#roleRoster').innerHTML=names.length
+    ? names.map(n=>'<div class="nameitem"></div>').join('')
+    : '<div class="small">No names received for this role yet.</div>';
+  document.querySelectorAll('#roleRoster .nameitem').forEach((el,i)=>el.textContent=names[i]);
+}
+
+document.querySelectorAll('.roleBtn').forEach(btn=>{
+  btn.onclick=()=>{
+    destinationRole=btn.dataset.role;
+    document.querySelectorAll('.roleBtn').forEach(b=>b.classList.toggle('primary',b===btn));
+    document.querySelector('#selectedRole').className='status';
+    document.querySelector('#selectedRole').textContent='Destination: '+destinationRole;
+    document.querySelector('#sendNamesBtn').disabled=false;
+  };
+});
+
+document.querySelector('#sendNamesBtn').onclick=async()=>{
+  const names=sourceNames();
+  const status=document.querySelector('#sendStatus');
+  if(!names.length){
+    status.className='status bad';
+    status.textContent='There are no Registration names to send.';
+    return;
+  }
+
+  // The file CONTENT is names only, one name per line.
+  const file=new File(
+    [names.join('\n')],
+    'PDW2027-NAMES-'+destinationRole+'.txt',
+    {type:'text/plain'}
+  );
+
+  try{
+    if(!navigator.share)throw new Error('Native Share is not available in this browser.');
+    if(navigator.canShare && !navigator.canShare({files:[file]})){
+      throw new Error('This browser cannot share files through the native Share menu.');
+    }
+    await navigator.share({
+      title:'PD Warriors 2027 Names',
+      files:[file]
+    });
+    status.className='status';
+    status.textContent=names.length+' names sent to the device Share menu. Choose Quick Share or another nearby option.';
+  }catch(err){
+    if(err&&err.name==='AbortError'){
+      status.className='status warn';
+      status.textContent='Sharing cancelled.';
+    }else{
+      status.className='status bad';
+      status.textContent=(err&&err.message)||'Unable to open native Share.';
+    }
+  }
+};
+
+document.querySelector('#receiveNamesBtn').onclick=()=>document.querySelector('#receiveNamesFile').click();
+
+document.querySelector('#receiveNamesFile').onchange=async e=>{
+  const file=e.target.files&&e.target.files[0];
+  if(!file)return;
+  try{
+    pendingNames=cleanNames((await file.text()).split(/\r?\n/));
+    if(!pendingNames.length)throw new Error('No names were found in this file.');
+
+    document.querySelector('#previewCount').textContent=pendingNames.length;
+    const box=document.querySelector('#previewNames');
+    box.innerHTML=pendingNames.map(()=>'<div class="nameitem"></div>').join('');
+    box.querySelectorAll('.nameitem').forEach((el,i)=>el.textContent=pendingNames[i]);
+    document.querySelector('#previewCard').classList.remove('hidden');
+    document.querySelector('#receiveStatus').className='status warn';
+    document.querySelector('#receiveStatus').textContent='Preview only. Nothing has been imported yet.';
+  }catch(err){
+    pendingNames=[];
+    document.querySelector('#previewCard').classList.add('hidden');
+    document.querySelector('#receiveStatus').className='status bad';
+    document.querySelector('#receiveStatus').textContent=(err&&err.message)||'Unable to read names file.';
+  }finally{
+    e.target.value='';
+  }
+};
+
+document.querySelector('#confirmNames').onclick=()=>{
+  const existing=loadRoster();
+  const merged=cleanNames([...existing,...pendingNames]);
+  saveRoster(merged);
+  const added=merged.length-existing.length;
+  pendingNames=[];
+  document.querySelector('#previewCard').classList.add('hidden');
+  document.querySelector('#receiveStatus').className='status';
+  document.querySelector('#receiveStatus').textContent=added+' new name'+(added===1?'':'s')+' added to '+currentRole+' roster.';
+  renderRoster();
+};
+
+document.querySelector('#cancelNames').onclick=()=>{
+  pendingNames=[];
+  document.querySelector('#previewCard').classList.add('hidden');
+  document.querySelector('#receiveStatus').className='status warn';
+  document.querySelector('#receiveStatus').textContent='Import cancelled. No names were added.';
+};
+
+document.querySelector('#clearRoster').onclick=()=>{
+  if(!confirm('Clear all received names for '+currentRole+' on this device?'))return;
+  localStorage.removeItem(rosterKey());
+  localStorage.removeItem(rosterKey()+':updatedAt');
+  renderRoster();
+};
+
+renderRoster();
+</script>
+<script src="./feature-highlights.js?v=36"></script>
+</body>
+</html>
