@@ -1,4 +1,4 @@
-const CACHE='pdw2027-checkin-before-food-v76';
+const CACHE='pdw2027-quick-transfer-v77';
 const ASSETS=[
   './vendor/jsQR.js',
   './vendor/qrcode.min.js',
@@ -8,7 +8,7 @@ const ASSETS=[
   './index.html',
   './biometric.html','./biometric-app-v63.html','./biometric-mobile-v59.html','./biometric-large-v58.html','./biometric-v57.html',
   './pass.html','./qr-bundle-v75.html','./companion-pass-v73.html','./pass-max-v67.html','./pass-full-v66.html','./pass-large-v65.html',
-  './admin.html','./clear-demo.html',
+  './admin.html','./clear-demo.html','./quick-transfer-v77.html','./quick-transfer-v77.js',
   './master.html',
   './checkin.html',
   './snack.html',
