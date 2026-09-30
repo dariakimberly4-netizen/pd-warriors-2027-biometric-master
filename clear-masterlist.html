@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="stylesheet" href="./app.css?v=53">
+<title>PD Warriors 2027 — Clear Masterlist</title>
+</head>
+<body>
+<script>
+(function(){
+  const ok=sessionStorage.getItem('pdwStaffSession')==='1';
+  const role=sessionStorage.getItem('pdwStaffRole')||'';
+  if(!ok||!(role==='ADMIN'||role==='REGISTRATION'))location.replace('./login.html?v=53');
+})();
+</script>
+
+<div class="app">
+  <div class="hero">
+    <h1>Clear Masterlist</h1>
+    <p>Registration Data Reset</p>
+  </div>
+
+  <a class="toplink" href="./master.html?v=53">← Back to Registration</a>
+
+  <div class="card">
+    <div class="status bad">
+      <b>WARNING</b><br>
+      This will remove ALL locally stored attendee names and event records from this device/browser.
+    </div>
+
+    <p class="small" style="margin-top:14px">
+      This clears the Registration masterlist, Check-In names, Snack/Lunch status, Raffle Draw winner history,
+      local audit transactions, and related attendee data stored on this device.
+    </p>
+
+    <button class="bad" id="clearBtn">CLEAR ALL MASTERLIST</button>
+    <div id="status" class="status hidden" style="margin-top:12px"></div>
+  </div>
+</div>
+
+<script>
+const keys=[
+  'pdw2027BioDemoV1',
+  'pdw2027RegistrationUpdatedAt',
+  'pdw2027RaffleDrawWinnersV51',
+  'pdw2027NamesRoster:REGISTRATION',
+  'pdw2027NamesRoster:CHECKIN',
+  'pdw2027NamesRoster:SNACK',
+  'pdw2027NamesRoster:LUNCH',
+  'pdw2027NamesRoster:RAFFLE',
+  'pdw2027NamesRoster:REPORTS',
+  'pdw2027NamesRosterCheckin:CHECKIN',
+  'pdw2027NamesRosterCheckinTx:CHECKIN'
+];
+
+function clearPrefixedKeys(){
+  const prefixes=[
+    'pdw2027NamesRoster:',
+    'pdw2027NamesRosterCheckin:',
+    'pdw2027NamesRosterCheckinTx:'
+  ];
+  const all=[];
+  for(let i=0;i<localStorage.length;i++)all.push(localStorage.key(i));
+  all.filter(Boolean).forEach(k=>{
+    if(prefixes.some(p=>k.startsWith(p)))localStorage.removeItem(k);
+  });
+}
+
+document.querySelector('#clearBtn').onclick=()=>{
+  const ok=confirm(
+    'DELETE ALL MASTERLIST DATA FROM THIS DEVICE?\n\n'+
+    'This includes Registration names and local event status. This cannot be undone.'
+  );
+  if(!ok)return;
+
+  keys.forEach(k=>localStorage.removeItem(k));
+  clearPrefixedKeys();
+
+  sessionStorage.removeItem('pdwParticipantId');
+
+  const status=document.querySelector('#status');
+  status.className='status';
+  status.textContent='All local masterlist and attendee event data have been cleared from this device.';
+
+  document.querySelector('#clearBtn').disabled=true;
+  document.querySelector('#clearBtn').textContent='MASTERLIST CLEARED';
+};
+</script>
+</body>
+</html>
