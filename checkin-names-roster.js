@@ -4,6 +4,7 @@
   const TX_KEY='pdw2027NamesRosterCheckinTx:CHECKIN';
   const REGISTRATION_DB_KEY='pdw2027BioDemoV1';
   let selectedName='';
+  let visibleNames=[];
 
   const norm=v=>String(v||'').toLowerCase().normalize('NFD')
     .replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
@@ -66,7 +67,7 @@
         No Registration name selected.
       </div>
 
-      <button class="primary" id="confirmNameArrival" disabled>CONFIRM ARRIVAL BY NAME</button>
+      <button class="primary" id="confirmNameArrival">CONFIRM ARRIVAL BY NAME</button>
 
       <div class="status warn" style="margin-top:12px">
         <b>Auto-synced from Registration:</b> names on this device appear here automatically. QR/Participant ID remains available for verified check-in.
@@ -95,6 +96,13 @@
     const states=statusMap();
     const q=norm(document.querySelector('#namesSearch')?.value||'');
     const filtered=names.filter(name=>!q||norm(name).includes(q));
+    visibleNames=filtered.slice();
+
+    if(q && filtered.length===1 && !statusMap()[filtered[0]]?.arrived){
+      selectedName=filtered[0];
+    }else if(selectedName && !names.includes(selectedName)){
+      selectedName='';
+    }
 
     const summary=document.querySelector('#namesRosterSummary');
     if(summary){
@@ -139,10 +147,14 @@
     const btn=document.querySelector('#confirmNameArrival');
     if(!el||!btn)return;
 
+    btn.disabled=false;
+
     if(!selectedName){
       el.className='status warn';
-      el.textContent='No received name selected.';
-      btn.disabled=true;
+      el.textContent=visibleNames.length===1
+        ? 'Ready to select: '+visibleNames[0]
+        : 'Search or tap a Registration name first.';
+      btn.textContent='CONFIRM ARRIVAL BY NAME';
       return;
     }
 
@@ -150,18 +162,32 @@
     if(st?.arrived){
       el.className='status warn';
       el.textContent=selectedName+' — ALREADY ARRIVED';
-      btn.disabled=true;
+      btn.textContent='ALREADY ARRIVED';
     }else{
       el.className='status';
       el.textContent='Selected: '+selectedName;
-      btn.disabled=false;
+      btn.textContent='CONFIRM ARRIVAL — '+selectedName;
     }
   }
 
   function confirmArrival(){
-    if(!selectedName)return;
-
     const states=statusMap();
+
+    if(!selectedName){
+      const waiting=visibleNames.filter(name=>!states[name]?.arrived);
+      if(waiting.length===1){
+        selectedName=waiting[0];
+        updateSelected();
+      }else{
+        const el=document.querySelector('#selectedNameStatus');
+        el.className='status warn';
+        el.textContent=waiting.length
+          ? 'Tap the correct name first. '+waiting.length+' matching names are shown.'
+          : 'Search for a waiting Registration name first.';
+        return;
+      }
+    }
+
     if(states[selectedName]?.arrived){
       updateSelected();
       return;
