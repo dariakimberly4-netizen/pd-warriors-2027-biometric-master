@@ -1,0 +1,141 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="stylesheet" href="./app.css?v=42">
+<title>PD Warriors 2027 — Receive Shared Names</title>
+<style>
+.role-result{font-size:20px;font-weight:1000;color:#0f5132}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="hero">
+    <h1>Receiving Names</h1>
+    <p>Direct Offline Import</p>
+  </div>
+
+  <div class="card">
+    <div id="receiveState" class="status warn">Reading shared names…</div>
+    <div id="receiveDetails" class="hidden" style="margin-top:14px">
+      <div class="role-result" id="receiveRole"></div>
+      <div class="kpi" style="margin-top:12px">
+        <div><b id="incomingCount">0</b>Received</div>
+        <div><b id="newCount">0</b>New</div>
+        <div><b id="totalCount">0</b>Total Roster</div>
+      </div>
+      <a class="btn primary" id="openRoleBtn" href="./admin.html?v=42">OPEN STAFF AREA</a>
+    </div>
+  </div>
+
+  <div class="footer">PD Warriors 2027 • Names-Only Share Target</div>
+</div>
+
+<script>
+const DB_NAME='pdw2027-share-target';
+const STORE='incoming';
+const KEY='latest';
+const VALID_ROLES=['REGISTRATION','CHECKIN','SNACK','LUNCH','RAFFLE','REPORTS'];
+
+function cleanNames(list){
+  const seen=new Set();
+  return list.map(x=>String(x||'').replace(/\s+/g,' ').trim())
+    .filter(Boolean)
+    .filter(name=>{
+      const k=name.toLowerCase();
+      if(seen.has(k))return false;
+      seen.add(k);
+      return true;
+    });
+}
+
+function openDB(){
+  return new Promise((resolve,reject)=>{
+    const req=indexedDB.open(DB_NAME,1);
+    req.onupgradeneeded=()=>req.result.createObjectStore(STORE);
+    req.onsuccess=()=>resolve(req.result);
+    req.onerror=()=>reject(req.error);
+  });
+}
+
+async function getPending(){
+  const db=await openDB();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(STORE,'readonly');
+    const req=tx.objectStore(STORE).get(KEY);
+    req.onsuccess=()=>resolve(req.result||null);
+    req.onerror=()=>reject(req.error);
+  });
+}
+
+async function clearPending(){
+  const db=await openDB();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(STORE,'readwrite');
+    tx.objectStore(STORE).delete(KEY);
+    tx.oncomplete=()=>resolve();
+    tx.onerror=()=>reject(tx.error);
+  });
+}
+
+function rolePage(role){
+  if(role==='CHECKIN')return './checkin.html?v=42';
+  if(role==='SNACK')return './snack.html?v=42';
+  if(role==='LUNCH')return './lunch.html?v=42';
+  if(role==='RAFFLE')return './raffle.html?v=42';
+  if(role==='REPORTS')return './reports.html?v=42';
+  if(role==='REGISTRATION')return './master.html?v=42';
+  return './admin.html?v=42';
+}
+
+async function importSharedNames(){
+  const state=document.querySelector('#receiveState');
+  try{
+    const pending=await getPending();
+    if(!pending||!pending.text)throw new Error('No newly shared names were found.');
+
+    const names=cleanNames(String(pending.text).split(/\r?\n/));
+    if(!names.length)throw new Error('The shared file did not contain any names.');
+
+    let role=String(pending.role||'').toUpperCase().replace(/[^A-Z]/g,'');
+    if(!VALID_ROLES.includes(role)){
+      const last=String(localStorage.getItem('pdwLastStaffRole')||'').toUpperCase();
+      role=VALID_ROLES.includes(last)?last:'';
+    }
+    if(!role)throw new Error('The destination staff role could not be identified.');
+
+    const rosterKey='pdw2027NamesRoster:'+role;
+    let existing=[];
+    try{existing=JSON.parse(localStorage.getItem(rosterKey)||'[]')}catch(e){}
+    existing=cleanNames(existing);
+
+    const merged=cleanNames([...existing,...names]);
+    const added=merged.length-existing.length;
+
+    localStorage.setItem(rosterKey,JSON.stringify(merged));
+    localStorage.setItem(rosterKey+':updatedAt',new Date().toISOString());
+    localStorage.setItem(rosterKey+':lastReceivedFrom','QUICK SHARE');
+    await clearPending();
+
+    state.className='status';
+    state.textContent='Names imported directly. No file selection was required.';
+    document.querySelector('#receiveDetails').classList.remove('hidden');
+    document.querySelector('#receiveRole').textContent='Destination: '+role;
+    document.querySelector('#incomingCount').textContent=names.length;
+    document.querySelector('#newCount').textContent=added;
+    document.querySelector('#totalCount').textContent=merged.length;
+    document.querySelector('#openRoleBtn').href=rolePage(role);
+
+    if(navigator.vibrate)navigator.vibrate(100);
+  }catch(err){
+    state.className='status bad';
+    state.textContent=(err&&err.message)||'Unable to import the shared names.';
+  }
+}
+
+importSharedNames();
+</script>
+</body>
+</html>
