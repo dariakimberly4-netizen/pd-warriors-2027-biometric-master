@@ -21,5 +21,15 @@
         }
       ]
     }
-  }
+  },
+  "id": "./",
+  "scope": "./",
+  "icons": [
+    {
+      "src": "./pdw-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
 }
