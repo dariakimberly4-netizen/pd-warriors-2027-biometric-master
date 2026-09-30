@@ -81,6 +81,8 @@ function esc(v){
 
 function render(){
   const d=PDW.db();
+  const openBioBtn=document.querySelector('#openBioBtn');
+  if(openBioBtn)openBioBtn.style.display=d.people.some(x=>x.type==='PATIENT')?'flex':'none';
   const pat=d.people.filter(x=>x.type==='PATIENT').length;
   document.querySelector('#reg').textContent=d.people.length;
   document.querySelector('#arr').textContent=d.people.filter(x=>x.arrived).length;
@@ -251,6 +253,7 @@ function importRows(rows){
   }
 
   PDW.save(d);
+  localStorage.setItem('pdw2027RegistrationUpdatedAt',new Date().toISOString());
   return {patients,companions,total:patients+companions};
 }
 
