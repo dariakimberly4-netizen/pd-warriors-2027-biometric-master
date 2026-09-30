@@ -172,23 +172,23 @@ button{
 
   <section class="card">
     <h2>Find Your Name</h2>
-    <p class="note">Your registration details are already in the Master Database. Search your name to continue to biometric verification.</p>
+    <p class="note">Search your registered name to continue to biometric verification.</p>
 
     <label for="searchName">Search Name</label>
     <input id="searchName" autocomplete="name" placeholder="Enter patient name or nickname">
 
-    <button id="searchBtn">SEARCH MASTER DATABASE</button>
+    <button id="searchBtn">SEARCH REGISTRATION</button>
 
     <div id="status" class="status hidden" aria-live="polite"></div>
     <div id="results"></div>
 
-    <p class="note">Only confirmation details are shown here. Your full registration record remains in the Master Database.</p>
+    <p class="note">Only confirmation details are shown here.</p>
   </section>
 
   <div class="footer">Step 1 of 3 • Search & Confirm</div>
 </main>
 
-<script src="./app-core.js?v=12"></script>
+<script src="./app-core.js?v=21"></script>
 <script>
 const SHEET_ID='1l8Xk4B5EkniJq3hVoES6blYPIFCEl1-rnmXmxWEJLgI';
 const SHEET_NAME='Form Responses 1';
@@ -252,7 +252,7 @@ function renderResults(rows){
     b.textContent='THIS IS ME';
     b.onclick=()=>{
       PDW.selectMasterRecord(record);
-      location.href='./biometric.html?v=12';
+      location.href='./biometric.html?v=21';
     };
     box.append(h,p,b);
     resultsEl.appendChild(box);
@@ -308,15 +308,15 @@ async function doSearch(){
   }
   searchBtn.disabled=true;
   searchBtn.textContent='SEARCHING…';
-  setStatus('Searching the Master Database…');
+  setStatus('Searching registration…');
   try{
     const rows=await searchGoogleSheet(q);
     renderResults(rows);
   }catch(e){
-    setStatus('The Master Database could not be reached from this device. Please check the name again or ask event staff for assistance.',true);
+    setStatus('Registration could not be reached from this device. Please check the name again or ask event staff for assistance.',true);
   }finally{
     searchBtn.disabled=false;
-    searchBtn.textContent='SEARCH MASTER DATABASE';
+    searchBtn.textContent='SEARCH REGISTRATION';
   }
 }
 searchBtn.onclick=doSearch;
