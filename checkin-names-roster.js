@@ -2,6 +2,7 @@
   const ROSTER_KEY='pdw2027NamesRoster:CHECKIN';
   const STATUS_KEY='pdw2027NamesRosterCheckin:CHECKIN';
   const TX_KEY='pdw2027NamesRosterCheckinTx:CHECKIN';
+  const REGISTRATION_DB_KEY='pdw2027BioDemoV1';
   let selectedName='';
 
   const norm=v=>String(v||'').toLowerCase().normalize('NFD')
@@ -16,6 +17,34 @@
   function statusMap(){return read(STATUS_KEY,{})}
   function tx(){return read(TX_KEY,[])}
 
+  function uniqueNames(list){
+    const seen=new Set();
+    return list
+      .map(v=>String(v||'').replace(/\s+/g,' ').trim())
+      .filter(Boolean)
+      .filter(name=>{
+        const key=norm(name);
+        if(seen.has(key))return false;
+        seen.add(key);
+        return true;
+      });
+  }
+
+  function syncFromRegistration(){
+    const d=PDW.db();
+    const registrationNames=uniqueNames(
+      (d.people||[])
+        .filter(p=>p.registrationStatus!=='CANCELLED'&&p.registrationStatus!=='NO SHOW')
+        .map(p=>p.name)
+    );
+    const existing=roster();
+    const merged=uniqueNames([...registrationNames,...existing]);
+    write(ROSTER_KEY,merged);
+    localStorage.setItem(ROSTER_KEY+':updatedAt',new Date().toISOString());
+    localStorage.setItem(ROSTER_KEY+':source','REGISTRATION AUTO-SYNC');
+    return {registration:registrationNames.length,total:merged.length};
+  }
+
   function inject(){
     if(document.querySelector('#receivedNamesCheckin'))return;
     const recent=Array.from(document.querySelectorAll('.card')).find(c=>c.querySelector('#tx'));
@@ -25,23 +54,22 @@
     card.className='card';
     card.id='receivedNamesCheckin';
     card.innerHTML=`
-      <h2>Received Names Check-In</h2>
-      <div class="status" id="namesRosterSummary">0 names received for CHECK-IN.</div>
-      <a class="btn blue" href="./staff-names-share.html?v=43">OPEN NAMES QUICK SHARE</a>
+      <h2>Registration Names Check-In</h2>
+      <div class="status" id="namesRosterSummary">0 Registration names loaded.</div>
 
-      <label for="namesSearch">Search Received Name</label>
+      <label for="namesSearch">Search Registration Name</label>
       <input id="namesSearch" type="search" autocomplete="off" placeholder="Type first name or last name">
 
       <div id="namesList" class="names-roster-list" style="margin-top:12px"></div>
 
       <div id="selectedNameStatus" class="status warn" style="margin-top:12px">
-        No received name selected.
+        No Registration name selected.
       </div>
 
       <button class="primary" id="confirmNameArrival" disabled>CONFIRM ARRIVAL BY NAME</button>
 
       <div class="status warn" style="margin-top:12px">
-        <b>Names-only roster:</b> this does not contain IDs or attendee type. QR/Participant ID remains the verified check-in method.
+        <b>Auto-synced from Registration:</b> names on this device appear here automatically. QR/Participant ID remains available for verified check-in.
       </div>
     `;
     recent.parentNode.insertBefore(card,recent);
@@ -71,14 +99,14 @@
     const summary=document.querySelector('#namesRosterSummary');
     if(summary){
       const arrived=names.filter(n=>states[n]?.arrived).length;
-      summary.textContent=names.length+' names received • '+arrived+' arrived • '+(names.length-arrived)+' waiting';
+      summary.textContent=names.length+' Registration names • '+arrived+' arrived • '+(names.length-arrived)+' waiting';
     }
 
     const list=document.querySelector('#namesList');
     if(!list)return;
 
     if(!names.length){
-      list.innerHTML='<div class="small" style="padding:14px">No names received yet. Use Staff Menu → Names Quick Share → Receive Names File while logged in as CHECK-IN.</div>';
+      list.innerHTML='<div class="small" style="padding:14px">No Registration names are available on this device yet. Open Registration first and load/import the attendee database.</div>';
       selectedName='';
       updateSelected();
       return;
@@ -214,10 +242,16 @@
     renderNameTransactions();
   }
 
+  syncFromRegistration();
   inject();
   injectNameTransactions();
 
   window.addEventListener('storage',e=>{
+    if(e.key===REGISTRATION_DB_KEY){
+      syncFromRegistration();
+      render();
+      return;
+    }
     if(e.key===ROSTER_KEY||e.key===STATUS_KEY){
       render();
       renderNameTransactions();
