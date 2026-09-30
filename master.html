@@ -30,13 +30,13 @@
 
   <div class="card">
     <h2>Google Sheet / Upload File</h2>
-<label for="csvFile">Upload Registration CSV File</label>
-    <input id="csvFile" type="file" accept=".csv,text/csv">
+<label for="csvFile">Upload Registration Excel or CSV File</label>
+    <input id="csvFile" type="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv">
 
     <button class="blue" id="importBtn" disabled>IMPORT / MERGE INTO REGISTRATION</button>
 
     <div id="importStatus" class="status warn" style="margin-top:12px">
-      No file selected. In Google Sheets: File → Download → Comma Separated Values (.csv).
+      No file selected. Accepted files: Excel (.xlsx / .xls) or CSV (.csv).
     </div>
 
     <p class="small">
@@ -61,6 +61,7 @@
 </div>
 
 <script src="./app-core.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 const csvFile=document.querySelector('#csvFile');
 const importBtn=document.querySelector('#importBtn');
@@ -263,7 +264,24 @@ importBtn.addEventListener('click',async()=>{
   importStatus.className='status warn';
   importStatus.textContent='Importing registration file…';
   try{
-    const rows=parseCSV(await selectedFile.text());
+    let rows;
+    const fileName=(selectedFile.name||'').toLowerCase();
+
+    if(fileName.endsWith('.xlsx') || fileName.endsWith('.xls')){
+      if(!window.XLSX)throw new Error('Excel reader is not available. Connect to the internet once, reload this page, and try again.');
+      const buffer=await selectedFile.arrayBuffer();
+      const workbook=XLSX.read(buffer,{type:'array',cellDates:true});
+      const firstSheet=workbook.SheetNames[0];
+      if(!firstSheet)throw new Error('No worksheet was found in the Excel file.');
+      rows=XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet],{
+        header:1,
+        defval:'',
+        raw:false
+      });
+    }else{
+      rows=parseCSV(await selectedFile.text());
+    }
+
     const result=importRows(rows);
     importStatus.className='status';
     importStatus.textContent='Imported / merged '+result.patients+' patients and '+result.companions+' companions.';
