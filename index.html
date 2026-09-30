@@ -152,6 +152,24 @@ button{
   margin-top:16px;
 }
 .hidden{display:none!important}
+@media (max-width:700px){
+  .screen{width:min(calc(100vw - 14px),1100px);padding:18px 0 24px}
+  .hero{padding:30px 16px;border-radius:22px}
+  .hero h1{font-size:38px}
+  .hero p{font-size:23px;margin-top:10px}
+  .card{padding:26px 22px;border-radius:22px}
+  .card h2{font-size:31px;margin-bottom:20px}
+  label{font-size:23px;margin-top:22px}
+  input{font-size:22px;min-height:72px;padding:16px 17px}
+  button{font-size:22px;min-height:74px;padding:16px 18px}
+  .note{font-size:19px;line-height:1.55}
+  .status{font-size:19px;padding:17px}
+  .result{padding:20px}
+  .result h3{font-size:25px}
+  .result p{font-size:19px;line-height:1.5}
+  .result button{min-height:72px;font-size:22px}
+  .footer{font-size:18px;padding-top:18px}
+}
 @media (min-width:1200px){
   .screen{padding-top:28px}
   .hero h1{font-size:52px}
@@ -201,8 +219,8 @@ button{
   <div class="footer">Step 1 of 3 • Search & Confirm</div>
 </main>
 
-<script src="./app-core.js?v=54"></script>
-<script src="./vendor/xlsx.full.min.js?v=54"></script>
+<script src="./app-core.js?v=55"></script>
+<script src="./vendor/xlsx.full.min.js?v=55"></script>
 <script>
 const SHEET_ID='1l8Xk4B5EkniJq3hVoES6blYPIFCEl1-rnmXmxWEJLgI';
 const SHEET_NAME='Form Responses 1';
@@ -397,7 +415,7 @@ function renderLocalResults(list){
     if(p.mobile)parts.push('Mobile: '+maskMobile(p.mobile));
     meta.textContent=parts.join(' • ');
     const b=document.createElement('button');b.textContent='THIS IS ME';
-    b.onclick=()=>{PDW.setActive(p.id);location.href='./biometric.html?v=54'};
+    b.onclick=()=>{PDW.setActive(p.id);location.href='./biometric.html?v=55'};
     box.append(h,meta,b);resultsEl.appendChild(box);
   });
   return true;
@@ -458,7 +476,7 @@ function renderResults(rows){
     b.textContent='THIS IS ME';
     b.onclick=()=>{
       PDW.selectMasterRecord(record);
-      location.href='./biometric.html?v=54';
+      location.href='./biometric.html?v=55';
     };
     box.append(h,p,b);
     resultsEl.appendChild(box);
