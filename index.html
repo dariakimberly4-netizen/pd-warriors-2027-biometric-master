@@ -170,6 +170,18 @@ button{
     <p>Home Biometric</p>
   </section>
 
+  <section class="card hidden" id="staffFiles">
+    <div style="display:inline-block;padding:8px 14px;border-radius:999px;background:#eef8f2;color:#0f5132;font-weight:900;margin-bottom:12px">STAFF ONLY</div>
+    <h2>Add Registration File</h2>
+    <p class="note">Upload the latest Registration Excel or CSV file. The file is stored only in this browser's local event database.</p>
+
+    <label for="staffFile">Excel or CSV File</label>
+    <input id="staffFile" type="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv">
+
+    <button id="staffImportBtn" disabled>IMPORT / MERGE REGISTRATION</button>
+    <div id="staffImportStatus" class="status hidden" aria-live="polite"></div>
+  </section>
+
   <section class="card">
     <h2>Find Your Name</h2>
     <p class="note">Search your registered name to continue to biometric verification.</p>
@@ -188,7 +200,8 @@ button{
   <div class="footer">Step 1 of 3 • Search & Confirm</div>
 </main>
 
-<script src="./app-core.js?v=21"></script>
+<script src="./app-core.js?v=22"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 const SHEET_ID='1l8Xk4B5EkniJq3hVoES6blYPIFCEl1-rnmXmxWEJLgI';
 const SHEET_NAME='Form Responses 1';
@@ -196,6 +209,177 @@ const searchInput=document.querySelector('#searchName');
 const searchBtn=document.querySelector('#searchBtn');
 const statusEl=document.querySelector('#status');
 const resultsEl=document.querySelector('#results');
+
+const staffFiles=document.querySelector('#staffFiles');
+const staffFile=document.querySelector('#staffFile');
+const staffImportBtn=document.querySelector('#staffImportBtn');
+const staffImportStatus=document.querySelector('#staffImportStatus');
+let selectedStaffFile=null;
+
+if(sessionStorage.getItem('pdwStaffSession')==='1'){
+  staffFiles.classList.remove('hidden');
+}
+
+function parseCSV(text){
+  const rows=[]; let row=[],val='',quoted=false;
+  for(let i=0;i<text.length;i++){
+    const ch=text[i],next=text[i+1];
+    if(ch==='"' && quoted && next==='"'){val+='"';i++;continue}
+    if(ch==='"'){quoted=!quoted;continue}
+    if(ch===',' && !quoted){row.push(val);val='';continue}
+    if((ch==='\n'||ch==='\r') && !quoted){
+      if(ch==='\r'&&next==='\n')i++;
+      row.push(val);
+      if(row.some(x=>String(x).trim()!==''))rows.push(row);
+      row=[];val='';continue;
+    }
+    val+=ch;
+  }
+  row.push(val);
+  if(row.some(x=>String(x).trim()!==''))rows.push(row);
+  return rows;
+}
+function headerIndex(headers,contains){
+  const h=headers.map(x=>String(x||'').trim().toLowerCase());
+  return h.findIndex(x=>contains.every(y=>x.includes(y)));
+}
+function stableCompanionId(sourceKey,patientName,raw,index){
+  const s=String(sourceKey||'')+'|'+String(patientName||'')+'|'+String(raw||'')+'|'+String(index||0);
+  let h=2166136261;
+  for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}
+  return 'COM-'+String(Math.abs(h>>>0)%1000000).padStart(6,'0');
+}
+function parseCompanions(raw){
+  const text=String(raw||'').trim();
+  if(!text||/^(none|na|n\/a|wala|0)$/i.test(text))return [];
+  return text.split(/\n+/).map(x=>x.trim()).filter(Boolean)
+    .filter(x=>!/^(none|na|n\/a|wala|0)$/i.test(x))
+    .map((line,index)=>{
+      const parts=line.split(/\s*-\s*/).map(x=>x.trim()).filter(Boolean);
+      let name=line,nickname='',age='';
+      if(parts.length>=3){
+        name=parts[0]; nickname=parts.slice(1,-1).join(' - ');
+        const m=parts[parts.length-1].match(/\d{1,3}/); age=m?m[0]:'';
+      }else if(parts.length===2){
+        name=parts[0];
+        const m=parts[1].match(/\b(\d{1,3})\b/);
+        if(m){age=m[1];nickname=parts[1].replace(m[0],'').trim()}else nickname=parts[1];
+      }else{
+        const m=line.match(/^(.*?)(?:\s*[, ]\s*)(\d{1,3})(?:\s*(?:yrs?|years?|yo|old))?\.?$/i);
+        if(m){name=m[1].trim();age=m[2]}
+      }
+      return {name,nickname,age,raw:line,index:index+1};
+    });
+}
+function mergeLocalPerson(d,incoming){
+  const old=d.people.find(x=>x.id===incoming.id);
+  if(old){
+    const keep={
+      biometric:!!old.biometric,verifyMethod:old.verifyMethod||null,
+      arrived:!!old.arrived,snack:!!old.snack,lunch:!!old.lunch,raffle:!!old.raffle,
+      registeredAt:old.registeredAt||incoming.registeredAt
+    };
+    Object.assign(old,incoming,keep);
+  }else d.people.push(incoming);
+}
+function importStaffRows(rows){
+  if(rows.length<2)throw new Error('No registration rows found.');
+  const headers=rows[0];
+  const idxTimestamp=headerIndex(headers,['timestamp']);
+  const idxName=headerIndex(headers,['patient','full','name']);
+  const idxNickname=headerIndex(headers,['nickname']);
+  const idxMobile=headerIndex(headers,['mobile']);
+  const idxCity=headerIndex(headers,['city']);
+  const idxCompanions=headerIndex(headers,['name/s','companion']);
+  if(idxName<0)throw new Error("PATIENT'S FULL NAME column was not found.");
+
+  const d=PDW.db(); let patients=0,companions=0;
+  for(let r=1;r<rows.length;r++){
+    const row=rows[r],name=String(row[idxName]||'').trim();
+    if(!name)continue;
+    const sourceKey=idxTimestamp>=0?String(row[idxTimestamp]||'').trim():('ROW-'+(r+1));
+    const id=PDW.masterId(sourceKey,name),now=new Date().toISOString();
+    mergeLocalPerson(d,{
+      id,type:'PATIENT',name,
+      nickname:idxNickname>=0?String(row[idxNickname]||'').trim():'',
+      mobile:idxMobile>=0?String(row[idxMobile]||'').trim():'',
+      location:idxCity>=0?String(row[idxCity]||'').trim():'',
+      sourceKey,fromMaster:true,biometric:false,verifyMethod:null,
+      arrived:false,snack:false,lunch:false,raffle:false,eventPassCreated:false,registeredAt:now
+    });
+    patients++;
+    const list=parseCompanions(idxCompanions>=0?String(row[idxCompanions]||''):'');
+    list.forEach(c=>{
+      const cid=stableCompanionId(sourceKey,name,c.raw,c.index);
+      mergeLocalPerson(d,{
+        id:cid,type:'COMPANION',name:c.name,nickname:c.nickname,age:c.age,
+        linkedPatientId:id,companionOf:name,
+        location:idxCity>=0?String(row[idxCity]||'').trim():'',
+        sourceKey,fromMaster:true,biometric:false,verifyMethod:null,
+        arrived:false,snack:false,lunch:false,raffle:false,eventPassCreated:false,registeredAt:now
+      });
+      companions++;
+    });
+  }
+  PDW.save(d);
+  return {patients,companions};
+}
+staffFile.addEventListener('change',()=>{
+  selectedStaffFile=staffFile.files&&staffFile.files[0]?staffFile.files[0]:null;
+  staffImportBtn.disabled=!selectedStaffFile;
+  staffImportStatus.classList.remove('hidden');
+  staffImportStatus.textContent=selectedStaffFile?'Selected: '+selectedStaffFile.name:'No file selected.';
+});
+staffImportBtn.addEventListener('click',async()=>{
+  if(!selectedStaffFile)return;
+  staffImportBtn.disabled=true;
+  staffImportStatus.classList.remove('hidden');
+  staffImportStatus.textContent='Importing registration file…';
+  try{
+    let rows;
+    const name=(selectedStaffFile.name||'').toLowerCase();
+    if(name.endsWith('.xlsx')||name.endsWith('.xls')){
+      if(!window.XLSX)throw new Error('Excel reader unavailable. Connect once and reload.');
+      const buffer=await selectedStaffFile.arrayBuffer();
+      const wb=XLSX.read(buffer,{type:'array',cellDates:true});
+      const first=wb.SheetNames[0];
+      rows=XLSX.utils.sheet_to_json(wb.Sheets[first],{header:1,defval:'',raw:false});
+    }else rows=parseCSV(await selectedStaffFile.text());
+    const r=importStaffRows(rows);
+    staffImportStatus.textContent='Imported / merged '+r.patients+' patients and '+r.companions+' companions.';
+  }catch(e){
+    staffImportStatus.textContent='Import failed: '+(e&&e.message?e.message:'Please check the file.');
+  }finally{
+    staffImportBtn.disabled=false;
+  }
+});
+
+function localMatches(query){
+  const q=normalizeQuery(query);
+  const d=PDW.db();
+  return d.people.filter(p=>p.type==='PATIENT' && (
+    normalizeQuery(p.name).includes(q) || normalizeQuery(p.nickname||'').includes(q)
+  )).slice(0,10);
+}
+function renderLocalResults(list){
+  resultsEl.innerHTML='';
+  if(!list.length)return false;
+  clearStatus();
+  list.forEach(p=>{
+    const box=document.createElement('div');box.className='result';
+    const h=document.createElement('h3');h.textContent=p.name;
+    const meta=document.createElement('p');
+    const parts=[];
+    if(p.nickname)parts.push('Nickname: '+p.nickname);
+    if(p.location)parts.push('City: '+p.location);
+    if(p.mobile)parts.push('Mobile: '+maskMobile(p.mobile));
+    meta.textContent=parts.join(' • ');
+    const b=document.createElement('button');b.textContent='THIS IS ME';
+    b.onclick=()=>{PDW.setActive(p.id);location.href='./biometric.html?v=22'};
+    box.append(h,meta,b);resultsEl.appendChild(box);
+  });
+  return true;
+}
 
 function maskMobile(v){
   const digits=String(v||'').replace(/\D/g,'');
@@ -252,7 +436,7 @@ function renderResults(rows){
     b.textContent='THIS IS ME';
     b.onclick=()=>{
       PDW.selectMasterRecord(record);
-      location.href='./biometric.html?v=21';
+      location.href='./biometric.html?v=22';
     };
     box.append(h,p,b);
     resultsEl.appendChild(box);
@@ -310,8 +494,13 @@ async function doSearch(){
   searchBtn.textContent='SEARCHING…';
   setStatus('Searching registration…');
   try{
-    const rows=await searchGoogleSheet(q);
-    renderResults(rows);
+    const local=localMatches(q);
+    if(local.length){
+      renderLocalResults(local);
+    }else{
+      const rows=await searchGoogleSheet(q);
+      renderResults(rows);
+    }
   }catch(e){
     setStatus('Registration could not be reached from this device. Please check the name again or ask event staff for assistance.',true);
   }finally{
