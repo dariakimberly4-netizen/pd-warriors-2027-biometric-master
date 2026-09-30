@@ -13,7 +13,7 @@
     <p>Digital QR Event Pass</p>
   </div>
 
-  <a class="toplink" href="./demo.html?v=15">← Back to Name Search</a>
+  <a class="toplink" id="backLink" href="./demo.html?v=26">← Back</a>
 
   <div class="card">
     <div class="pass">
@@ -29,7 +29,7 @@
     </div>
 
     <p class="small" style="text-align:center;font-size:16px;line-height:1.5">
-      Show this QR code to event staff. Staff can scan it for Check-In, Snack, Lunch, and Raffle verification.
+      <span id="entitlementText">Show this QR code to event staff.</span>
     </p>
 
     <button class="primary" id="bioBtn" style="display:none">ACTIVATE DEVICE BIOMETRIC</button>
@@ -38,10 +38,19 @@
   <div class="footer">Digital QR Event Pass</div>
 </div>
 
-<script src="./app-core.js?v=15"></script>
+<script src="./app-core.js?v=26"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
 const p=PDW.active();
+const staffMode=new URLSearchParams(location.search).get('staff')==='1';
+const backLink=document.querySelector('#backLink');
+if(staffMode){
+  backLink.href='./master.html?v=26';
+  backLink.textContent='← Back to Registration';
+}else{
+  backLink.href='./index.html?v=26';
+  backLink.textContent='← Back to Search';
+}
 
 if(!p){
   location.href='./demo.html?v=15';
@@ -49,6 +58,9 @@ if(!p){
   document.querySelector('#name').textContent=p.name;
   document.querySelector('#type').textContent=p.type==='PATIENT'?'PD WARRIOR':'COMPANION';
   document.querySelector('#id').textContent=p.id;
+  document.querySelector('#entitlementText').textContent=p.type==='COMPANION'
+    ? 'Companion Event Pass • Snack ✓ • Lunch ✓ • Raffle ✕'
+    : 'PD Warrior Event Pass • Snack ✓ • Lunch ✓ • Raffle ✓';
 
   const badge=document.querySelector('#verify');
   const bioBtn=document.querySelector('#bioBtn');
@@ -79,7 +91,7 @@ if(!p){
   }
 
   bioBtn.onclick=()=>{
-    location.href='./biometric.html?v=15';
+    location.href='./biometric.html?v=26';
   };
 }
 </script>
