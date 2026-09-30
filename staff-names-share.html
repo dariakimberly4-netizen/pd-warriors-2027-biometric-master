@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<link rel="stylesheet" href="./app.css?v=36">
+<link rel="stylesheet" href="./app.css?v=37">
 <title>PD Warriors 2027 — Names Quick Share</title>
 <style>
 .sharegrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -19,7 +19,7 @@
 <script>
 (function(){
   const ok=sessionStorage.getItem('pdwStaffSession')==='1';
-  if(!ok)location.replace('./login.html?v=36');
+  if(!ok)location.replace('./login.html?v=37');
 })();
 </script>
 
@@ -29,7 +29,7 @@
     <p>Offline Staff-to-Staff Transfer</p>
   </div>
 
-  <a class="toplink" href="./admin.html?v=36">← Staff Menu</a>
+  <a class="toplink" href="./admin.html?v=37">← Staff Menu</a>
 
   <div class="card">
     <div id="who" class="status"></div>
@@ -53,14 +53,16 @@
     </div>
 
     <div id="selectedRole" class="status warn" style="margin-top:12px">Select destination role.</div>
-    <button class="primary" id="sendNamesBtn" data-new-feature="names-quickshare-v36" disabled>SEND NAMES WITH QUICK SHARE</button>
+    <div id="shareCapability" class="status warn" style="margin-top:12px"></div>
+    <button class="primary" id="sendNamesBtn" data-new-feature="names-quickshare-v37" disabled>SEND NAMES WITH QUICK SHARE</button>
+    <button class="ghost hidden" id="desktopNamesBtn">PREPARE NAMES FILE FOR QUICK SHARE</button>
     <div id="sendStatus" class="status hidden" style="margin-top:12px"></div>
   </div>
 
   <div class="card">
     <h2>Receive Names</h2>
     <p class="small">On the receiving phone, select the names-only text file received through Quick Share, AirDrop, Bluetooth, or another nearby transfer method.</p>
-    <button class="blue" id="receiveNamesBtn" data-new-feature="receive-names-v36">RECEIVE NAMES FILE</button>
+    <button class="blue" id="receiveNamesBtn" data-new-feature="receive-names-v37">RECEIVE NAMES FILE</button>
     <input id="receiveNamesFile" type="file" accept=".txt,text/plain" class="hidden">
 
     <div id="previewCard" class="hidden" style="margin-top:14px">
@@ -83,7 +85,7 @@
   <div class="footer">PD Warriors 2027 • Names-Only Offline Transfer</div>
 </div>
 
-<script src="./app-core.js?v=36"></script>
+<script src="./app-core.js?v=37"></script>
 <script>
 const currentRole=sessionStorage.getItem('pdwStaffRole')||'';
 const currentName=sessionStorage.getItem('pdwStaffName')||'Staff';
@@ -144,43 +146,95 @@ document.querySelectorAll('.roleBtn').forEach(btn=>{
   };
 });
 
-document.querySelector('#sendNamesBtn').onclick=async()=>{
+function makeNamesFile(){
   const names=sourceNames();
-  const status=document.querySelector('#sendStatus');
-  if(!names.length){
-    status.className='status bad';
-    status.textContent='There are no Registration names to send.';
-    return;
-  }
+  if(!names.length)throw new Error('There are no Registration names to send.');
+  return {
+    names,
+    file:new File([names.join('\n')],'PDW2027-NAMES-'+destinationRole+'.txt',{type:'text/plain'})
+  };
+}
 
-  // The file CONTENT is names only, one name per line.
-  const file=new File(
-    [names.join('\n')],
-    'PDW2027-NAMES-'+destinationRole+'.txt',
-    {type:'text/plain'}
-  );
-
+function nativeFileShareAvailable(){
   try{
-    if(!navigator.share)throw new Error('Native Share is not available in this browser.');
-    if(navigator.canShare && !navigator.canShare({files:[file]})){
-      throw new Error('This browser cannot share files through the native Share menu.');
+    if(!navigator.share)return false;
+    const test=new File(['TEST'],'pdw-test.txt',{type:'text/plain'});
+    return !navigator.canShare || navigator.canShare({files:[test]});
+  }catch(e){
+    return false;
+  }
+}
+
+function updateShareCapability(){
+  const cap=document.querySelector('#shareCapability');
+  const fallback=document.querySelector('#desktopNamesBtn');
+  if(nativeFileShareAvailable()){
+    cap.className='status';
+    cap.textContent='Native nearby sharing is available on this device. On Android, choose Quick Share from the Share menu.';
+    fallback.classList.add('hidden');
+  }else{
+    cap.className='status warn';
+    cap.textContent='This browser cannot open native Quick Share directly. Use PREPARE NAMES FILE FOR QUICK SHARE, then send that names-only file with Quick Share for Windows.';
+    fallback.classList.remove('hidden');
+  }
+}
+
+document.querySelector('#sendNamesBtn').onclick=async()=>{
+  const status=document.querySelector('#sendStatus');
+  try{
+    if(!destinationRole)throw new Error('Select a destination role first.');
+    const {names,file}=makeNamesFile();
+
+    if(!nativeFileShareAvailable()){
+      status.className='status warn';
+      status.textContent='Native Quick Share is blocked or unavailable in this browser. Use PREPARE NAMES FILE FOR QUICK SHARE below.';
+      document.querySelector('#desktopNamesBtn').classList.remove('hidden');
+      return;
     }
+
     await navigator.share({
       title:'PD Warriors 2027 Names',
       files:[file]
     });
     status.className='status';
-    status.textContent=names.length+' names sent to the device Share menu. Choose Quick Share or another nearby option.';
+    status.textContent=names.length+' names handed to the device Share menu.';
   }catch(err){
     if(err&&err.name==='AbortError'){
       status.className='status warn';
       status.textContent='Sharing cancelled.';
-    }else{
-      status.className='status bad';
-      status.textContent=(err&&err.message)||'Unable to open native Share.';
+      return;
     }
+    if(err&&/permission|notallowed/i.test(String(err.message||err.name||''))){
+      status.className='status warn';
+      status.textContent='This browser blocked native sharing. Use PREPARE NAMES FILE FOR QUICK SHARE instead.';
+      document.querySelector('#desktopNamesBtn').classList.remove('hidden');
+      return;
+    }
+    status.className='status bad';
+    status.textContent=(err&&err.message)||'Unable to open native Share.';
   }
 };
+
+document.querySelector('#desktopNamesBtn').onclick=()=>{
+  const status=document.querySelector('#sendStatus');
+  try{
+    if(!destinationRole)throw new Error('Select a destination role first.');
+    const {names,file}=makeNamesFile();
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(file);
+    a.download=file.name;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},0);
+    status.className='status';
+    status.textContent=names.length+' names prepared. Open Quick Share for Windows and send the downloaded names-only file.';
+  }catch(err){
+    status.className='status bad';
+    status.textContent=(err&&err.message)||'Unable to prepare names file.';
+  }
+};
+
+updateShareCapability();
 
 document.querySelector('#receiveNamesBtn').onclick=()=>document.querySelector('#receiveNamesFile').click();
 
@@ -236,6 +290,6 @@ document.querySelector('#clearRoster').onclick=()=>{
 
 renderRoster();
 </script>
-<script src="./feature-highlights.js?v=36"></script>
+<script src="./feature-highlights.js?v=37"></script>
 </body>
 </html>
