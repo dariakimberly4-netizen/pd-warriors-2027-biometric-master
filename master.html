@@ -1,1 +1,289 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="./app.css"><title>PD Warriors 2027 — Registration</title></head><body><div class="app"><div class="hero"><h1>Registration</h1><p>Master Database / Source of Truth</p></div><a class="toplink" href="./admin.html">← Admin Menu</a><div class="card"><div class="kpi"><div><b id="reg">0</b>Registered</div><div><b id="arr">0</b>Arrived</div><div><b id="pat">0</b>Patients</div><div><b id="com">0</b>Companions</div></div><div class="status" style="margin-top:12px"><b>REGISTRATION = MASTER DATABASE</b><br>All attendee records, IDs, QR status, check-in, food, and raffle status belong here.</div></div><div class="card"><h2>Registration Database</h2><div class="tablewrap"><table><thead><tr><th>ID</th><th>Name</th><th>Type</th><th>Bio</th><th>Arrived</th><th>Snack</th><th>Lunch</th><th>Raffle</th></tr></thead><tbody id="rows"></tbody></table></div></div></div><script src="./app-core.js"></script><script>function render(){const d=PDW.db(),pat=d.people.filter(x=>x.type==='PATIENT').length;document.querySelector('#reg').textContent=d.people.length;document.querySelector('#arr').textContent=d.people.filter(x=>x.arrived).length;document.querySelector('#pat').textContent=pat;document.querySelector('#com').textContent=d.people.length-pat;document.querySelector('#rows').innerHTML=d.people.map(p=>'<tr><td><b>'+p.id+'</b></td><td>'+p.name+'</td><td>'+p.type+'</td><td>'+(p.biometric?'✓':'—')+'</td><td>'+(p.arrived?'✓':'—')+'</td><td>'+(p.snack?'✓':'—')+'</td><td>'+(p.lunch?'✓':'—')+'</td><td>'+(p.type==='COMPANION'?'NOT ELIGIBLE':p.raffle?'✓':'—')+'</td></tr>').join('')||'<tr><td colspan="8">No participants yet.</td></tr>'}render();</script></body></html>
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="stylesheet" href="./app.css">
+<title>PD Warriors 2027 — Registration</title>
+</head>
+<body>
+<div class="app">
+  <div class="hero">
+    <h1>Registration</h1>
+    <p>Master Database / Source of Truth</p>
+  </div>
+
+  <a class="toplink" href="./admin.html">← Admin Menu</a>
+
+  <div class="card">
+    <div class="kpi">
+      <div><b id="reg">0</b>Registered</div>
+      <div><b id="arr">0</b>Arrived</div>
+      <div><b id="pat">0</b>Patients</div>
+      <div><b id="com">0</b>Companions</div>
+    </div>
+    <div class="status" style="margin-top:12px">
+      <b>REGISTRATION = MASTER DATABASE</b><br>
+      All attendee records, IDs, QR status, check-in, food, and raffle status belong here.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Google Sheet / Upload File</h2>
+
+    <a class="btn primary"
+       href="https://docs.google.com/spreadsheets/d/1l8Xk4B5EkniJq3hVoES6blYPIFCEl1-rnmXmxWEJLgI/edit"
+       target="_blank" rel="noopener">
+      OPEN GOOGLE SHEET
+    </a>
+
+    <label for="csvFile">Upload Registration CSV File</label>
+    <input id="csvFile" type="file" accept=".csv,text/csv">
+
+    <button class="blue" id="importBtn" disabled>IMPORT / MERGE INTO REGISTRATION</button>
+
+    <div id="importStatus" class="status warn" style="margin-top:12px">
+      No file selected. In Google Sheets: File → Download → Comma Separated Values (.csv).
+    </div>
+
+    <p class="small">
+      Importing merges records into this device's Registration database. Existing Check-In, Snack, Lunch, and Raffle claim status is preserved when the participant ID matches.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Registration Database</h2>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th><th>Name</th><th>Type</th><th>Bio</th>
+            <th>Arrived</th><th>Snack</th><th>Lunch</th><th>Raffle</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="./app-core.js"></script>
+<script>
+const csvFile=document.querySelector('#csvFile');
+const importBtn=document.querySelector('#importBtn');
+const importStatus=document.querySelector('#importStatus');
+let selectedFile=null;
+
+function esc(v){
+  return String(v==null?'':v)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function render(){
+  const d=PDW.db();
+  const pat=d.people.filter(x=>x.type==='PATIENT').length;
+  document.querySelector('#reg').textContent=d.people.length;
+  document.querySelector('#arr').textContent=d.people.filter(x=>x.arrived).length;
+  document.querySelector('#pat').textContent=pat;
+  document.querySelector('#com').textContent=d.people.length-pat;
+
+  document.querySelector('#rows').innerHTML=d.people.map(p=>
+    '<tr>'+
+    '<td><b>'+esc(p.id)+'</b></td>'+
+    '<td>'+esc(p.name)+'</td>'+
+    '<td>'+esc(p.type)+'</td>'+
+    '<td>'+(p.biometric?'✓':'—')+'</td>'+
+    '<td>'+(p.arrived?'✓':'—')+'</td>'+
+    '<td>'+(p.snack?'✓':'—')+'</td>'+
+    '<td>'+(p.lunch?'✓':'—')+'</td>'+
+    '<td>'+(p.type==='COMPANION'?'NOT ELIGIBLE':p.raffle?'✓':'—')+'</td>'+
+    '</tr>'
+  ).join('') || '<tr><td colspan="8">No participants yet.</td></tr>';
+}
+
+function parseCSV(text){
+  const rows=[]; let row=[],val='',quoted=false;
+  for(let i=0;i<text.length;i++){
+    const ch=text[i],next=text[i+1];
+    if(ch==='"' && quoted && next==='"'){val+='"';i++;continue}
+    if(ch==='"'){quoted=!quoted;continue}
+    if(ch===',' && !quoted){row.push(val);val='';continue}
+    if((ch==='\n'||ch==='\r') && !quoted){
+      if(ch==='\r'&&next==='\n')i++;
+      row.push(val);
+      if(row.some(x=>String(x).trim()!==''))rows.push(row);
+      row=[];val='';continue;
+    }
+    val+=ch;
+  }
+  row.push(val);
+  if(row.some(x=>String(x).trim()!==''))rows.push(row);
+  return rows;
+}
+
+function headerIndex(headers,contains){
+  const h=headers.map(x=>String(x||'').trim().toLowerCase());
+  return h.findIndex(x=>contains.every(y=>x.includes(y)));
+}
+
+function stableCompanionId(sourceKey,patientName,raw,index){
+  const s=String(sourceKey||'')+'|'+String(patientName||'')+'|'+String(raw||'')+'|'+String(index||0);
+  let h=2166136261;
+  for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}
+  return 'COM-'+String(Math.abs(h>>>0)%1000000).padStart(6,'0');
+}
+
+function parseCompanions(raw){
+  const text=String(raw||'').trim();
+  if(!text||/^(none|na|n\/a|wala|0)$/i.test(text))return [];
+  return text.split(/\n+/).map(x=>x.trim()).filter(Boolean)
+    .filter(x=>!/^(none|na|n\/a|wala|0)$/i.test(x))
+    .map((line,index)=>{
+      const parts=line.split(/\s*-\s*/).map(x=>x.trim()).filter(Boolean);
+      let name=line,nickname='',age='';
+      if(parts.length>=3){
+        name=parts[0];
+        nickname=parts.slice(1,-1).join(' - ');
+        const m=parts[parts.length-1].match(/\d{1,3}/);
+        age=m?m[0]:'';
+      }else if(parts.length===2){
+        name=parts[0];
+        const m=parts[1].match(/\b(\d{1,3})\b/);
+        if(m){age=m[1];nickname=parts[1].replace(m[0],'').trim()}
+        else nickname=parts[1];
+      }else{
+        const m=line.match(/^(.*?)(?:\s*[, ]\s*)(\d{1,3})(?:\s*(?:yrs?|years?|yo|old))?\.?$/i);
+        if(m){name=m[1].trim();age=m[2]}
+      }
+      return {name,nickname,age,raw:line,index:index+1};
+    });
+}
+
+function mergePerson(d,incoming){
+  const old=d.people.find(x=>x.id===incoming.id);
+  if(old){
+    const keep={
+      biometric:!!old.biometric,
+      verifyMethod:old.verifyMethod||null,
+      arrived:!!old.arrived,
+      snack:!!old.snack,
+      lunch:!!old.lunch,
+      raffle:!!old.raffle,
+      registeredAt:old.registeredAt||incoming.registeredAt
+    };
+    Object.assign(old,incoming,keep);
+  }else{
+    d.people.push(incoming);
+  }
+}
+
+function importRows(rows){
+  if(rows.length<2)throw new Error('No registration rows found.');
+
+  const headers=rows[0];
+  const idxTimestamp=headerIndex(headers,['timestamp']);
+  const idxName=headerIndex(headers,['patient','full','name']);
+  const idxNickname=headerIndex(headers,['nickname']);
+  const idxMobile=headerIndex(headers,['mobile']);
+  const idxCity=headerIndex(headers,['city']);
+  const idxCompanions=headerIndex(headers,['name/s','companion']);
+
+  if(idxName<0)throw new Error("PATIENT'S FULL NAME column was not found.");
+
+  const d=PDW.db();
+  let patients=0,companions=0;
+
+  for(let r=1;r<rows.length;r++){
+    const row=rows[r];
+    const name=String(row[idxName]||'').trim();
+    if(!name)continue;
+
+    const sourceKey=idxTimestamp>=0?String(row[idxTimestamp]||'').trim():('ROW-'+(r+1));
+    const id=PDW.masterId(sourceKey,name);
+    const now=new Date().toISOString();
+
+    mergePerson(d,{
+      id,
+      type:'PATIENT',
+      name,
+      nickname:idxNickname>=0?String(row[idxNickname]||'').trim():'',
+      mobile:idxMobile>=0?String(row[idxMobile]||'').trim():'',
+      location:idxCity>=0?String(row[idxCity]||'').trim():'',
+      sourceKey,
+      fromMaster:true,
+      biometric:false,
+      verifyMethod:null,
+      arrived:false,
+      snack:false,
+      lunch:false,
+      raffle:false,
+      eventPassCreated:false,
+      registeredAt:now
+    });
+    patients++;
+
+    const raw=idxCompanions>=0?String(row[idxCompanions]||''):'';
+    const list=parseCompanions(raw);
+    list.forEach(c=>{
+      const cid=stableCompanionId(sourceKey,name,c.raw,c.index);
+      mergePerson(d,{
+        id:cid,
+        type:'COMPANION',
+        name:c.name,
+        nickname:c.nickname,
+        age:c.age,
+        linkedPatientId:id,
+        companionOf:name,
+        location:idxCity>=0?String(row[idxCity]||'').trim():'',
+        sourceKey,
+        fromMaster:true,
+        biometric:false,
+        verifyMethod:null,
+        arrived:false,
+        snack:false,
+        lunch:false,
+        raffle:false,
+        eventPassCreated:false,
+        registeredAt:now
+      });
+      companions++;
+    });
+  }
+
+  PDW.save(d);
+  return {patients,companions,total:patients+companions};
+}
+
+csvFile.addEventListener('change',()=>{
+  selectedFile=csvFile.files&&csvFile.files[0]?csvFile.files[0]:null;
+  importBtn.disabled=!selectedFile;
+  importStatus.className='status warn';
+  importStatus.textContent=selectedFile
+    ? 'Selected: '+selectedFile.name+' — tap IMPORT / MERGE INTO REGISTRATION.'
+    : 'No file selected.';
+});
+
+importBtn.addEventListener('click',async()=>{
+  if(!selectedFile)return;
+  importBtn.disabled=true;
+  importStatus.className='status warn';
+  importStatus.textContent='Importing registration file…';
+  try{
+    const rows=parseCSV(await selectedFile.text());
+    const result=importRows(rows);
+    importStatus.className='status';
+    importStatus.textContent='Imported / merged '+result.patients+' patients and '+result.companions+' companions.';
+    render();
+  }catch(e){
+    importStatus.className='status bad';
+    importStatus.textContent='Import failed: '+(e&&e.message?e.message:'Please check the CSV file.');
+  }finally{
+    importBtn.disabled=false;
+  }
+});
+
+render();
+</script>
+</body>
+</html>
