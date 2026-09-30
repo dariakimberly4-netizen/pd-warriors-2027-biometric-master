@@ -194,6 +194,7 @@ function updateOfflineStatus(){
 window.addEventListener('online',updateOfflineStatus);
 window.addEventListener('offline',updateOfflineStatus);
 updateOfflineStatus();
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
 </script>
 </body>
 </html>
