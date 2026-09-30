@@ -18,7 +18,7 @@
     <div><b id="raffle">0</b><span>Raffle Claimed</span></div>
     <div><b id="txCount">0</b><span>Transactions</span></div>
   </div>
-  <button class="gold" id="download">DOWNLOAD CSV REPORT</button>
+  <button class="gold" id="download" data-new-feature="download-report">DOWNLOAD CSV REPORT</button>
 </div>
 
 <div class="card">
@@ -31,7 +31,7 @@
   </div>
 </div>
 
-<div class="card">
+<div class="card" data-new-feature="audit-trail">
   <h2>Recent Audit Trail</h2>
   <div class="tablewrap"><table>
     <thead><tr><th>Time</th><th>Participant</th><th>Action</th><th>Station</th><th>Staff</th></tr></thead>
@@ -78,4 +78,4 @@ document.querySelector('#download').onclick=()=>{
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='PDW2027-event-report.csv';a.click();URL.revokeObjectURL(a.href);
 };
 render();
-</script></body></html>
+</script><script src="./feature-highlights.js?v=27"></script></body></html>
