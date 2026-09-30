@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="stylesheet" href="./app.css">
+<title>PD Warriors 2027 — Staff Login</title>
+</head>
+<body>
+<div class="app">
+  <div class="hero">
+    <h1>PD Warriors 2027</h1>
+    <p>Staff Login</p>
+  </div>
+
+  <div class="card">
+    <h2>Select Staff Role</h2>
+    <p class="small">Demo one-tap login. Each role opens only the station assigned to it.</p>
+
+    <div class="hub">
+      <button class="primary staffLogin" data-name="Registration Staff" data-role="REGISTRATION" data-go="./master.html?v=26">REGISTRATION</button>
+      <button class="blue staffLogin" data-name="Check-In Staff" data-role="CHECKIN" data-go="./checkin.html?v=26">CHECK-IN</button>
+      <button class="blue staffLogin" data-name="Snack Staff" data-role="SNACK" data-go="./snack.html?v=26">SNACK</button>
+      <button class="blue staffLogin" data-name="Lunch Staff" data-role="LUNCH" data-go="./lunch.html?v=26">LUNCH</button>
+      <button class="blue staffLogin" data-name="Raffle Staff" data-role="RAFFLE" data-go="./raffle.html?v=26">RAFFLE</button>
+      <button class="gold staffLogin" data-name="Administrator" data-role="ADMIN" data-go="./admin.html?v=26">ADMIN</button>
+    </div>
+
+    <div class="status warn" style="margin-top:14px">
+      This is a demo login for GitHub Pages. It is not a production password/security system.
+    </div>
+  </div>
+
+  <div class="footer">Registration Committee • Staff Access</div>
+</div>
+
+<script>
+document.querySelectorAll('.staffLogin').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    sessionStorage.setItem('pdwStaffSession','1');
+    sessionStorage.setItem('pdwStaffRole',btn.dataset.role);
+    sessionStorage.setItem('pdwStaffName',btn.dataset.name);
+    sessionStorage.setItem('pdwStaffLoginAt',new Date().toISOString());
+    location.href=btn.dataset.go;
+  });
+});
+</script>
+</body>
+</html>
