@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <link rel="manifest" href="./manifest.webmanifest">
-<link rel="stylesheet" href="./app.css?v=73">
+<link rel="stylesheet" href="./app.css?v=74">
 <title>PD Warriors 2027 — Registration</title>
 <style>
 .actions{display:flex;gap:7px;flex-wrap:wrap}.actions button{width:auto;min-height:42px;margin:0;padding:8px 11px;font-size:14px;border-radius:11px}
@@ -18,7 +18,7 @@
 (function(){
   const ok=sessionStorage.getItem('pdwStaffSession')==='1';
   const role=sessionStorage.getItem('pdwStaffRole')||'';
-  if(!ok || !(role==='ADMIN'||role==='REGISTRATION')) location.replace('./login.html?v=73');
+  if(!ok || !(role==='ADMIN'||role==='REGISTRATION')) location.replace('./login.html?v=74');
 })();
 </script>
 
@@ -28,7 +28,7 @@
     <p>Master Database / Source of Truth</p>
   </div>
 
-  <a class="toplink" href="./admin.html?v=73">← Staff Menu</a>
+  <a class="toplink" href="./admin.html?v=74">← Staff Menu</a>
 
   <div class="card">
     <div id="staffWho" class="status"></div>
@@ -40,7 +40,8 @@
     </div>
     <div class="status" style="margin-top:12px">
       <b>REGISTRATION = MASTER DATABASE</b><br>
-      All attendee records, IDs, QR status, check-in, food, and Raffle Draw status belong here.
+      All attendee records, IDs, QR status, check-in, food, and Raffle Draw status belong here.<br>
+      <b>Google Sheet rule:</b> 1 Patient + each named Companion = one separate record and one unique QR code.
     </div>
   </div>
 
@@ -105,7 +106,7 @@
   </div>
 </div>
 
-<script src="./app-core.js?v=73"></script>
+<script src="./app-core.js?v=74"></script>
 <script src="./vendor/xlsx.full.min.js?v=52"></script>
 <script>
 const csvFile=document.querySelector('#csvFile');
@@ -184,10 +185,25 @@ function indexes(rows){
     nickname:headerIndex(h,['nickname']),
     mobile:headerIndex(h,['mobile']),
     city:headerIndex(h,['city']),
-    companions:headerIndex(h,['name/s','companion'])
+    companions:headerIndex(h,['name/s','companion']),
+    companionCount:(()=>{
+      let i=headerIndex(h,['#','companion']);
+      if(i<0)i=headerIndex(h,['number','companion']);
+      if(i<0)i=headerIndex(h,['no.','companion']);
+      if(i<0)i=headerIndex(h,['how many','companion']);
+      if(i<0)i=headerIndex(h,['companion','count']);
+      return i;
+    })()
   };
   if(x.name<0)throw new Error("PATIENT'S FULL NAME column was not found.");
   return x;
+}
+function declaredCompanionCount(row,x){
+  if(x.companionCount<0)return null;
+  const raw=String(row[x.companionCount]??'').trim();
+  if(!raw)return 0;
+  const m=raw.match(/\d+/);
+  return m?Math.max(0,parseInt(m[0],10)):null;
 }
 function analyzeRows(rows){
   const x=indexes(rows);let patients=0,companions=0,review=0,duplicates=0;
@@ -202,7 +218,10 @@ function analyzeRows(rows){
     if(seen.has(patientKey)||existing.some(p=>p.type==='PATIENT'&&normDup(p.name)===normDup(name)))duplicates++;
     seen.add(patientKey);
     const list=parseCompanions(x.companions>=0?String(row[x.companions]||''):'');
-    companions+=list.length;review+=list.filter(c=>c.review).length;
+    const declared=declaredCompanionCount(row,x);
+    const countMismatch=declared!==null&&declared!==list.length;
+    companions+=list.length;
+    review+=list.filter(c=>c.review).length+(countMismatch?1:0);
     list.forEach(c=>{
       const key='COMPANION|'+normDup(c.name);
       if(seen.has(key)||existing.some(p=>p.type==='COMPANION'&&normDup(p.name)===normDup(c.name)))duplicates++;
@@ -234,6 +253,9 @@ function importRows(rows){
     if(!name)continue;
     const sourceKey=x.timestamp>=0?String(row[x.timestamp]||'').trim():('ROW-'+(r+1));
     const id=PDW.masterId(sourceKey,name),now=new Date().toISOString();
+    const list=parseCompanions(x.companions>=0?String(row[x.companions]||''):'');
+    const declared=declaredCompanionCount(row,x);
+    const countMismatch=declared!==null&&declared!==list.length;
     mergePerson(d,{
       id,type:'PATIENT',name,
       nickname:x.nickname>=0?String(row[x.nickname]||'').trim():'',
@@ -241,18 +263,24 @@ function importRows(rows){
       location:x.city>=0?String(row[x.city]||'').trim():'',
       sourceKey,fromMaster:true,biometric:false,verifyMethod:null,
       arrived:false,snack:false,lunch:false,raffle:false,eventPassCreated:false,
-      registrationStatus:'CONFIRMED',
+      companionCountDeclared:declared,
+      companionCountNamed:list.length,
+      companionCountMismatch:countMismatch,
+      registrationStatus:countMismatch?'NEEDS REVIEW':'CONFIRMED',
+      needsReview:countMismatch,
+      reviewReason:countMismatch?('Google Sheet says '+declared+' companion'+(declared===1?'':'s')+' but '+list.length+' named companion'+(list.length===1?' is':'s are')+' provided.'):'',
       documents:{seniorId:'NOT REQUIRED',pwdId:'NOT REQUIRED',authorization:'NOT REQUIRED'},
       registeredAt:now
     });
     patients++;
-    const list=parseCompanions(x.companions>=0?String(row[x.companions]||''):'');
     list.forEach(c=>{
       const cid=stableCompanionId(sourceKey,name,c.raw,c.index);
       mergePerson(d,{
         id:cid,type:'COMPANION',name:c.name,nickname:c.nickname,age:c.age,
         linkedPatientId:id,companionOf:name,location:x.city>=0?String(row[x.city]||'').trim():'',
         sourceKey,fromMaster:true,biometric:false,verifyMethod:null,
+        companionNumber:c.index,
+        groupSize:1+list.length,
         arrived:false,snack:false,lunch:false,raffle:false,eventPassCreated:false,
         registrationStatus:c.review?'NEEDS REVIEW':'CONFIRMED',
         documents:{seniorId:'NOT REQUIRED',pwdId:'NOT REQUIRED',authorization:'NOT REQUIRED'},
@@ -322,7 +350,7 @@ function render(){
   document.querySelectorAll('.editBtn').forEach(b=>b.onclick=()=>openEdit(b.dataset.id));
   document.querySelectorAll('.qrBtn').forEach(b=>b.onclick=()=>{
     PDW.setActive(b.dataset.id);
-    const person=PDW.person(b.dataset.id); location.href=person&&person.type==='COMPANION'?'./companion-pass-v73.html?v=73':'./pass-max-v67.html?staff=1&v=73';
+    const person=PDW.person(b.dataset.id); location.href=person&&person.type==='COMPANION'?'./companion-pass-v73.html?v=74':'./pass-max-v67.html?staff=1&v=74';
   });
 }
 function openEdit(id){
@@ -376,7 +404,9 @@ previewBtn.onclick=async()=>{
     document.querySelector('#previewDuplicates').textContent=a.duplicates;
     previewBox.classList.remove('hidden');
     importStatus.className='status';
-    importStatus.textContent='Preview ready. Review the counts, then confirm import.';
+    importStatus.textContent=a.review
+      ? 'Preview ready. '+a.review+' record'+(a.review===1?' needs':'s need')+' review. Companion count must match the named companions in the Google Sheet.'
+      : 'Preview ready. Each patient and each named companion will receive one separate attendee record / QR code.';
   }catch(e){
     pendingRows=null;previewBox.classList.add('hidden');importStatus.className='status bad';
     importStatus.textContent='Preview failed: '+(e.message||'Please check the file.');
@@ -386,7 +416,7 @@ document.querySelector('#confirmImport').onclick=()=>{
   if(!pendingRows)return;
   const r=importRows(pendingRows);
   importStatus.className='status';
-  importStatus.textContent='Imported / merged '+r.patients+' patients and '+r.companions+' companions.';
+  importStatus.textContent='Imported / merged '+r.patients+' patients and '+r.companions+' companions = '+(r.patients+r.companions)+' individual QR records.';
   pendingRows=null;previewBox.classList.add('hidden');render();
 };
 document.querySelector('#cancelImport').onclick=()=>{
@@ -398,6 +428,6 @@ render();
 </script>
 <script src="./registration-enhancements.js?v=52"></script>
 <script src="./registration-admin-v52.js"></script>
-<script src="./feature-highlights.js?v=73"></script>
+<script src="./feature-highlights.js?v=74"></script>
 </body>
 </html>
