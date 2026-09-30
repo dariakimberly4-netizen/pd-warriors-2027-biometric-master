@@ -13,7 +13,7 @@
     <p>Digital QR Event Pass</p>
   </div>
 
-  <a class="toplink" id="backLink" href="./demo.html?v=26">← Back</a>
+  <a class="toplink" id="backLink" href="./demo.html?v=32">← Back</a>
 
   <div class="card">
     <div class="pass">
@@ -38,17 +38,17 @@
   <div class="footer">Digital QR Event Pass</div>
 </div>
 
-<script src="./app-core.js?v=26"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="./app-core.js?v=32"></script>
+<script src="./vendor/qrcode.min.js?v=32"></script>
 <script>
 const p=PDW.active();
 const staffMode=new URLSearchParams(location.search).get('staff')==='1';
 const backLink=document.querySelector('#backLink');
 if(staffMode){
-  backLink.href='./master.html?v=26';
+  backLink.href='./master.html?v=32';
   backLink.textContent='← Back to Registration';
 }else{
-  backLink.href='./index.html?v=26';
+  backLink.href='./index.html?v=32';
   backLink.textContent='← Back to Search';
 }
 
@@ -91,7 +91,7 @@ if(!p){
   }
 
   bioBtn.onclick=()=>{
-    location.href='./biometric.html?v=26';
+    location.href='./biometric.html?v=32';
   };
 }
 </script>
