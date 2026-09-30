@@ -1,4 +1,4 @@
-const CACHE='pdw2027-registration-admin-v52';
+const CACHE='pdw2027-biometric-qr-v54';
 const ASSETS=[
   './vendor/jsQR.js',
   './vendor/qrcode.min.js',
