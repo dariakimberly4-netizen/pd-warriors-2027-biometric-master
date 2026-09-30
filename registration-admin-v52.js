@@ -29,7 +29,9 @@
     const raffleIndex=headers.findIndex(th=>/raffle/i.test(th.textContent||''));
     if(raffleIndex<0)return;
 
-    headers[raffleIndex].textContent='Raffle Draw';
+    if(headers[raffleIndex].textContent!=='Raffle Draw'){
+      headers[raffleIndex].textContent='Raffle Draw';
+    }
 
     const d=PDW.db();
     table.querySelectorAll('#rows tr').forEach(tr=>{
@@ -38,7 +40,10 @@
       const id=(cells[0].textContent||'').trim();
       const p=d.people.find(x=>x.id===id);
       if(!p)return;
-      cells[raffleIndex].textContent=drawStatus(p);
+      const status=drawStatus(p);
+      if(cells[raffleIndex].textContent!==status){
+        cells[raffleIndex].textContent=status;
+      }
     });
   }
 
@@ -226,7 +231,7 @@
       pwdId:bestDoc(kd.pwdId,dd.pwdId),
       authorization:bestDoc(kd.authorization,dd.authorization)
     };
-    keep.needsReview=!!keep.needsReview&&!!dup.needsReview;
+    keep.needsReview=!!keep.needsReview||!!dup.needsReview;
     keep.updatedAt=new Date().toISOString();
 
     if(keep.type==='PATIENT'){
@@ -241,6 +246,26 @@
 
     d.tx.forEach(t=>{if(t.id===dup.id)t.id=keep.id});
     d.people=d.people.filter(p=>p.id!==dup.id);
+
+    try{
+      const winners=JSON.parse(localStorage.getItem(DRAW_WINNERS_KEY)||'[]');
+      if(Array.isArray(winners)){
+        const seen=new Set();
+        const updated=[];
+        winners.forEach(w=>{
+          const copy={...w};
+          if(copy.id===dup.id){
+            copy.id=keep.id;
+            copy.name=keep.name;
+          }
+          if(!seen.has(copy.id)){
+            seen.add(copy.id);
+            updated.push(copy);
+          }
+        });
+        localStorage.setItem(DRAW_WINNERS_KEY,JSON.stringify(updated));
+      }
+    }catch(e){}
 
     const now=new Date();
     d.tx.push({
