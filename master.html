@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<link rel="stylesheet" href="./app.css?v=33">
+<link rel="stylesheet" href="./app.css?v=34">
 <title>PD Warriors 2027 — Registration</title>
 <style>
 .actions{display:flex;gap:7px;flex-wrap:wrap}.actions button{width:auto;min-height:42px;margin:0;padding:8px 11px;font-size:14px;border-radius:11px}
 .editgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.editgrid .full{grid-column:1/-1}
-.previewgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.previewgrid div{background:#f6f2e8;border-radius:14px;padding:13px;text-align:center}.previewgrid b{display:block;font-size:28px;color:#0f5132}
+.previewgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.previewgrid div{background:#f6f2e8;border-radius:14px;padding:13px;text-align:center}.previewgrid b{display:block;font-size:28px;color:#0f5132}
 @media(max-width:650px){.editgrid,.previewgrid{grid-template-columns:1fr}.editgrid .full{grid-column:auto}}
 </style>
 </head>
@@ -17,7 +17,7 @@
 (function(){
   const ok=sessionStorage.getItem('pdwStaffSession')==='1';
   const role=sessionStorage.getItem('pdwStaffRole')||'';
-  if(!ok || !(role==='ADMIN'||role==='REGISTRATION')) location.replace('./login.html?v=33');
+  if(!ok || !(role==='ADMIN'||role==='REGISTRATION')) location.replace('./login.html?v=34');
 })();
 </script>
 
@@ -27,7 +27,7 @@
     <p>Master Database / Source of Truth</p>
   </div>
 
-  <a class="toplink" href="./admin.html?v=33">← Staff Menu</a>
+  <a class="toplink" href="./admin.html?v=34">← Staff Menu</a>
 
   <div class="card">
     <div id="staffWho" class="status"></div>
@@ -58,12 +58,13 @@
         <div><b id="previewPatients">0</b>Patients</div>
         <div><b id="previewCompanions">0</b>Companions</div>
         <div><b id="previewReview">0</b>Need Review</div>
+        <div><b id="previewDuplicates">0</b>Possible Duplicates</div>
       </div>
       <button class="primary" id="confirmImport">CONFIRM IMPORT / MERGE</button>
       <button class="ghost" id="cancelImport">CANCEL PREVIEW</button>
     </div>
 
-    <a class="btn primary" id="openBioBtn" href="./index.html?v=33" style="display:none">OPEN BIOMETRIC SEARCH</a>
+    <a class="btn primary" id="openBioBtn" href="./index.html?v=34" style="display:none">OPEN BIOMETRIC SEARCH</a>
     <p class="small">Preview first, then confirm. Existing arrival and claim status is preserved when IDs match.</p>
   </div>
 
@@ -103,8 +104,8 @@
   </div>
 </div>
 
-<script src="./app-core.js?v=33"></script>
-<script src="./vendor/xlsx.full.min.js?v=33"></script>
+<script src="./app-core.js?v=34"></script>
+<script src="./vendor/xlsx.full.min.js?v=34"></script>
 <script>
 const csvFile=document.querySelector('#csvFile');
 const previewBtn=document.querySelector('#previewBtn');
@@ -188,15 +189,26 @@ function indexes(rows){
   return x;
 }
 function analyzeRows(rows){
-  const x=indexes(rows);let patients=0,companions=0,review=0;
+  const x=indexes(rows);let patients=0,companions=0,review=0,duplicates=0;
+  const existing=PDW.db().people;
+  const seen=new Set();
+  const normDup=v=>String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
   for(let r=1;r<rows.length;r++){
     const row=rows[r],name=String(row[x.name]||'').trim();
     if(!name)continue;
     patients++;
+    const patientKey='PATIENT|'+normDup(name);
+    if(seen.has(patientKey)||existing.some(p=>p.type==='PATIENT'&&normDup(p.name)===normDup(name)))duplicates++;
+    seen.add(patientKey);
     const list=parseCompanions(x.companions>=0?String(row[x.companions]||''):'');
     companions+=list.length;review+=list.filter(c=>c.review).length;
+    list.forEach(c=>{
+      const key='COMPANION|'+normDup(c.name);
+      if(seen.has(key)||existing.some(p=>p.type==='COMPANION'&&normDup(p.name)===normDup(c.name)))duplicates++;
+      seen.add(key);
+    });
   }
-  return {patients,companions,review};
+  return {patients,companions,review,duplicates};
 }
 function mergePerson(d,incoming){
   const old=d.people.find(x=>x.id===incoming.id);
@@ -205,7 +217,11 @@ function mergePerson(d,incoming){
       biometric:!!old.biometric,verifyMethod:old.verifyMethod||null,
       arrived:!!old.arrived,snack:!!old.snack,lunch:!!old.lunch,raffle:!!old.raffle,
       arrivalAt:old.arrivalAt||null,snackAt:old.snackAt||null,lunchAt:old.lunchAt||null,raffleAt:old.raffleAt||null,
-      registeredAt:old.registeredAt||incoming.registeredAt
+      registeredAt:old.registeredAt||incoming.registeredAt,
+      registrationStatus:old.registrationStatus||incoming.registrationStatus||'CONFIRMED',
+      documents:old.documents||incoming.documents||{seniorId:'NOT REQUIRED',pwdId:'NOT REQUIRED',authorization:'NOT REQUIRED'},
+      mobile:old.mobile||incoming.mobile||'',
+      walkIn:!!old.walkIn||!!incoming.walkIn
     };
     Object.assign(old,incoming,keep);
   }else d.people.push(incoming);
@@ -223,7 +239,10 @@ function importRows(rows){
       mobile:x.mobile>=0?String(row[x.mobile]||'').trim():'',
       location:x.city>=0?String(row[x.city]||'').trim():'',
       sourceKey,fromMaster:true,biometric:false,verifyMethod:null,
-      arrived:false,snack:false,lunch:false,raffle:false,eventPassCreated:false,registeredAt:now
+      arrived:false,snack:false,lunch:false,raffle:false,eventPassCreated:false,
+      registrationStatus:'CONFIRMED',
+      documents:{seniorId:'NOT REQUIRED',pwdId:'NOT REQUIRED',authorization:'NOT REQUIRED'},
+      registeredAt:now
     });
     patients++;
     const list=parseCompanions(x.companions>=0?String(row[x.companions]||''):'');
@@ -234,6 +253,8 @@ function importRows(rows){
         linkedPatientId:id,companionOf:name,location:x.city>=0?String(row[x.city]||'').trim():'',
         sourceKey,fromMaster:true,biometric:false,verifyMethod:null,
         arrived:false,snack:false,lunch:false,raffle:false,eventPassCreated:false,
+        registrationStatus:c.review?'NEEDS REVIEW':'CONFIRMED',
+        documents:{seniorId:'NOT REQUIRED',pwdId:'NOT REQUIRED',authorization:'NOT REQUIRED'},
         needsReview:!!c.review,registeredAt:now
       });
       companions++;
@@ -345,6 +366,7 @@ previewBtn.onclick=async()=>{
     document.querySelector('#previewPatients').textContent=a.patients;
     document.querySelector('#previewCompanions').textContent=a.companions;
     document.querySelector('#previewReview').textContent=a.review;
+    document.querySelector('#previewDuplicates').textContent=a.duplicates;
     previewBox.classList.remove('hidden');
     importStatus.className='status';
     importStatus.textContent='Preview ready. Review the counts, then confirm import.';
@@ -367,7 +389,7 @@ document.querySelector('#cancelImport').onclick=()=>{
 document.querySelector('#registrationSearch').addEventListener('input',render);
 render();
 </script>
-<script src="./registration-enhancements.js?v=33"></script>
-<script src="./feature-highlights.js?v=33"></script>
+<script src="./registration-enhancements.js?v=34"></script>
+<script src="./feature-highlights.js?v=34"></script>
 </body>
 </html>
