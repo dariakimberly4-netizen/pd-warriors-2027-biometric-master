@@ -1,4 +1,4 @@
-const CACHE='pdw2027-one-tap-checkin-v49';
+const CACHE='pdw2027-one-tap-stations-v50';
 const ASSETS=[
   './vendor/jsQR.js',
   './vendor/qrcode.min.js',
@@ -24,7 +24,7 @@ const ASSETS=[
   './feature-highlights.js',
   './registration-enhancements.js',
   './staff-names-share.html',
-  './station-scanner.js',
+  './station-scanner.js','./station-names-one-tap-v50.js',
   './checkin-names-roster.js','./checkin-names-roster-v48.js','./checkin-names-roster-v49.js',
   './manifest.webmanifest',
   './pdw-icon.svg'
