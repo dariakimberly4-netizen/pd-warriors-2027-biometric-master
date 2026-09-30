@@ -39,6 +39,10 @@
       No file selected. Accepted files: Excel (.xlsx / .xls) or CSV (.csv).
     </div>
 
+    <a class="btn primary" id="openBioBtn" href="./index.html?v=23" style="display:none">
+      OPEN BIOMETRIC SEARCH
+    </a>
+
     <p class="small">
       Importing merges records into this device's Registration database. Existing Check-In, Snack, Lunch, and Raffle claim status is preserved when the participant ID matches.
     </p>
@@ -60,6 +64,7 @@
   </div>
 </div>
 
+<script>sessionStorage.setItem('pdwStaffSession','1');</script>
 <script src="./app-core.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
@@ -284,7 +289,9 @@ importBtn.addEventListener('click',async()=>{
 
     const result=importRows(rows);
     importStatus.className='status';
-    importStatus.textContent='Imported / merged '+result.patients+' patients and '+result.companions+' companions.';
+    importStatus.textContent='Imported / merged '+result.patients+' patients and '+result.companions+' companions. Registration database is ready for biometric search.';
+    const openBioBtn=document.querySelector('#openBioBtn');
+    if(openBioBtn)openBioBtn.style.display='flex';
     render();
   }catch(e){
     importStatus.className='status bad';
