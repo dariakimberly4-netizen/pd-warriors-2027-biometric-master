@@ -48,7 +48,7 @@
     <label for="csvFile">Excel or CSV File</label>
     <input id="csvFile" type="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv">
 
-    <button class="blue" id="previewBtn" disabled>PREVIEW FILE</button>
+    <button class="blue" id="previewBtn" data-new-feature="import-preview" disabled>PREVIEW FILE</button>
     <div id="importStatus" class="status warn" style="margin-top:12px">
       No file selected. Accepted: Excel (.xlsx / .xls) or CSV (.csv).
     </div>
@@ -71,7 +71,7 @@
     <h2>Registration Database</h2>
 
     <label for="registrationSearch">Search Name or Last Name</label>
-    <input id="registrationSearch" type="search" autocomplete="off" placeholder="Example: Dela Cruz or Juan">
+    <input id="registrationSearch" data-new-feature="registration-search" type="search" autocomplete="off" placeholder="Example: Dela Cruz or Juan">
     <div id="searchCount" class="small" style="margin-top:8px"></div>
 
     <div class="tablewrap" style="margin-top:12px">
@@ -274,7 +274,7 @@ function render(){
     ? filtered.length+' matching record'+(filtered.length===1?'':'s')
     : d.people.length+' total record'+(d.people.length===1?'':'s');
 
-  document.querySelector('#rows').innerHTML=filtered.map(p=>
+  document.querySelector('#rows').innerHTML=filtered.map((p,i)=>
     '<tr>'+
       '<td><b>'+esc(p.id)+'</b></td>'+
       '<td>'+esc(p.name)+(p.needsReview?' <span title="Review needed">⚠</span>':'')+'</td>'+
@@ -285,8 +285,8 @@ function render(){
       '<td>'+(p.lunch?'✓':'—')+'</td>'+
       '<td>'+(p.type==='COMPANION'?'NOT ELIGIBLE':p.raffle?'✓':'—')+'</td>'+
       '<td><div class="actions">'+
-        '<button class="ghost editBtn" data-id="'+esc(p.id)+'">EDIT</button>'+
-        '<button class="primary qrBtn" data-id="'+esc(p.id)+'">QR PASS</button>'+
+        '<button class="ghost editBtn" '+(i===0?'data-new-feature="edit-attendee" ':'')+'data-id="'+esc(p.id)+'">EDIT</button>'+
+        '<button class="primary qrBtn" '+(i===0?'data-new-feature="qr-pass" ':'')+'data-id="'+esc(p.id)+'">QR PASS</button>'+
       '</div></td>'+
     '</tr>'
   ).join('')||'<tr><td colspan="9">'+(q?'No matching record found.':'No participants yet.')+'</td></tr>';
@@ -365,5 +365,6 @@ document.querySelector('#cancelImport').onclick=()=>{
 document.querySelector('#registrationSearch').addEventListener('input',render);
 render();
 </script>
+<script src="./feature-highlights.js?v=27"></script>
 </body>
 </html>
