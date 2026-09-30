@@ -1,4 +1,4 @@
-const CACHE='pdw2027-companion-qr-v73';
+const CACHE='pdw2027-master-companion-qr-v74';
 const ASSETS=[
   './vendor/jsQR.js',
   './vendor/qrcode.min.js',
