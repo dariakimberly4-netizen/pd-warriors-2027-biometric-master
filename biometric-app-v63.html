@@ -34,7 +34,7 @@ html,body{margin:0;width:100%;min-height:100%;background:#fffaf0;color:#10231b;f
 <body>
 <main class="page">
 <header class="hero"><h1>PD Warriors 2027</h1><p>Biometric Verification</p></header>
-<a class="back" href="./index.html?v=63">← Back to Search</a>
+<a class="back" href="./index.html?v=65">← Back to Search</a>
 <section class="card">
 <h2>Verify on Your Own Phone</h2>
 <div id="who" class="who">Loading participant…</div>
@@ -43,16 +43,16 @@ html,body{margin:0;width:100%;min-height:100%;background:#fffaf0;color:#10231b;f
 </section>
 <div class="footer">Step 2 of 3 • Biometric Verification</div>
 </main>
-<script src="./app-core.js?v=63"></script>
+<script src="./app-core.js?v=65"></script>
 <script>
 const p=PDW.active();
-if(!p){location.replace('./index.html?v=63')}
+if(!p){location.replace('./index.html?v=65')}
 else document.getElementById('who').textContent=p.name+' — '+(p.type==='PATIENT'?'PD Warrior':'Companion');
 
 document.getElementById('fallback').onclick=()=>{
  const p=PDW.active();
  PDW.updatePerson(p.id,x=>{x.biometric=false;x.verifyMethod='STAFF_ASSISTED';x.biometricVerifiedAt=null});
- location.href='./pass.html?v=63';
+ location.href='./pass-large-v65.html?v=65';
 };
 
 if('serviceWorker' in navigator){
