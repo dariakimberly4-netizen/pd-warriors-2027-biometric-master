@@ -1,4 +1,4 @@
-const CACHE='pdw2027-direct-role-import-v43';
+const CACHE='pdw2027-checkin-autosync-v44';
 const ASSETS=[
   './vendor/jsQR.js',
   './vendor/qrcode.min.js',
