@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f5132">
+<link rel="manifest" href="./manifest.webmanifest?v=68">
+<link rel="stylesheet" href="./app.css?v=68">
+<title>PD Warriors 2027 — Clear Demo Data</title>
+<style>
+  .dangerbox{
+    background:#fff0f1;
+    border:2px solid #efc8cc;
+    color:#8c2630;
+    border-radius:18px;
+    padding:16px;
+    font-weight:800;
+  }
+  .dangerbtn{
+    background:#a8323e;
+    color:#fff;
+  }
+</style>
+</head>
+<body>
+<script>
+(function(){
+  const ok=sessionStorage.getItem('pdwStaffSession')==='1';
+  const role=sessionStorage.getItem('pdwStaffRole')||'';
+  if(!ok||!(role==='ADMIN'||role==='REGISTRATION')){
+    location.replace('./login.html?v=68');
+  }
+})();
+</script>
+
+<div class="app">
+  <div class="hero">
+    <h1>PD Warriors 2027</h1>
+    <p>Clear Demo Data</p>
+  </div>
+
+  <a class="toplink" href="./admin.html?v=68">← Back to Staff Menu</a>
+
+  <div class="card">
+    <h2>Reset Demo / Test Records</h2>
+
+    <div class="dangerbox">
+      This removes the attendee and event records currently stored on THIS DEVICE / BROWSER.
+    </div>
+
+    <p class="small" style="margin-top:16px">
+      It clears Registration names, Check-In status, Snack and Lunch claims, Raffle Draw history,
+      local attendee activity, QR participant selection, and old locally shared-name data.
+      The PD Warriors system, pages, staff login, and offline app files remain intact.
+    </p>
+
+    <button class="dangerbtn" id="clearDemoBtn">CLEAR DEMO DATA</button>
+
+    <div id="result" class="status hidden" style="margin-top:14px" aria-live="polite"></div>
+  </div>
+
+  <div class="footer">Registration Committee • Demo Reset</div>
+</div>
+
+<script>
+function clearPdwLocalData(){
+  const keys=[];
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(k)keys.push(k);
+  }
+
+  keys.forEach(k=>{
+    if(
+      k.startsWith('pdw2027') ||
+      k==='pdwLastStaffRole' ||
+      k==='pdwLastStaffName'
+    ){
+      localStorage.removeItem(k);
+    }
+  });
+
+  sessionStorage.removeItem('pdwParticipantId');
+}
+
+function clearLegacyShareDb(){
+  return new Promise(resolve=>{
+    if(!('indexedDB' in window)){resolve();return}
+    const req=indexedDB.deleteDatabase('pdw2027-share-target');
+    req.onsuccess=()=>resolve();
+    req.onerror=()=>resolve();
+    req.onblocked=()=>resolve();
+  });
+}
+
+document.getElementById('clearDemoBtn').onclick=async()=>{
+  const yes=confirm(
+    'CLEAR ALL DEMO / TEST ATTENDEE DATA ON THIS DEVICE?\n\n'+
+    'Registration names and local event activity will be reset. The app itself will not be deleted.'
+  );
+  if(!yes)return;
+
+  clearPdwLocalData();
+  await clearLegacyShareDb();
+
+  const result=document.getElementById('result');
+  result.className='status';
+  result.innerHTML='<b>DEMO DATA CLEARED ✓</b><br>This device is ready for a fresh Registration list.';
+
+  const btn=document.getElementById('clearDemoBtn');
+  btn.disabled=true;
+  btn.textContent='DEMO DATA CLEARED';
+};
+</script>
+</body>
+</html>
