@@ -26,7 +26,8 @@ const ASSETS=[
   './staff-names-share.html',
   './station-scanner.js',
   './checkin-names-roster.js',
-  './manifest.webmanifest'
+  './manifest.webmanifest',
+  './pdw-icon.svg'
 ];
 
 const SHARE_DB='pdw2027-share-target';
