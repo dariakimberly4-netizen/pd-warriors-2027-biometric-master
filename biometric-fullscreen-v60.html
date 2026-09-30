@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>PD Warriors 2027 — Biometric Verification</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;min-height:100%;background:#fffaf0;font-family:Arial,Helvetica,sans-serif;color:#10231b;-webkit-text-size-adjust:none;text-size-adjust:none}
+.page{width:100%;min-height:100vh;padding:12px}
+.hero{width:100%;background:#0c5b3a;color:#fff;border-radius:24px;padding:34px 16px;text-align:center;box-shadow:0 8px 22px rgba(0,0,0,.10)}
+.hero h1{margin:0;font-size:clamp(34px,9vw,48px);line-height:1.05;font-weight:900}
+.hero p{margin:10px 0 0;font-size:clamp(21px,5.5vw,28px);font-weight:700}
+.back{display:flex;align-items:center;min-height:58px;color:#0c5b3a;text-decoration:none;font-size:21px;font-weight:900;padding:2px 4px}
+.card{width:100%;background:#fff;border:1px solid #e6ddcf;border-radius:24px;padding:28px 18px 30px;box-shadow:0 8px 22px rgba(0,0,0,.08)}
+.card h2{margin:0 0 22px;color:#0c5b3a;font-size:clamp(30px,7.5vw,40px);line-height:1.12;font-weight:900}
+.who{width:100%;background:#fff4e5;border:1px solid #edc98f;border-radius:18px;padding:20px 17px;font-size:clamp(20px,5.2vw,27px);line-height:1.35;font-weight:900}
+button{width:100%;min-height:88px;margin-top:16px;border-radius:18px;padding:18px 14px;font:900 clamp(20px,5.2vw,27px)/1.22 Arial,Helvetica,sans-serif}
+.primary{border:0;background:#285d91;color:#fff}
+.secondary{border:2px solid #ddd0b7;background:#f8f4e9;color:#0c5b3a}
+.privacy{margin:24px 2px 0;color:#5e6964;font-size:clamp(18px,4.7vw,23px);line-height:1.55;font-weight:600}
+.footer{text-align:center;color:#5e6964;font-size:clamp(17px,4.3vw,21px);font-weight:700;padding:24px 8px 10px}
+@media(min-width:720px){
+ .page{max-width:900px;margin:auto;padding:24px}
+ .hero{padding:40px 22px}
+ .card{padding:36px 30px}
+}
+</style>
+</head>
+<body>
+<main class="page">
+<header class="hero"><h1>PD Warriors 2027</h1><p>Biometric Verification</p></header>
+<a class="back" href="./index.html?v=60">← Back to Search</a>
+<section class="card">
+<h2>Verify on Your Own Phone</h2>
+<div id="who" class="who">Loading participant…</div>
+<button id="bio" class="primary">VERIFY &amp; GENERATE QR CODE</button>
+<button id="fallback" class="secondary">STAFF-ASSISTED VERIFICATION &amp; GENERATE QR</button>
+<p class="privacy">Your fingerprint or face stays on your own device. The event system does not store fingerprint images, face images, or biometric templates.</p>
+</section>
+<div class="footer">Step 2 of 3 • Verify &amp; Generate QR Code</div>
+</main>
+<script src="./app-core.js?v=60"></script>
+<script>
+const p=PDW.active();
+if(!p){location.replace('./index.html?v=60')}
+else document.getElementById('who').textContent=p.name+' — '+(p.type==='PATIENT'?'PD Warrior':'Companion');
+document.getElementById('bio').onclick=async()=>{
+ const p=PDW.active();
+ try{
+  if(!window.PublicKeyCredential||!navigator.credentials)throw new Error('unsupported');
+  const challenge=crypto.getRandomValues(new Uint8Array(32)),userId=crypto.getRandomValues(new Uint8Array(16));
+  await navigator.credentials.create({publicKey:{challenge,rp:{name:'PD Warriors 2027'},user:{id:userId,name:p.id,displayName:p.name},pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],authenticatorSelection:{userVerification:'required'},timeout:60000,attestation:'none'}});
+  PDW.updatePerson(p.id,x=>{x.biometric=true;x.verifyMethod='DEVICE_BIOMETRIC';x.biometricVerifiedAt=new Date().toISOString()});
+  location.href='./pass.html?v=60';
+ }catch(e){alert('Biometric was unavailable or cancelled. Please try again or use staff-assisted verification.')}
+};
+document.getElementById('fallback').onclick=()=>{
+ const p=PDW.active();
+ PDW.updatePerson(p.id,x=>{x.biometric=false;x.verifyMethod='STAFF_ASSISTED';x.biometricVerifiedAt=null});
+ location.href='./pass.html?v=60';
+};
+</script>
+</body>
+</html>
