@@ -1,4 +1,4 @@
-const CACHE='pdw2027-full-qr-v66';
+const CACHE='pdw2027-max-qr-v67';
 const ASSETS=[
   './vendor/jsQR.js',
   './vendor/qrcode.min.js',
@@ -7,7 +7,7 @@ const ASSETS=[
   './login.html',
   './index.html',
   './biometric.html','./biometric-app-v63.html','./biometric-mobile-v59.html','./biometric-large-v58.html','./biometric-v57.html',
-  './pass.html','./pass-full-v66.html','./pass-large-v65.html',
+  './pass.html','./pass-max-v67.html','./pass-full-v66.html','./pass-large-v65.html',
   './admin.html',
   './master.html',
   './checkin.html',
