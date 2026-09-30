@@ -1,4 +1,4 @@
-const CACHE='pdw2027-dual-admin-v69';
+const CACHE='pdw2027-companion-qr-v73';
 const ASSETS=[
   './vendor/jsQR.js',
   './vendor/qrcode.min.js',
@@ -7,7 +7,7 @@ const ASSETS=[
   './login.html',
   './index.html',
   './biometric.html','./biometric-app-v63.html','./biometric-mobile-v59.html','./biometric-large-v58.html','./biometric-v57.html',
-  './pass.html','./pass-max-v67.html','./pass-full-v66.html','./pass-large-v65.html',
+  './pass.html','./companion-pass-v73.html','./pass-max-v67.html','./pass-full-v66.html','./pass-large-v65.html',
   './admin.html','./clear-demo.html',
   './master.html',
   './checkin.html',
