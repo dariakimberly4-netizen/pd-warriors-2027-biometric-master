@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <link rel="manifest" href="./manifest.webmanifest">
-<link rel="stylesheet" href="./app.css?v=42">
+<link rel="stylesheet" href="./app.css?v=43">
 <title>PD Warriors 2027 — Names Quick Share</title>
 <style>
 .sharegrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -20,7 +20,7 @@
 <script>
 (function(){
   const ok=sessionStorage.getItem('pdwStaffSession')==='1';
-  if(!ok)location.replace('./login.html?v=42');
+  if(!ok)location.replace('./login.html?v=43');
 })();
 </script>
 
@@ -30,7 +30,7 @@
     <p>Offline Staff-to-Staff Transfer</p>
   </div>
 
-  <a class="toplink" href="./admin.html?v=42">← Staff Menu</a>
+  <a class="toplink" href="./admin.html?v=43">← Staff Menu</a>
 
   <div class="card">
     <div id="who" class="status"></div>
@@ -42,7 +42,7 @@
 
   <div class="card">
     <h2>Send Names to Another Role</h2>
-    <p class="small">Choose the receiving staff role. The transferred file itself contains only attendee names, one name per line.</p>
+    <p class="small">Choose the receiving staff role. Names already loaded in Registration will be imported directly into that role's roster on this device.</p>
 
     <div class="rolegrid" id="roleGrid">
       <button class="ghost roleBtn" data-role="REGISTRATION">REGISTRATION</button>
@@ -54,21 +54,20 @@
     </div>
 
     <div id="selectedRole" class="status warn" style="margin-top:12px">Select destination role.</div>
-    <div id="shareCapability" class="status warn" style="margin-top:12px"></div>
-    <button class="primary" id="sendNamesBtn" data-new-feature="names-quickshare-v41" disabled>SEND NAMES WITH QUICK SHARE</button>
-    <button class="ghost hidden" id="desktopNamesBtn">PREPARE NAMES FILE FOR QUICK SHARE</button>
+    <div id="shareCapability" class="status" style="margin-top:12px">
+      <b>DIRECT ROLE IMPORT</b><br>
+      No file will be downloaded. Names are copied directly from Registration into the selected role roster.
+    </div>
+    <button class="primary" id="sendNamesBtn" data-new-feature="names-direct-role-v43" disabled>SEND NAMES TO ROLE</button>
     <div id="sendStatus" class="status hidden" style="margin-top:12px"></div>
   </div>
 
   <div class="card">
-    <h2>Receive Names Automatically</h2>
+    <h2>Direct Role Import</h2>
     <div class="status">
-      <b>No Choose File inside PDW 2027.</b><br>
-      On the receiving Android device, open/share the incoming names file with the installed <b>PDW 2027</b> app. The destination role is read automatically and the names are imported directly.
+      <b>No download. No Choose File.</b><br>
+      When Registration sends names to a role on this device, they appear automatically in that role's roster.
     </div>
-    <p class="small" style="margin-top:10px">
-      Install/open PDW 2027 once on the receiving device so Android can show it as a share destination.
-    </p>
   </div>
 
   <div class="card">
@@ -81,13 +80,12 @@
   <div class="footer">PD Warriors 2027 • Names-Only Offline Transfer</div>
 </div>
 
-<script src="./app-core.js?v=42"></script>
+<script src="./app-core.js?v=43"></script>
 <script>
 const currentRole=sessionStorage.getItem('pdwStaffRole')||'';
 const currentName=sessionStorage.getItem('pdwStaffName')||'Staff';
 const ROSTER_PREFIX='pdw2027NamesRoster:';
 let destinationRole='';
-let shareInProgress=false;
 
 document.querySelector('#who').textContent=currentName+' • '+currentRole;
 
@@ -138,147 +136,60 @@ document.querySelectorAll('.roleBtn').forEach(btn=>{
     document.querySelectorAll('.roleBtn').forEach(b=>b.classList.toggle('primary',b===btn));
     document.querySelector('#selectedRole').className='status';
     document.querySelector('#selectedRole').textContent='Destination: '+destinationRole;
-    document.querySelector('#sendNamesBtn').disabled=false;
+    updateSendButton();
   };
 });
 
-function makeNamesFile(){
-  const names=sourceNames();
-  if(!names.length)throw new Error('There are no Registration names to send.');
-  return {
-    names,
-    file:new File([names.join('\n')],'PDW2027-NAMES-'+destinationRole+'.txt',{type:'text/plain'})
-  };
+function destinationRosterKey(role){
+  return ROSTER_PREFIX+role;
 }
 
-function nativeFileShareAvailable(){
-  try{
-    if(!navigator.share)return false;
-    const test=new File(['TEST'],'pdw-test.txt',{type:'text/plain'});
-    return !navigator.canShare || navigator.canShare({files:[test]});
-  }catch(e){
-    return false;
-  }
+function loadDestinationRoster(role){
+  try{return JSON.parse(localStorage.getItem(destinationRosterKey(role))||'[]')}
+  catch(e){return []}
 }
 
-function isWindowsDevice(){
-  const p=(navigator.userAgentData&&navigator.userAgentData.platform)||navigator.platform||navigator.userAgent||'';
-  return /win/i.test(String(p));
+function saveDestinationRoster(role,names){
+  localStorage.setItem(destinationRosterKey(role),JSON.stringify(cleanNames(names)));
+  localStorage.setItem(destinationRosterKey(role)+':updatedAt',new Date().toISOString());
+  localStorage.setItem(destinationRosterKey(role)+':lastReceivedFrom','REGISTRATION DIRECT');
 }
 
-function prepareNamesFileForNearbyShare(){
-  const status=document.querySelector('#sendStatus');
-  if(!destinationRole)throw new Error('Select a destination role first.');
-  const {names,file}=makeNamesFile();
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(file);
-  a.download=file.name;
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},0);
-  status.className='status';
-  status.textContent=names.length+' names prepared. Open Quick Share for Windows and send this names-only file.';
-}
-
-function updateShareCapability(){
-  const cap=document.querySelector('#shareCapability');
-  const main=document.querySelector('#sendNamesBtn');
-  const fallback=document.querySelector('#desktopNamesBtn');
-
-  fallback.classList.add('hidden');
-
-  if(isWindowsDevice()){
-    cap.className='status';
-    cap.textContent='Windows mode: this button prepares the names-only file for Quick Share for Windows. It will not open Chrome Share.';
-    main.textContent='PREPARE NAMES FOR QUICK SHARE';
-    return;
-  }
-
-  if(nativeFileShareAvailable()){
-    cap.className='status';
-    cap.textContent='Native device sharing is available. On Android, choose Quick Share from the Share menu.';
-    main.textContent='SEND NAMES WITH QUICK SHARE';
-  }else{
-    cap.className='status warn';
-    cap.textContent='Native sharing is unavailable in this browser. The button will prepare the names-only transfer file instead.';
-    main.textContent='PREPARE NAMES FOR NEARBY SHARE';
-  }
-}
-
-document.querySelector('#sendNamesBtn').onclick=async()=>{
+function updateSendButton(){
   const btn=document.querySelector('#sendNamesBtn');
+  if(!btn)return;
+  btn.disabled=!destinationRole;
+  btn.textContent=destinationRole?'SEND NAMES TO '+destinationRole:'SEND NAMES TO ROLE';
+}
+
+document.querySelector('#sendNamesBtn').onclick=()=>{
   const status=document.querySelector('#sendStatus');
-
-  if(shareInProgress){
-    status.className='status warn';
-    status.textContent='A Share window is already open. Finish or close it before sending again.';
-    return;
-  }
-
   try{
     if(!destinationRole)throw new Error('Select a destination role first.');
 
-    // Windows and browsers without reliable file sharing never call navigator.share.
-    if(isWindowsDevice() || !nativeFileShareAvailable()){
-      prepareNamesFileForNearbyShare();
-      return;
-    }
+    const names=sourceNames();
+    if(!names.length)throw new Error('There are no Registration names to send.');
 
-    const {names,file}=makeNamesFile();
-    shareInProgress=true;
-    btn.disabled=true;
-    btn.dataset.originalText=btn.textContent;
-    btn.textContent='SHARING…';
-    status.className='status warn';
-    status.textContent='Share window opened. Complete or cancel it before sending again.';
+    const existing=loadDestinationRoster(destinationRole);
+    const merged=cleanNames([...existing,...names]);
+    const added=merged.length-existing.length;
 
-    await navigator.share({
-      title:'PD Warriors 2027 Names',
-      files:[file]
-    });
+    saveDestinationRoster(destinationRole,merged);
 
     status.className='status';
-    status.textContent=names.length+' names handed to the device Share menu.';
+    status.textContent=
+      names.length+' names sent directly to '+destinationRole+
+      ' • '+added+' new • '+merged.length+' total in that role roster. No file downloaded.';
+
+    if(destinationRole===currentRole)renderRoster();
+    if(navigator.vibrate)navigator.vibrate(80);
   }catch(err){
-    const msg=String((err&&err.message)||'');
-    const name=String((err&&err.name)||'');
-
-    if(name==='AbortError'){
-      status.className='status warn';
-      status.textContent='Sharing cancelled.';
-    }else if(name==='InvalidStateError'||/earlier share|already.*share|not yet completed/i.test(msg)){
-      status.className='status warn';
-      status.textContent='A previous Share window is still open. Close it, or use the names-file method.';
-      try{prepareNamesFileForNearbyShare()}catch(e){}
-    }else if(/permission|notallowed/i.test(msg+name)){
-      status.className='status warn';
-      status.textContent='Native sharing was blocked. Preparing the names-only file instead.';
-      try{prepareNamesFileForNearbyShare()}catch(e){}
-    }else{
-      status.className='status bad';
-      status.textContent=msg||'Unable to prepare or share names.';
-    }
-  }finally{
-    shareInProgress=false;
-    setTimeout(()=>{
-      btn.disabled=!destinationRole;
-      if(isWindowsDevice())btn.textContent='PREPARE NAMES FOR QUICK SHARE';
-      else if(nativeFileShareAvailable())btn.textContent='SEND NAMES WITH QUICK SHARE';
-      else btn.textContent='PREPARE NAMES FOR NEARBY SHARE';
-    },400);
-  }
-};
-
-document.querySelector('#desktopNamesBtn').onclick=()=>{
-  try{prepareNamesFileForNearbyShare()}
-  catch(err){
-    const status=document.querySelector('#sendStatus');
     status.className='status bad';
-    status.textContent=(err&&err.message)||'Unable to prepare names file.';
+    status.textContent=(err&&err.message)||'Unable to send names to role.';
   }
 };
 
-updateShareCapability();
+updateSendButton();
 
 document.querySelector('#clearRoster').onclick=()=>{
   if(!confirm('Clear all received names for '+currentRole+' on this device?'))return;
@@ -289,6 +200,6 @@ document.querySelector('#clearRoster').onclick=()=>{
 
 renderRoster();
 </script>
-<script src="./feature-highlights.js?v=42"></script>
+<script src="./feature-highlights.js?v=43"></script>
 </body>
 </html>
