@@ -5,18 +5,33 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <link rel="stylesheet" href="./app.css">
 <title>PD Warriors 2027 — Registration</title>
+<style>
+.actions{display:flex;gap:7px;flex-wrap:wrap}.actions button{width:auto;min-height:42px;margin:0;padding:8px 11px;font-size:14px;border-radius:11px}
+.editgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.editgrid .full{grid-column:1/-1}
+.previewgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.previewgrid div{background:#f6f2e8;border-radius:14px;padding:13px;text-align:center}.previewgrid b{display:block;font-size:28px;color:#0f5132}
+@media(max-width:650px){.editgrid,.previewgrid{grid-template-columns:1fr}.editgrid .full{grid-column:auto}}
+</style>
 </head>
 <body>
+<script>
+(function(){
+  const ok=sessionStorage.getItem('pdwStaffSession')==='1';
+  const role=sessionStorage.getItem('pdwStaffRole')||'';
+  if(!ok || !(role==='ADMIN'||role==='REGISTRATION')) location.replace('./login.html?v=26');
+})();
+</script>
+
 <div class="app">
   <div class="hero">
     <h1>Registration</h1>
     <p>Master Database / Source of Truth</p>
   </div>
 
-  <a class="toplink" href="./admin.html">← Admin Menu</a>
+  <a class="toplink" href="./admin.html?v=26">← Staff Menu</a>
 
   <div class="card">
-    <div class="kpi">
+    <div id="staffWho" class="status"></div>
+    <div class="kpi" style="margin-top:12px">
       <div><b id="reg">0</b>Registered</div>
       <div><b id="arr">0</b>Arrived</div>
       <div><b id="pat">0</b>Patients</div>
@@ -29,23 +44,27 @@
   </div>
 
   <div class="card">
-    <h2>Google Sheet / Upload File</h2>
-<label for="csvFile">Upload Registration Excel or CSV File</label>
+    <h2>Upload Registration File</h2>
+    <label for="csvFile">Excel or CSV File</label>
     <input id="csvFile" type="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv">
 
-    <button class="blue" id="importBtn" disabled>IMPORT / MERGE INTO REGISTRATION</button>
-
+    <button class="blue" id="previewBtn" disabled>PREVIEW FILE</button>
     <div id="importStatus" class="status warn" style="margin-top:12px">
-      No file selected. Accepted files: Excel (.xlsx / .xls) or CSV (.csv).
+      No file selected. Accepted: Excel (.xlsx / .xls) or CSV (.csv).
     </div>
 
-    <a class="btn primary" id="openBioBtn" href="./index.html?v=24" style="display:none">
-      OPEN BIOMETRIC SEARCH
-    </a>
+    <div id="previewBox" class="hidden" style="margin-top:14px">
+      <div class="previewgrid">
+        <div><b id="previewPatients">0</b>Patients</div>
+        <div><b id="previewCompanions">0</b>Companions</div>
+        <div><b id="previewReview">0</b>Need Review</div>
+      </div>
+      <button class="primary" id="confirmImport">CONFIRM IMPORT / MERGE</button>
+      <button class="ghost" id="cancelImport">CANCEL PREVIEW</button>
+    </div>
 
-    <p class="small">
-      Importing merges records into this device's Registration database. Existing Check-In, Snack, Lunch, and Raffle claim status is preserved when the participant ID matches.
-    </p>
+    <a class="btn primary" id="openBioBtn" href="./index.html?v=26" style="display:none">OPEN BIOMETRIC SEARCH</a>
+    <p class="small">Preview first, then confirm. Existing arrival and claim status is preserved when IDs match.</p>
   </div>
 
   <div class="card">
@@ -60,112 +79,78 @@
         <thead>
           <tr>
             <th>ID</th><th>Name</th><th>Type</th><th>Bio</th>
-            <th>Arrived</th><th>Snack</th><th>Lunch</th><th>Raffle</th>
+            <th>Arrived</th><th>Snack</th><th>Lunch</th><th>Raffle</th><th>Actions</th>
           </tr>
         </thead>
         <tbody id="rows"></tbody>
       </table>
     </div>
   </div>
+
+  <div class="card hidden" id="editCard">
+    <h2>Edit Attendee</h2>
+    <input id="editId" type="hidden">
+    <div class="editgrid">
+      <div class="full"><label for="editName">Full Name</label><input id="editName"></div>
+      <div><label for="editNickname">Nickname</label><input id="editNickname"></div>
+      <div><label for="editType">Type</label><select id="editType"><option>PATIENT</option><option>COMPANION</option></select></div>
+      <div><label for="editLocation">City / Area</label><input id="editLocation"></div>
+      <div><label for="editCompanionOf">Linked Patient</label><input id="editCompanionOf"></div>
+    </div>
+    <button class="primary" id="saveEdit">SAVE CHANGES</button>
+    <button class="ghost" id="cancelEdit">CANCEL</button>
+    <div id="editMsg" class="status hidden" style="margin-top:12px"></div>
+  </div>
 </div>
 
-<script>sessionStorage.setItem('pdwStaffSession','1');</script>
-<script src="./app-core.js"></script>
+<script src="./app-core.js?v=26"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 const csvFile=document.querySelector('#csvFile');
-const importBtn=document.querySelector('#importBtn');
+const previewBtn=document.querySelector('#previewBtn');
 const importStatus=document.querySelector('#importStatus');
+const previewBox=document.querySelector('#previewBox');
 let selectedFile=null;
+let pendingRows=null;
+
+document.querySelector('#staffWho').textContent=(sessionStorage.getItem('pdwStaffName')||'Staff')+' • '+(sessionStorage.getItem('pdwStaffRole')||'');
 
 function esc(v){
   return String(v==null?'':v)
     .replace(/&/g,'&amp;').replace(/</g,'&lt;')
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-
 function normalizeSearch(v){
-  return String(v||'')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g,'')
-    .replace(/\s+/g,' ')
-    .trim();
+  return String(v||'').toLowerCase().normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
 }
-
-function render(){
-  const d=PDW.db();
-  const openBioBtn=document.querySelector('#openBioBtn');
-  if(openBioBtn)openBioBtn.style.display=d.people.some(x=>x.type==='PATIENT')?'flex':'none';
-
-  const pat=d.people.filter(x=>x.type==='PATIENT').length;
-  document.querySelector('#reg').textContent=d.people.length;
-  document.querySelector('#arr').textContent=d.people.filter(x=>x.arrived).length;
-  document.querySelector('#pat').textContent=pat;
-  document.querySelector('#com').textContent=d.people.length-pat;
-
-  const searchEl=document.querySelector('#registrationSearch');
-  const q=normalizeSearch(searchEl?searchEl.value:'');
-  const filtered=!q ? d.people : d.people.filter(p=>{
-    const fullName=normalizeSearch(p.name);
-    const nickname=normalizeSearch(p.nickname);
-    const companionOf=normalizeSearch(p.companionOf);
-    return fullName.includes(q) || nickname.includes(q) || companionOf.includes(q);
-  });
-
-  const countEl=document.querySelector('#searchCount');
-  if(countEl){
-    countEl.textContent=q
-      ? filtered.length+' matching record'+(filtered.length===1?'':'s')
-      : d.people.length+' total record'+(d.people.length===1?'':'s');
-  }
-
-  document.querySelector('#rows').innerHTML=filtered.map(p=>
-    '<tr>'+
-    '<td><b>'+esc(p.id)+'</b></td>'+
-    '<td>'+esc(p.name)+'</td>'+
-    '<td>'+esc(p.type)+'</td>'+
-    '<td>'+(p.biometric?'✓':'—')+'</td>'+
-    '<td>'+(p.arrived?'✓':'—')+'</td>'+
-    '<td>'+(p.snack?'✓':'—')+'</td>'+
-    '<td>'+(p.lunch?'✓':'—')+'</td>'+
-    '<td>'+(p.type==='COMPANION'?'NOT ELIGIBLE':p.raffle?'✓':'—')+'</td>'+
-    '</tr>'
-  ).join('') || '<tr><td colspan="8">'+(q?'No matching name or last name found.':'No participants yet.')+'</td></tr>';
-}
-
 function parseCSV(text){
-  const rows=[]; let row=[],val='',quoted=false;
+  const rows=[];let row=[],val='',quoted=false;
   for(let i=0;i<text.length;i++){
     const ch=text[i],next=text[i+1];
-    if(ch==='"' && quoted && next==='"'){val+='"';i++;continue}
+    if(ch==='"'&&quoted&&next==='"'){val+='"';i++;continue}
     if(ch==='"'){quoted=!quoted;continue}
-    if(ch===',' && !quoted){row.push(val);val='';continue}
-    if((ch==='\n'||ch==='\r') && !quoted){
+    if(ch===','&&!quoted){row.push(val);val='';continue}
+    if((ch==='\n'||ch==='\r')&&!quoted){
       if(ch==='\r'&&next==='\n')i++;
-      row.push(val);
-      if(row.some(x=>String(x).trim()!==''))rows.push(row);
+      row.push(val);if(row.some(x=>String(x).trim()!==''))rows.push(row);
       row=[];val='';continue;
     }
     val+=ch;
   }
-  row.push(val);
-  if(row.some(x=>String(x).trim()!==''))rows.push(row);
+  row.push(val);if(row.some(x=>String(x).trim()!==''))rows.push(row);
   return rows;
 }
-
 function headerIndex(headers,contains){
   const h=headers.map(x=>String(x||'').trim().toLowerCase());
   return h.findIndex(x=>contains.every(y=>x.includes(y)));
 }
-
 function stableCompanionId(sourceKey,patientName,raw,index){
   const s=String(sourceKey||'')+'|'+String(patientName||'')+'|'+String(raw||'')+'|'+String(index||0);
   let h=2166136261;
   for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}
   return 'COM-'+String(Math.abs(h>>>0)%1000000).padStart(6,'0');
 }
-
 function parseCompanions(raw){
   const text=String(raw||'').trim();
   if(!text||/^(none|na|n\/a|wala|0)$/i.test(text))return [];
@@ -173,172 +158,211 @@ function parseCompanions(raw){
     .filter(x=>!/^(none|na|n\/a|wala|0)$/i.test(x))
     .map((line,index)=>{
       const parts=line.split(/\s*-\s*/).map(x=>x.trim()).filter(Boolean);
-      let name=line,nickname='',age='';
+      let name=line,nickname='',age='',review=false;
       if(parts.length>=3){
-        name=parts[0];
-        nickname=parts.slice(1,-1).join(' - ');
-        const m=parts[parts.length-1].match(/\d{1,3}/);
-        age=m?m[0]:'';
+        name=parts[0];nickname=parts.slice(1,-1).join(' - ');
+        const m=parts[parts.length-1].match(/\d{1,3}/);age=m?m[0]:'';
       }else if(parts.length===2){
-        name=parts[0];
-        const m=parts[1].match(/\b(\d{1,3})\b/);
-        if(m){age=m[1];nickname=parts[1].replace(m[0],'').trim()}
-        else nickname=parts[1];
+        name=parts[0];const m=parts[1].match(/\b(\d{1,3})\b/);
+        if(m){age=m[1];nickname=parts[1].replace(m[0],'').trim()}else{nickname=parts[1];review=true}
       }else{
         const m=line.match(/^(.*?)(?:\s*[, ]\s*)(\d{1,3})(?:\s*(?:yrs?|years?|yo|old))?\.?$/i);
-        if(m){name=m[1].trim();age=m[2]}
+        if(m){name=m[1].trim();age=m[2]}else review=true;
       }
-      return {name,nickname,age,raw:line,index:index+1};
+      if(!age)review=true;
+      return {name,nickname,age,raw:line,index:index+1,review};
     });
 }
-
+function indexes(rows){
+  if(rows.length<2)throw new Error('No registration rows found.');
+  const h=rows[0];
+  const x={
+    timestamp:headerIndex(h,['timestamp']),
+    name:headerIndex(h,['patient','full','name']),
+    nickname:headerIndex(h,['nickname']),
+    mobile:headerIndex(h,['mobile']),
+    city:headerIndex(h,['city']),
+    companions:headerIndex(h,['name/s','companion'])
+  };
+  if(x.name<0)throw new Error("PATIENT'S FULL NAME column was not found.");
+  return x;
+}
+function analyzeRows(rows){
+  const x=indexes(rows);let patients=0,companions=0,review=0;
+  for(let r=1;r<rows.length;r++){
+    const row=rows[r],name=String(row[x.name]||'').trim();
+    if(!name)continue;
+    patients++;
+    const list=parseCompanions(x.companions>=0?String(row[x.companions]||''):'');
+    companions+=list.length;review+=list.filter(c=>c.review).length;
+  }
+  return {patients,companions,review};
+}
 function mergePerson(d,incoming){
   const old=d.people.find(x=>x.id===incoming.id);
   if(old){
     const keep={
-      biometric:!!old.biometric,
-      verifyMethod:old.verifyMethod||null,
-      arrived:!!old.arrived,
-      snack:!!old.snack,
-      lunch:!!old.lunch,
-      raffle:!!old.raffle,
+      biometric:!!old.biometric,verifyMethod:old.verifyMethod||null,
+      arrived:!!old.arrived,snack:!!old.snack,lunch:!!old.lunch,raffle:!!old.raffle,
+      arrivalAt:old.arrivalAt||null,snackAt:old.snackAt||null,lunchAt:old.lunchAt||null,raffleAt:old.raffleAt||null,
       registeredAt:old.registeredAt||incoming.registeredAt
     };
     Object.assign(old,incoming,keep);
-  }else{
-    d.people.push(incoming);
-  }
+  }else d.people.push(incoming);
 }
-
 function importRows(rows){
-  if(rows.length<2)throw new Error('No registration rows found.');
-
-  const headers=rows[0];
-  const idxTimestamp=headerIndex(headers,['timestamp']);
-  const idxName=headerIndex(headers,['patient','full','name']);
-  const idxNickname=headerIndex(headers,['nickname']);
-  const idxMobile=headerIndex(headers,['mobile']);
-  const idxCity=headerIndex(headers,['city']);
-  const idxCompanions=headerIndex(headers,['name/s','companion']);
-
-  if(idxName<0)throw new Error("PATIENT'S FULL NAME column was not found.");
-
-  const d=PDW.db();
-  let patients=0,companions=0;
-
+  const x=indexes(rows),d=PDW.db();let patients=0,companions=0;
   for(let r=1;r<rows.length;r++){
-    const row=rows[r];
-    const name=String(row[idxName]||'').trim();
+    const row=rows[r],name=String(row[x.name]||'').trim();
     if(!name)continue;
-
-    const sourceKey=idxTimestamp>=0?String(row[idxTimestamp]||'').trim():('ROW-'+(r+1));
-    const id=PDW.masterId(sourceKey,name);
-    const now=new Date().toISOString();
-
+    const sourceKey=x.timestamp>=0?String(row[x.timestamp]||'').trim():('ROW-'+(r+1));
+    const id=PDW.masterId(sourceKey,name),now=new Date().toISOString();
     mergePerson(d,{
-      id,
-      type:'PATIENT',
-      name,
-      nickname:idxNickname>=0?String(row[idxNickname]||'').trim():'',
-      mobile:idxMobile>=0?String(row[idxMobile]||'').trim():'',
-      location:idxCity>=0?String(row[idxCity]||'').trim():'',
-      sourceKey,
-      fromMaster:true,
-      biometric:false,
-      verifyMethod:null,
-      arrived:false,
-      snack:false,
-      lunch:false,
-      raffle:false,
-      eventPassCreated:false,
-      registeredAt:now
+      id,type:'PATIENT',name,
+      nickname:x.nickname>=0?String(row[x.nickname]||'').trim():'',
+      mobile:x.mobile>=0?String(row[x.mobile]||'').trim():'',
+      location:x.city>=0?String(row[x.city]||'').trim():'',
+      sourceKey,fromMaster:true,biometric:false,verifyMethod:null,
+      arrived:false,snack:false,lunch:false,raffle:false,eventPassCreated:false,registeredAt:now
     });
     patients++;
-
-    const raw=idxCompanions>=0?String(row[idxCompanions]||''):'';
-    const list=parseCompanions(raw);
+    const list=parseCompanions(x.companions>=0?String(row[x.companions]||''):'');
     list.forEach(c=>{
       const cid=stableCompanionId(sourceKey,name,c.raw,c.index);
       mergePerson(d,{
-        id:cid,
-        type:'COMPANION',
-        name:c.name,
-        nickname:c.nickname,
-        age:c.age,
-        linkedPatientId:id,
-        companionOf:name,
-        location:idxCity>=0?String(row[idxCity]||'').trim():'',
-        sourceKey,
-        fromMaster:true,
-        biometric:false,
-        verifyMethod:null,
-        arrived:false,
-        snack:false,
-        lunch:false,
-        raffle:false,
-        eventPassCreated:false,
-        registeredAt:now
+        id:cid,type:'COMPANION',name:c.name,nickname:c.nickname,age:c.age,
+        linkedPatientId:id,companionOf:name,location:x.city>=0?String(row[x.city]||'').trim():'',
+        sourceKey,fromMaster:true,biometric:false,verifyMethod:null,
+        arrived:false,snack:false,lunch:false,raffle:false,eventPassCreated:false,
+        needsReview:!!c.review,registeredAt:now
       });
       companions++;
     });
   }
-
   PDW.save(d);
   localStorage.setItem('pdw2027RegistrationUpdatedAt',new Date().toISOString());
-  return {patients,companions,total:patients+companions};
+  return {patients,companions};
 }
-
-csvFile.addEventListener('change',()=>{
-  selectedFile=csvFile.files&&csvFile.files[0]?csvFile.files[0]:null;
-  importBtn.disabled=!selectedFile;
-  importStatus.className='status warn';
-  importStatus.textContent=selectedFile
-    ? 'Selected: '+selectedFile.name+' — tap IMPORT / MERGE INTO REGISTRATION.'
-    : 'No file selected.';
-});
-
-importBtn.addEventListener('click',async()=>{
-  if(!selectedFile)return;
-  importBtn.disabled=true;
-  importStatus.className='status warn';
-  importStatus.textContent='Importing registration file…';
-  try{
-    let rows;
-    const fileName=(selectedFile.name||'').toLowerCase();
-
-    if(fileName.endsWith('.xlsx') || fileName.endsWith('.xls')){
-      if(!window.XLSX)throw new Error('Excel reader is not available. Connect to the internet once, reload this page, and try again.');
-      const buffer=await selectedFile.arrayBuffer();
-      const workbook=XLSX.read(buffer,{type:'array',cellDates:true});
-      const firstSheet=workbook.SheetNames[0];
-      if(!firstSheet)throw new Error('No worksheet was found in the Excel file.');
-      rows=XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet],{
-        header:1,
-        defval:'',
-        raw:false
-      });
-    }else{
-      rows=parseCSV(await selectedFile.text());
-    }
-
-    const result=importRows(rows);
-    importStatus.className='status';
-    importStatus.textContent='Imported / merged '+result.patients+' patients and '+result.companions+' companions. Registration database is ready for biometric search.';
-    const openBioBtn=document.querySelector('#openBioBtn');
-    if(openBioBtn)openBioBtn.style.display='flex';
-    render();
-  }catch(e){
-    importStatus.className='status bad';
-    importStatus.textContent='Import failed: '+(e&&e.message?e.message:'Please check the CSV file.');
-  }finally{
-    importBtn.disabled=false;
+async function readSelectedFile(){
+  const name=(selectedFile.name||'').toLowerCase();
+  if(name.endsWith('.xlsx')||name.endsWith('.xls')){
+    if(!window.XLSX)throw new Error('Excel reader is not available. Connect once and reload.');
+    const buffer=await selectedFile.arrayBuffer();
+    const wb=XLSX.read(buffer,{type:'array',cellDates:true});
+    const first=wb.SheetNames[0];if(!first)throw new Error('No worksheet found.');
+    return XLSX.utils.sheet_to_json(wb.Sheets[first],{header:1,defval:'',raw:false});
   }
-});
-
-const registrationSearch=document.querySelector('#registrationSearch');
-if(registrationSearch){
-  registrationSearch.addEventListener('input',render);
+  return parseCSV(await selectedFile.text());
 }
+function render(){
+  const d=PDW.db();
+  document.querySelector('#openBioBtn').style.display=d.people.some(x=>x.type==='PATIENT')?'flex':'none';
+  const pat=d.people.filter(x=>x.type==='PATIENT').length;
+  document.querySelector('#reg').textContent=d.people.length;
+  document.querySelector('#arr').textContent=d.people.filter(x=>x.arrived).length;
+  document.querySelector('#pat').textContent=pat;
+  document.querySelector('#com').textContent=d.people.length-pat;
+
+  const q=normalizeSearch(document.querySelector('#registrationSearch').value);
+  const filtered=!q?d.people:d.people.filter(p=>
+    normalizeSearch(p.name).includes(q)||
+    normalizeSearch(p.nickname).includes(q)||
+    normalizeSearch(p.companionOf).includes(q)||
+    normalizeSearch(p.id).includes(q)
+  );
+  document.querySelector('#searchCount').textContent=q
+    ? filtered.length+' matching record'+(filtered.length===1?'':'s')
+    : d.people.length+' total record'+(d.people.length===1?'':'s');
+
+  document.querySelector('#rows').innerHTML=filtered.map(p=>
+    '<tr>'+
+      '<td><b>'+esc(p.id)+'</b></td>'+
+      '<td>'+esc(p.name)+(p.needsReview?' <span title="Review needed">⚠</span>':'')+'</td>'+
+      '<td>'+esc(p.type)+'</td>'+
+      '<td>'+(p.biometric?'✓':'—')+'</td>'+
+      '<td>'+(p.arrived?'✓':'—')+'</td>'+
+      '<td>'+(p.snack?'✓':'—')+'</td>'+
+      '<td>'+(p.lunch?'✓':'—')+'</td>'+
+      '<td>'+(p.type==='COMPANION'?'NOT ELIGIBLE':p.raffle?'✓':'—')+'</td>'+
+      '<td><div class="actions">'+
+        '<button class="ghost editBtn" data-id="'+esc(p.id)+'">EDIT</button>'+
+        '<button class="primary qrBtn" data-id="'+esc(p.id)+'">QR PASS</button>'+
+      '</div></td>'+
+    '</tr>'
+  ).join('')||'<tr><td colspan="9">'+(q?'No matching record found.':'No participants yet.')+'</td></tr>';
+
+  document.querySelectorAll('.editBtn').forEach(b=>b.onclick=()=>openEdit(b.dataset.id));
+  document.querySelectorAll('.qrBtn').forEach(b=>b.onclick=()=>{
+    PDW.setActive(b.dataset.id);
+    location.href='./pass.html?staff=1&v=26';
+  });
+}
+function openEdit(id){
+  const p=PDW.person(id);if(!p)return;
+  document.querySelector('#editId').value=p.id;
+  document.querySelector('#editName').value=p.name||'';
+  document.querySelector('#editNickname').value=p.nickname||'';
+  document.querySelector('#editType').value=p.type||'PATIENT';
+  document.querySelector('#editLocation').value=p.location||'';
+  document.querySelector('#editCompanionOf').value=p.companionOf||'';
+  document.querySelector('#editCard').classList.remove('hidden');
+  document.querySelector('#editMsg').classList.add('hidden');
+  document.querySelector('#editCard').scrollIntoView({behavior:'smooth',block:'start'});
+}
+document.querySelector('#saveEdit').onclick=()=>{
+  const id=document.querySelector('#editId').value;
+  const name=document.querySelector('#editName').value.trim();
+  if(!name){alert('Full Name is required.');return}
+  PDW.updatePerson(id,p=>{
+    p.name=name;
+    p.nickname=document.querySelector('#editNickname').value.trim();
+    p.type=document.querySelector('#editType').value;
+    p.location=document.querySelector('#editLocation').value.trim();
+    p.companionOf=document.querySelector('#editCompanionOf').value.trim();
+    p.needsReview=false;
+    if(p.type==='COMPANION')p.raffle=false;
+    p.updatedAt=new Date().toISOString();
+  });
+  const msg=document.querySelector('#editMsg');msg.className='status';msg.textContent='Attendee record updated.';
+  render();
+};
+document.querySelector('#cancelEdit').onclick=()=>document.querySelector('#editCard').classList.add('hidden');
+
+csvFile.onchange=()=>{
+  selectedFile=csvFile.files&&csvFile.files[0]?csvFile.files[0]:null;
+  previewBtn.disabled=!selectedFile;pendingRows=null;previewBox.classList.add('hidden');
+  importStatus.className='status warn';
+  importStatus.textContent=selectedFile?'Selected: '+selectedFile.name+' — tap PREVIEW FILE.':'No file selected.';
+};
+previewBtn.onclick=async()=>{
+  if(!selectedFile)return;
+  previewBtn.disabled=true;importStatus.className='status warn';importStatus.textContent='Reading file…';
+  try{
+    pendingRows=await readSelectedFile();
+    const a=analyzeRows(pendingRows);
+    document.querySelector('#previewPatients').textContent=a.patients;
+    document.querySelector('#previewCompanions').textContent=a.companions;
+    document.querySelector('#previewReview').textContent=a.review;
+    previewBox.classList.remove('hidden');
+    importStatus.className='status';
+    importStatus.textContent='Preview ready. Review the counts, then confirm import.';
+  }catch(e){
+    pendingRows=null;previewBox.classList.add('hidden');importStatus.className='status bad';
+    importStatus.textContent='Preview failed: '+(e.message||'Please check the file.');
+  }finally{previewBtn.disabled=false}
+};
+document.querySelector('#confirmImport').onclick=()=>{
+  if(!pendingRows)return;
+  const r=importRows(pendingRows);
+  importStatus.className='status';
+  importStatus.textContent='Imported / merged '+r.patients+' patients and '+r.companions+' companions.';
+  pendingRows=null;previewBox.classList.add('hidden');render();
+};
+document.querySelector('#cancelImport').onclick=()=>{
+  pendingRows=null;previewBox.classList.add('hidden');
+  importStatus.className='status warn';importStatus.textContent='Preview cancelled. No records were changed.';
+};
+document.querySelector('#registrationSearch').addEventListener('input',render);
 render();
 </script>
 </body>
