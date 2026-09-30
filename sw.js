@@ -1,4 +1,4 @@
-const CACHE='pdw2027-names-quickshare-v36';
+const CACHE='pdw2027-names-only-share-v37';
 const ASSETS=['./vendor/jsQR.js','./vendor/qrcode.min.js','./vendor/xlsx.full.min.js','./','./login.html','./index.html','./biometric.html','./pass.html','./admin.html','./master.html','./checkin.html','./snack.html','./lunch.html','./raffle.html','./reports.html','./privacy.html','./registration.html','./demo.html','./app.css','./app-core.js','./feature-highlights.js','./registration-enhancements.js','./staff-names-share.html','./station-scanner.js','./manifest.webmanifest'];
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)))});
 self.addEventListener('activate',e=>e.waitUntil(Promise.all([self.clients.claim(),caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))])));
