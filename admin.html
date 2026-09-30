@@ -1,19 +1,19 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="manifest" href="./manifest.webmanifest">
-<link rel="stylesheet" href="./app.css?v=42"><title>PD Warriors 2027 — Staff</title></head>
+<link rel="stylesheet" href="./app.css?v=43"><title>PD Warriors 2027 — Staff</title></head>
 <body><div class="app">
 <div class="hero"><h1>PD Warriors 2027</h1><p>Staff Menu</p></div>
 <div class="card">
   <div class="status" id="who">Checking staff session…</div>
   <h2 style="margin-top:16px">Staff Modules</h2>
   <div class="hub" id="menu">
-    <a class="btn primary" data-role="REGISTRATION,ADMIN" href="./master.html?v=42">REGISTRATION</a>
-    <a class="btn blue" data-role="CHECKIN,ADMIN" href="./checkin.html?v=42">CHECK-IN</a>
+    <a class="btn primary" data-role="REGISTRATION,ADMIN" href="./master.html?v=43">REGISTRATION</a>
+    <a class="btn blue" data-role="CHECKIN,ADMIN" href="./checkin.html?v=43">CHECK-IN</a>
     <a class="btn blue" data-role="SNACK,ADMIN" href="./snack.html?v=26">SNACK</a>
     <a class="btn blue" data-role="LUNCH,ADMIN" href="./lunch.html?v=26">LUNCH</a>
     <a class="btn blue" data-role="RAFFLE,ADMIN" href="./raffle.html?v=26">RAFFLE</a>
     <a class="btn gold" data-new-feature="reports-upgrade" data-role="REGISTRATION,ADMIN" href="./reports.html?v=34">REPORTS</a>
     <a class="btn primary" data-new-feature="biometric-file-tools" data-role="REGISTRATION,ADMIN" href="./index.html?v=26">BIOMETRIC / ADD FILE</a>
-    <a class="btn gold" data-new-feature="names-quickshare-menu-v36" data-role="REGISTRATION,CHECKIN,SNACK,LUNCH,RAFFLE,ADMIN" href="./staff-names-share.html?v=42">NAMES QUICK SHARE</a>
+    <a class="btn gold" data-new-feature="names-quickshare-menu-v36" data-role="REGISTRATION,CHECKIN,SNACK,LUNCH,RAFFLE,ADMIN" href="./staff-names-share.html?v=43">NAMES QUICK SHARE</a>
   </div>
   <button class="ghost" id="logout">LOG OUT</button>
 </div>
@@ -21,7 +21,7 @@
 </div>
 <script>
 const ok=sessionStorage.getItem('pdwStaffSession')==='1';
-if(!ok){location.replace('./login.html?v=42')}
+if(!ok){location.replace('./login.html?v=43')}
 const role=sessionStorage.getItem('pdwStaffRole')||'';
 const name=sessionStorage.getItem('pdwStaffName')||'Staff';
 document.querySelector('#who').textContent=name+' • '+role;
@@ -31,6 +31,6 @@ document.querySelectorAll('[data-role]').forEach(el=>{
 });
 document.querySelector('#logout').onclick=()=>{
   ['pdwStaffSession','pdwStaffRole','pdwStaffName','pdwStaffLoginAt'].forEach(k=>sessionStorage.removeItem(k));
-  location.replace('./login.html?v=42');
+  location.replace('./login.html?v=43');
 };
-</script><script src="./feature-highlights.js?v=42"></script></body></html>
+</script><script src="./feature-highlights.js?v=43"></script></body></html>
