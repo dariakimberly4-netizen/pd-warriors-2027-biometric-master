@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <link rel="manifest" href="./manifest.webmanifest">
-<link rel="stylesheet" href="./app.css?v=44">
+<link rel="stylesheet" href="./app.css?v=52">
 <title>PD Warriors 2027 — Registration</title>
 <style>
 .actions{display:flex;gap:7px;flex-wrap:wrap}.actions button{width:auto;min-height:42px;margin:0;padding:8px 11px;font-size:14px;border-radius:11px}
@@ -18,7 +18,7 @@
 (function(){
   const ok=sessionStorage.getItem('pdwStaffSession')==='1';
   const role=sessionStorage.getItem('pdwStaffRole')||'';
-  if(!ok || !(role==='ADMIN'||role==='REGISTRATION')) location.replace('./login.html?v=44');
+  if(!ok || !(role==='ADMIN'||role==='REGISTRATION')) location.replace('./login.html?v=52');
 })();
 </script>
 
@@ -28,7 +28,7 @@
     <p>Master Database / Source of Truth</p>
   </div>
 
-  <a class="toplink" href="./admin.html?v=44">← Staff Menu</a>
+  <a class="toplink" href="./admin.html?v=52">← Staff Menu</a>
 
   <div class="card">
     <div id="staffWho" class="status"></div>
@@ -40,7 +40,7 @@
     </div>
     <div class="status" style="margin-top:12px">
       <b>REGISTRATION = MASTER DATABASE</b><br>
-      All attendee records, IDs, QR status, check-in, food, and raffle status belong here.
+      All attendee records, IDs, QR status, check-in, food, and Raffle Draw status belong here.
     </div>
   </div>
 
@@ -65,7 +65,7 @@
       <button class="ghost" id="cancelImport">CANCEL PREVIEW</button>
     </div>
 
-    <a class="btn primary" id="openBioBtn" href="./index.html?v=44" style="display:none">OPEN BIOMETRIC SEARCH</a>
+    <a class="btn primary" id="openBioBtn" href="./index.html?v=52" style="display:none">OPEN BIOMETRIC SEARCH</a>
     <p class="small">Preview first, then confirm. Existing arrival and claim status is preserved when IDs match.</p>
   </div>
 
@@ -81,7 +81,7 @@
         <thead>
           <tr>
             <th>ID</th><th>Name</th><th>Type</th><th>Status</th><th>Documents</th><th>Bio</th>
-            <th>Arrived</th><th>Snack</th><th>Lunch</th><th>Raffle</th><th>Actions</th>
+            <th>Arrived</th><th>Snack</th><th>Lunch</th><th>Raffle Draw</th><th>Actions</th>
           </tr>
         </thead>
         <tbody id="rows"></tbody>
@@ -105,8 +105,8 @@
   </div>
 </div>
 
-<script src="./app-core.js?v=44"></script>
-<script src="./vendor/xlsx.full.min.js?v=44"></script>
+<script src="./app-core.js?v=52"></script>
+<script src="./vendor/xlsx.full.min.js?v=52"></script>
 <script>
 const csvFile=document.querySelector('#csvFile');
 const previewBtn=document.querySelector('#previewBtn');
@@ -396,7 +396,8 @@ document.querySelector('#cancelImport').onclick=()=>{
 document.querySelector('#registrationSearch').addEventListener('input',render);
 render();
 </script>
-<script src="./registration-enhancements.js?v=44"></script>
-<script src="./feature-highlights.js?v=44"></script>
+<script src="./registration-enhancements.js?v=52"></script>
+<script src="./registration-admin-v52.js"></script>
+<script src="./feature-highlights.js?v=52"></script>
 </body>
 </html>
