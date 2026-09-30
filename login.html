@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<link rel="stylesheet" href="./app.css?v=32">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="stylesheet" href="./app.css?v=42">
 <title>PD Warriors 2027 — Staff Login</title>
 <style>
 .staff-login-highlight{
@@ -122,12 +123,12 @@ if(localStorage.getItem(STAFF_LOGIN_HIGHLIGHT_KEY)!=='1'){
 }
 
 const ACCOUNTS={
-  registration:{password:'PDW2027!',role:'REGISTRATION',name:'Registration Staff',go:'./master.html?v=32'},
-  checkin:{password:'PDW2027!',role:'CHECKIN',name:'Check-In Staff',go:'./checkin.html?v=32'},
-  snack:{password:'PDW2027!',role:'SNACK',name:'Snack Staff',go:'./snack.html?v=32'},
-  lunch:{password:'PDW2027!',role:'LUNCH',name:'Lunch Staff',go:'./lunch.html?v=32'},
-  raffle:{password:'PDW2027!',role:'RAFFLE',name:'Raffle Staff',go:'./raffle.html?v=32'},
-  admin:{password:'PDW2027!',role:'ADMIN',name:'Administrator',go:'./admin.html?v=32'}
+  registration:{password:'PDW2027!',role:'REGISTRATION',name:'Registration Staff',go:'./master.html?v=42'},
+  checkin:{password:'PDW2027!',role:'CHECKIN',name:'Check-In Staff',go:'./checkin.html?v=42'},
+  snack:{password:'PDW2027!',role:'SNACK',name:'Snack Staff',go:'./snack.html?v=42'},
+  lunch:{password:'PDW2027!',role:'LUNCH',name:'Lunch Staff',go:'./lunch.html?v=42'},
+  raffle:{password:'PDW2027!',role:'RAFFLE',name:'Raffle Staff',go:'./raffle.html?v=42'},
+  admin:{password:'PDW2027!',role:'ADMIN',name:'Administrator',go:'./admin.html?v=42'}
 };
 
 function showStatus(message,bad=false){
@@ -156,6 +157,8 @@ function doLogin(){
   sessionStorage.setItem('pdwStaffName',account.name);
   sessionStorage.setItem('pdwStaffUsername',u);
   sessionStorage.setItem('pdwStaffLoginAt',new Date().toISOString());
+  localStorage.setItem('pdwLastStaffRole',account.role);
+  localStorage.setItem('pdwLastStaffName',account.name);
 
   showStatus('Login successful. Opening '+account.name+'…');
   setTimeout(()=>location.href=account.go,250);
