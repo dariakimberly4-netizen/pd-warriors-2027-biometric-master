@@ -60,7 +60,8 @@
       <label for="namesSearch">Search Registration Name</label>
       <input id="namesSearch" type="search" autocomplete="off" placeholder="Type first name or last name">
 
-      <div id="namesList" class="names-roster-list" style="margin-top:12px"></div>
+      <div class="small" style="margin-top:10px"><b>Tap a name to select.</b></div>
+      <div id="namesList" class="names-roster-list" style="margin-top:8px"></div>
 
       <div id="selectedNameStatus" class="status warn" style="margin-top:12px">
         No Registration name selected.
@@ -77,11 +78,55 @@
     const style=document.createElement('style');
     style.textContent=`
       .names-roster-list{max-height:360px;overflow:auto;border:1px solid #e1d9ca;border-radius:15px;background:#fffdf8}
-      .names-roster-item{width:100%;margin:0;border:0;border-bottom:1px solid #ece5d8;border-radius:0;background:transparent;color:#0f5132;text-align:left;min-height:54px;padding:12px 14px;font-weight:900}
+      .names-roster-item{
+        width:100%;
+        margin:0;
+        border:0;
+        border-bottom:1px solid #ece5d8;
+        border-radius:0;
+        background:#fffdf8;
+        color:#0f5132;
+        text-align:left;
+        min-height:64px;
+        padding:12px 14px;
+        font-weight:900;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:12px;
+        cursor:pointer;
+        touch-action:manipulation;
+      }
       .names-roster-item:last-child{border-bottom:0}
-      .names-roster-item.selected{background:#eaf5ef}
-      .names-roster-item.arrived{opacity:.7}
-      .names-roster-item small{display:block;font-weight:700;color:#59655d;margin-top:3px}
+      .names-roster-item.selected{
+        background:#eaf5ef;
+        box-shadow:inset 4px 0 0 #0f5132;
+      }
+      .names-roster-item.arrived{background:#f4f4ef}
+      .names-roster-item .name-label{
+        flex:1;
+        min-width:0;
+        font-size:17px;
+        line-height:1.25;
+        color:#0f5132;
+      }
+      .names-roster-item .status-badge{
+        flex:0 0 auto;
+        border-radius:999px;
+        padding:7px 10px;
+        font-size:12px;
+        line-height:1;
+        font-weight:1000;
+        letter-spacing:.03em;
+        background:#f3ead7;
+        color:#6c531e;
+        border:1px solid #dfcfaa;
+      }
+      .names-roster-item.arrived .status-badge{
+        background:#e7f3ec;
+        color:#0f5132;
+        border-color:#c6decf;
+      }
     `;
     document.head.appendChild(style);
 
@@ -128,14 +173,26 @@
       const st=states[name]||{};
       btn.classList.toggle('selected',name===selectedName);
       btn.classList.toggle('arrived',!!st.arrived);
-      btn.textContent=name;
-      const small=document.createElement('small');
-      small.textContent=st.arrived?'ARRIVED'+(st.time?' • '+new Date(st.time).toLocaleTimeString():''):'WAITING';
-      btn.appendChild(small);
+
+      const nameLabel=document.createElement('span');
+      nameLabel.className='name-label';
+      nameLabel.textContent=name;
+
+      const badge=document.createElement('span');
+      badge.className='status-badge';
+      badge.textContent=st.arrived?'ARRIVED':'WAITING';
+
+      btn.replaceChildren(nameLabel,badge);
+
       btn.onclick=()=>{
         selectedName=name;
         updateSelected();
         render();
+        const list=document.querySelector('#namesList');
+        if(list){
+          const selected=list.querySelector('.names-roster-item.selected');
+          if(selected)selected.scrollIntoView({block:'nearest'});
+        }
       };
     });
     updateSelected();
