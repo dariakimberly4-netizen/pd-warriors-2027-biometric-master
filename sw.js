@@ -1,4 +1,4 @@
-const CACHE='pdw2027-raffle-draw-v51';
+const CACHE='pdw2027-registration-admin-v52';
 const ASSETS=[
   './vendor/jsQR.js',
   './vendor/qrcode.min.js',
@@ -22,7 +22,7 @@ const ASSETS=[
   './app.css',
   './app-core.js',
   './feature-highlights.js',
-  './registration-enhancements.js',
+  './registration-enhancements.js','./registration-admin-v52.js',
   './staff-names-share.html',
   './station-scanner.js','./station-names-one-tap-v50.js','./raffle-draw-v51.js',
   './checkin-names-roster.js','./checkin-names-roster-v48.js','./checkin-names-roster-v49.js',
