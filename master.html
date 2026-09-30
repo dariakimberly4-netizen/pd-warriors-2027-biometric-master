@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<link rel="stylesheet" href="./app.css">
+<link rel="stylesheet" href="./app.css?v=33">
 <title>PD Warriors 2027 — Registration</title>
 <style>
 .actions{display:flex;gap:7px;flex-wrap:wrap}.actions button{width:auto;min-height:42px;margin:0;padding:8px 11px;font-size:14px;border-radius:11px}
@@ -17,7 +17,7 @@
 (function(){
   const ok=sessionStorage.getItem('pdwStaffSession')==='1';
   const role=sessionStorage.getItem('pdwStaffRole')||'';
-  if(!ok || !(role==='ADMIN'||role==='REGISTRATION')) location.replace('./login.html?v=32');
+  if(!ok || !(role==='ADMIN'||role==='REGISTRATION')) location.replace('./login.html?v=33');
 })();
 </script>
 
@@ -27,7 +27,7 @@
     <p>Master Database / Source of Truth</p>
   </div>
 
-  <a class="toplink" href="./admin.html?v=32">← Staff Menu</a>
+  <a class="toplink" href="./admin.html?v=33">← Staff Menu</a>
 
   <div class="card">
     <div id="staffWho" class="status"></div>
@@ -63,7 +63,7 @@
       <button class="ghost" id="cancelImport">CANCEL PREVIEW</button>
     </div>
 
-    <a class="btn primary" id="openBioBtn" href="./index.html?v=32" style="display:none">OPEN BIOMETRIC SEARCH</a>
+    <a class="btn primary" id="openBioBtn" href="./index.html?v=33" style="display:none">OPEN BIOMETRIC SEARCH</a>
     <p class="small">Preview first, then confirm. Existing arrival and claim status is preserved when IDs match.</p>
   </div>
 
@@ -93,7 +93,7 @@
     <div class="editgrid">
       <div class="full"><label for="editName">Full Name</label><input id="editName"></div>
       <div><label for="editNickname">Nickname</label><input id="editNickname"></div>
-      <div><label for="editType">Type</label><select id="editType"><option>PATIENT</option><option>COMPANION</option></select></div>
+      <div><label for="editType">Type</label><select id="editType"><option>PATIENT</option><option>COMPANION</option></select></div><div><label for="editAge">Age</label><input id="editAge" inputmode="numeric"></div>
       <div><label for="editLocation">City / Area</label><input id="editLocation"></div>
       <div><label for="editCompanionOf">Linked Patient</label><input id="editCompanionOf"></div>
     </div>
@@ -103,8 +103,8 @@
   </div>
 </div>
 
-<script src="./app-core.js?v=32"></script>
-<script src="./vendor/xlsx.full.min.js?v=32"></script>
+<script src="./app-core.js?v=33"></script>
+<script src="./vendor/xlsx.full.min.js?v=33"></script>
 <script>
 const csvFile=document.querySelector('#csvFile');
 const previewBtn=document.querySelector('#previewBtn');
@@ -303,6 +303,7 @@ function openEdit(id){
   document.querySelector('#editName').value=p.name||'';
   document.querySelector('#editNickname').value=p.nickname||'';
   document.querySelector('#editType').value=p.type||'PATIENT';
+  document.querySelector('#editAge').value=p.age||'';
   document.querySelector('#editLocation').value=p.location||'';
   document.querySelector('#editCompanionOf').value=p.companionOf||'';
   document.querySelector('#editCard').classList.remove('hidden');
@@ -317,6 +318,7 @@ document.querySelector('#saveEdit').onclick=()=>{
     p.name=name;
     p.nickname=document.querySelector('#editNickname').value.trim();
     p.type=document.querySelector('#editType').value;
+    p.age=document.querySelector('#editAge').value.trim();
     p.location=document.querySelector('#editLocation').value.trim();
     p.companionOf=document.querySelector('#editCompanionOf').value.trim();
     p.needsReview=false;
@@ -365,6 +367,7 @@ document.querySelector('#cancelImport').onclick=()=>{
 document.querySelector('#registrationSearch').addEventListener('input',render);
 render();
 </script>
-<script src="./feature-highlights.js?v=32"></script>
+<script src="./registration-enhancements.js?v=33"></script>
+<script src="./feature-highlights.js?v=33"></script>
 </body>
 </html>
