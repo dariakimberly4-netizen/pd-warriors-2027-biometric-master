@@ -79,7 +79,7 @@
       <table>
         <thead>
           <tr>
-            <th>ID</th><th>Name</th><th>Type</th><th>Bio</th>
+            <th>ID</th><th>Name</th><th>Type</th><th>Status</th><th>Documents</th><th>Bio</th>
             <th>Arrived</th><th>Snack</th><th>Lunch</th><th>Raffle</th><th>Actions</th>
           </tr>
         </thead>
@@ -300,6 +300,12 @@ function render(){
       '<td><b>'+esc(p.id)+'</b></td>'+
       '<td>'+esc(p.name)+(p.needsReview?' <span title="Review needed">⚠</span>':'')+'</td>'+
       '<td>'+esc(p.type)+'</td>'+
+      '<td>'+esc(p.registrationStatus||'CONFIRMED')+'</td>'+
+      '<td>'+(()=>{
+        const docs=p.documents||{};
+        const vals=[docs.seniorId||'NOT REQUIRED',docs.pwdId||'NOT REQUIRED',docs.authorization||'NOT REQUIRED'];
+        return vals.every(v=>v==='VERIFIED'||v==='NOT REQUIRED')?'OK ✓':'CHECK';
+      })()+'</td>'+
       '<td>'+(p.biometric?'✓':'—')+'</td>'+
       '<td>'+(p.arrived?'✓':'—')+'</td>'+
       '<td>'+(p.snack?'✓':'—')+'</td>'+
@@ -310,7 +316,7 @@ function render(){
         '<button class="primary qrBtn" '+(i===0?'data-new-feature="qr-pass" ':'')+'data-id="'+esc(p.id)+'">QR PASS</button>'+
       '</div></td>'+
     '</tr>'
-  ).join('')||'<tr><td colspan="9">'+(q?'No matching record found.':'No participants yet.')+'</td></tr>';
+  ).join('')||'<tr><td colspan="11">'+(q?'No matching record found.':'No participants yet.')+'</td></tr>';
 
   document.querySelectorAll('.editBtn').forEach(b=>b.onclick=()=>openEdit(b.dataset.id));
   document.querySelectorAll('.qrBtn').forEach(b=>b.onclick=()=>{
