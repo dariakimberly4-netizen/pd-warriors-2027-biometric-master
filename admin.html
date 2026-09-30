@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="manifest" href="./manifest.webmanifest">
-<link rel="stylesheet" href="./app.css?v=44"><title>PD Warriors 2027 — Staff</title></head>
+<link rel="stylesheet" href="./app.css?v=45"><title>PD Warriors 2027 — Staff</title></head>
 <body><div class="app">
 <div class="hero"><h1>PD Warriors 2027</h1><p>Staff Menu</p></div>
 <div class="card">
@@ -7,7 +7,7 @@
   <h2 style="margin-top:16px">Staff Modules</h2>
   <div class="hub" id="menu">
     <a class="btn primary" data-role="REGISTRATION,ADMIN" href="./master.html?v=44">REGISTRATION</a>
-    <a class="btn blue" data-role="CHECKIN,ADMIN" href="./checkin.html?v=44">CHECK-IN</a>
+    <a class="btn blue" data-role="CHECKIN,ADMIN" href="./checkin.html?v=45">CHECK-IN</a>
     <a class="btn blue" data-role="SNACK,ADMIN" href="./snack.html?v=26">SNACK</a>
     <a class="btn blue" data-role="LUNCH,ADMIN" href="./lunch.html?v=26">LUNCH</a>
     <a class="btn blue" data-role="RAFFLE,ADMIN" href="./raffle.html?v=26">RAFFLE</a>
@@ -21,7 +21,7 @@
 </div>
 <script>
 const ok=sessionStorage.getItem('pdwStaffSession')==='1';
-if(!ok){location.replace('./login.html?v=44')}
+if(!ok){location.replace('./login.html?v=45')}
 const role=sessionStorage.getItem('pdwStaffRole')||'';
 const name=sessionStorage.getItem('pdwStaffName')||'Staff';
 document.querySelector('#who').textContent=name+' • '+role;
@@ -31,6 +31,6 @@ document.querySelectorAll('[data-role]').forEach(el=>{
 });
 document.querySelector('#logout').onclick=()=>{
   ['pdwStaffSession','pdwStaffRole','pdwStaffName','pdwStaffLoginAt'].forEach(k=>sessionStorage.removeItem(k));
-  location.replace('./login.html?v=44');
+  location.replace('./login.html?v=45');
 };
 </script><script src="./feature-highlights.js?v=44"></script></body></html>
