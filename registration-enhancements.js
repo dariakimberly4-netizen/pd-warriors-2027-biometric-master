@@ -1,8 +1,9 @@
 (()=>{
-  const NEW_VERSION='34';
+  const NEW_VERSION='35';
   let activeFilter='ALL';
   let currentProfileId='';
   let addCompanionPatientId='';
+  let pendingTransferPayload=null;
 
   const esc=v=>String(v==null?'':v)
     .replace(/&/g,'&amp;').replace(/</g,'&lt;')
@@ -58,16 +59,35 @@
     card.innerHTML=`
       <h2>Registration Tools</h2>
       <div class="reg-tools-grid">
-        <button class="primary" id="addWalkinBtn" data-new-feature="walk-in-v34">+ ADD WALK-IN ATTENDEE</button>
-        <button class="ghost" id="showReviewBtn" data-new-feature="needs-review-v34">SHOW NEEDS REVIEW</button>
-        <button class="gold" id="exportRegistrationBtn" data-new-feature="registration-export-v34">EXPORT REGISTRATION CSV</button>
-        <button class="ghost" id="backupRegistrationBtn" data-new-feature="offline-backup-v34">BACKUP DATABASE</button>
-        <button class="ghost" id="restoreRegistrationBtn" data-new-feature="offline-restore-v34">RESTORE BACKUP</button>
-        <input id="restoreRegistrationFile" class="hidden" type="file" accept=".json,application/json">
+        <button class="primary" id="addWalkinBtn" data-new-feature="walk-in-v35">+ ADD WALK-IN ATTENDEE</button>
+        <button class="ghost" id="showReviewBtn" data-new-feature="needs-review-v35">SHOW NEEDS REVIEW</button>
+        <button class="gold" id="exportRegistrationBtn" data-new-feature="registration-export-v35">EXPORT REGISTRATION CSV</button>
+        <button class="primary" id="sendRegistrationBtn" data-new-feature="direct-share-v35">SEND TO ANOTHER DEVICE</button>
+        <button class="ghost" id="receiveRegistrationBtn" data-new-feature="direct-receive-v35">RECEIVE REGISTRATION DATA</button>
+        <input id="receiveRegistrationFile" class="hidden" type="file" accept=".json,.pdw,application/json">
       </div>
-      <div id="backupRestoreStatus" class="status hidden reg-tools-note"></div>
+      <div id="transferStatus" class="status hidden reg-tools-note"></div>
     `;
     uploadCard.parentNode.insertBefore(card,uploadCard);
+
+    const transferPreview=document.createElement('div');
+    transferPreview.className='card hidden';
+    transferPreview.id='transferPreviewCard';
+    transferPreview.innerHTML=`
+      <h2>Receive Registration Data</h2>
+      <div class="status warn">Preview the incoming data before merging it into this device.</div>
+      <div class="reg-profile-grid" style="margin-top:12px">
+        <div class="reg-profile-item"><b>Incoming Records</b><span id="transferIncoming">0</span></div>
+        <div class="reg-profile-item"><b>New Records</b><span id="transferNew">0</span></div>
+        <div class="reg-profile-item"><b>Existing Matches</b><span id="transferExisting">0</span></div>
+        <div class="reg-profile-item"><b>Possible Conflicts</b><span id="transferConflicts">0</span></div>
+        <div class="reg-profile-item"><b>Transactions</b><span id="transferTransactions">0</span></div>
+        <div class="reg-profile-item"><b>Sent</b><span id="transferSentAt">—</span></div>
+      </div>
+      <button class="primary" id="confirmTransferMerge">CONFIRM MERGE</button>
+      <button class="ghost" id="cancelTransferMerge">CANCEL</button>
+    `;
+    uploadCard.parentNode.insertBefore(transferPreview,uploadCard);
 
     const walk=document.createElement('div');
     walk.className='card hidden';
@@ -101,9 +121,11 @@
     };
     document.querySelector('#saveWalkin').onclick=saveWalkin;
     document.querySelector('#exportRegistrationBtn').onclick=exportRegistrationCSV;
-    document.querySelector('#backupRegistrationBtn').onclick=backupRegistrationDatabase;
-    document.querySelector('#restoreRegistrationBtn').onclick=()=>document.querySelector('#restoreRegistrationFile').click();
-    document.querySelector('#restoreRegistrationFile').onchange=restoreRegistrationDatabase;
+    document.querySelector('#sendRegistrationBtn').onclick=sendRegistrationData;
+    document.querySelector('#receiveRegistrationBtn').onclick=()=>document.querySelector('#receiveRegistrationFile').click();
+    document.querySelector('#receiveRegistrationFile').onchange=prepareIncomingTransfer;
+    document.querySelector('#confirmTransferMerge').onclick=confirmIncomingTransfer;
+    document.querySelector('#cancelTransferMerge').onclick=cancelIncomingTransfer;
     document.querySelector('#showReviewBtn').onclick=()=>{
       setFilter('REVIEW');
       scrollToEl(document.querySelector('#registrationSearch'));
@@ -186,14 +208,14 @@
     bar.className='reg-filterbar';
     bar.id='regFilterBar';
     bar.innerHTML=`
-      <button class="ghost active regFilterBtn" data-filter="ALL" data-new-feature="registration-filters-v34">ALL</button>
-      <button class="ghost regFilterBtn" data-filter="PATIENT" data-new-feature="registration-filters-v34">PATIENTS</button>
-      <button class="ghost regFilterBtn" data-filter="COMPANION" data-new-feature="registration-filters-v34">COMPANIONS</button>
-      <button class="ghost regFilterBtn" data-filter="NOT_ARRIVED" data-new-feature="registration-filters-v34">NOT ARRIVED</button>
-      <button class="ghost regFilterBtn" data-filter="REVIEW" data-new-feature="registration-filters-v34">NEEDS REVIEW</button>
-      <button class="ghost regFilterBtn" data-filter="CONFIRMED" data-new-feature="registration-status-filter-v34">CONFIRMED</button>
-      <button class="ghost regFilterBtn" data-filter="CANCELLED" data-new-feature="registration-status-filter-v34">CANCELLED</button>
-      <button class="ghost regFilterBtn" data-filter="DOCS_PENDING" data-new-feature="document-filter-v34">DOCS PENDING</button>
+      <button class="ghost active regFilterBtn" data-filter="ALL" data-new-feature="registration-filters-v35">ALL</button>
+      <button class="ghost regFilterBtn" data-filter="PATIENT" data-new-feature="registration-filters-v35">PATIENTS</button>
+      <button class="ghost regFilterBtn" data-filter="COMPANION" data-new-feature="registration-filters-v35">COMPANIONS</button>
+      <button class="ghost regFilterBtn" data-filter="NOT_ARRIVED" data-new-feature="registration-filters-v35">NOT ARRIVED</button>
+      <button class="ghost regFilterBtn" data-filter="REVIEW" data-new-feature="registration-filters-v35">NEEDS REVIEW</button>
+      <button class="ghost regFilterBtn" data-filter="CONFIRMED" data-new-feature="registration-status-filter-v35">CONFIRMED</button>
+      <button class="ghost regFilterBtn" data-filter="CANCELLED" data-new-feature="registration-status-filter-v35">CANCELLED</button>
+      <button class="ghost regFilterBtn" data-filter="DOCS_PENDING" data-new-feature="document-filter-v35">DOCS PENDING</button>
     `;
     count.parentNode.insertBefore(bar,count);
     bar.querySelectorAll('.regFilterBtn').forEach(btn=>btn.onclick=()=>setFilter(btn.dataset.filter));
@@ -239,7 +261,7 @@
         btn.className='ghost profileBtn';
         btn.textContent='PROFILE';
         btn.dataset.id=id;
-        if(index===0)btn.setAttribute('data-new-feature','full-profile-v34');
+        if(index===0)btn.setAttribute('data-new-feature','full-profile-v35');
         btn.onclick=()=>openProfile(id);
         actions.insertBefore(btn,actions.firstChild);
       }
@@ -277,7 +299,7 @@
       <h2>Full Attendee Profile</h2>
       <div id="profileDetails" class="reg-profile-grid"></div>
       <div class="status" style="margin-top:16px"><b>Registration & Document Verification</b></div>
-      <div class="reg-verify-grid" data-new-feature="document-verification-v34">
+      <div class="reg-verify-grid" data-new-feature="document-verification-v35">
         <div><label for="profileRegStatus">Registration Status</label><select id="profileRegStatus">
           <option value="CONFIRMED">CONFIRMED</option>
           <option value="NEEDS REVIEW">NEEDS REVIEW</option>
@@ -294,12 +316,12 @@
           <option>NOT REQUIRED</option><option>PENDING</option><option>RECEIVED</option><option>VERIFIED</option>
         </select></div>
       </div>
-      <button class="primary" id="saveVerification" data-new-feature="save-verification-v34">SAVE STATUS / DOCUMENTS</button>
+      <button class="primary" id="saveVerification" data-new-feature="save-verification-v35">SAVE STATUS / DOCUMENTS</button>
       <div id="verificationMsg" class="status hidden" style="margin-top:10px"></div>
       <div id="companionManager" class="hidden" style="margin-top:18px">
         <h3>Companion Management</h3>
         <div id="companionList"></div>
-        <button class="primary" id="profileAddCompanion" data-new-feature="companion-management-v34">+ ADD COMPANION</button>
+        <button class="primary" id="profileAddCompanion" data-new-feature="companion-management-v35">+ ADD COMPANION</button>
       </div>
       <div class="reg-tools-grid" style="margin-top:12px">
         <button class="ghost" id="profileEdit">EDIT PROFILE</button>
@@ -505,45 +527,181 @@
     });
     const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(',')).join('\n');
     downloadBlob('PDW2027-registration-export.csv','text/csv;charset=utf-8',csv);
-    showBackupStatus('Registration CSV exported.');
+    showTransferStatus('Registration CSV exported.');
   }
 
-  function backupRegistrationDatabase(){
+  async function sendRegistrationData(){
+    const d=PDW.db();
+    if(!d.people.length){
+      showTransferStatus('There are no Registration records to send.',true);
+      return;
+    }
+
     const payload={
-      format:'PDW2027_OFFLINE_BACKUP',
+      format:'PDW2027_DIRECT_TRANSFER',
       version:1,
-      exportedAt:new Date().toISOString(),
-      data:PDW.db()
+      sentAt:new Date().toISOString(),
+      sentBy:sessionStorage.getItem('pdwStaffName')||'Registration Staff',
+      data:d
     };
-    downloadBlob('PDW2027-offline-backup.json','application/json',JSON.stringify(payload,null,2));
-    showBackupStatus('Offline database backup created.');
+    const file=new File(
+      [JSON.stringify(payload)],
+      'PDW2027-registration-transfer.pdw.json',
+      {type:'application/json'}
+    );
+
+    try{
+      if(!navigator.share){
+        throw new Error('Native device sharing is not available in this browser.');
+      }
+      if(navigator.canShare && !navigator.canShare({files:[file]})){
+        throw new Error('This device cannot share Registration files from the browser.');
+      }
+
+      await navigator.share({
+        title:'PD Warriors 2027 Registration Data',
+        text:'PD Warriors 2027 Registration data transfer',
+        files:[file]
+      });
+      showTransferStatus('Registration data handed to the device Share menu. Choose Quick Share, AirDrop, or another nearby sharing option.');
+    }catch(err){
+      if(err&&err.name==='AbortError'){
+        showTransferStatus('Sharing cancelled.');
+        return;
+      }
+      showTransferStatus((err&&err.message)||'Unable to open the device Share menu.',true);
+    }
   }
 
-  async function restoreRegistrationDatabase(e){
+  async function prepareIncomingTransfer(e){
     const file=e.target.files&&e.target.files[0];
     if(!file)return;
     try{
       const payload=JSON.parse(await file.text());
-      if(!payload||payload.format!=='PDW2027_OFFLINE_BACKUP'||!payload.data||!Array.isArray(payload.data.people)){
-        throw new Error('This is not a valid PD Warriors 2027 backup file.');
+      if(!payload||payload.format!=='PDW2027_DIRECT_TRANSFER'||!payload.data||!Array.isArray(payload.data.people)){
+        throw new Error('This is not a valid PD Warriors 2027 Registration transfer.');
       }
+
+      pendingTransferPayload=payload;
       const current=PDW.db();
-      if(current.people.length&&!confirm('Restore this backup and replace the current local Registration database on this device?'))return;
-      PDW.save(payload.data);
-      localStorage.setItem('pdw2027RegistrationUpdatedAt',new Date().toISOString());
-      showBackupStatus('Backup restored: '+payload.data.people.length+' attendee records loaded.');
-      if(typeof render==='function')render();
-      fillPatientSelect();
-      enhanceRowsAndFilter();
+      let newRecords=0,existing=0,conflicts=0;
+
+      payload.data.people.forEach(incoming=>{
+        const local=current.people.find(p=>p.id===incoming.id);
+        if(!local){newRecords++;return}
+        existing++;
+        const localStamp=Date.parse(local.updatedAt||local.registeredAt||0)||0;
+        const incomingStamp=Date.parse(incoming.updatedAt||incoming.registeredAt||0)||0;
+        const keyFields=['name','type','registrationStatus','companionOf'];
+        const differs=keyFields.some(k=>String(local[k]||'')!==String(incoming[k]||''));
+        if(differs&&localStamp&&incomingStamp&&localStamp!==incomingStamp)conflicts++;
+      });
+
+      document.querySelector('#transferIncoming').textContent=payload.data.people.length;
+      document.querySelector('#transferNew').textContent=newRecords;
+      document.querySelector('#transferExisting').textContent=existing;
+      document.querySelector('#transferConflicts').textContent=conflicts;
+      document.querySelector('#transferTransactions').textContent=Array.isArray(payload.data.tx)?payload.data.tx.length:0;
+      document.querySelector('#transferSentAt').textContent=fmtTime(payload.sentAt);
+
+      const card=document.querySelector('#transferPreviewCard');
+      card.classList.remove('hidden');
+      showTransferStatus('Incoming Registration data is ready for preview. No records have been changed yet.');
+      scrollToEl(card);
     }catch(err){
-      showBackupStatus('Restore failed: '+(err.message||'Invalid backup file.'),true);
+      pendingTransferPayload=null;
+      document.querySelector('#transferPreviewCard').classList.add('hidden');
+      showTransferStatus('Receive failed: '+((err&&err.message)||'Invalid transfer file.'),true);
     }finally{
       e.target.value='';
     }
   }
 
-  function showBackupStatus(message,bad=false){
-    const el=document.querySelector('#backupRestoreStatus');
+  function mergeTransferredPerson(local,incoming){
+    const merged={...local,...incoming};
+
+    // Never lose a completed event transaction already recorded on either device.
+    merged.biometric=!!local.biometric||!!incoming.biometric;
+    merged.arrived=!!local.arrived||!!incoming.arrived;
+    merged.snack=!!local.snack||!!incoming.snack;
+    merged.lunch=!!local.lunch||!!incoming.lunch;
+    merged.raffle=incoming.type==='COMPANION'?false:(!!local.raffle||!!incoming.raffle);
+
+    merged.arrivalAt=local.arrivalAt||incoming.arrivalAt||null;
+    merged.snackAt=local.snackAt||incoming.snackAt||null;
+    merged.lunchAt=local.lunchAt||incoming.lunchAt||null;
+    merged.raffleAt=local.raffleAt||incoming.raffleAt||null;
+    merged.registeredAt=local.registeredAt||incoming.registeredAt||new Date().toISOString();
+
+    const localStamp=Date.parse(local.updatedAt||local.registeredAt||0)||0;
+    const incomingStamp=Date.parse(incoming.updatedAt||incoming.registeredAt||0)||0;
+    if(localStamp>incomingStamp){
+      ['name','nickname','age','mobile','location','linkedPatientId','companionOf','registrationStatus','documents','needsReview']
+        .forEach(k=>{ if(local[k]!==undefined)merged[k]=local[k]; });
+    }
+
+    if(merged.type==='COMPANION')merged.raffle=false;
+    return merged;
+  }
+
+  function txKey(tx){
+    return [
+      tx.id||'',tx.action||'',tx.station||'',tx.timestamp||tx.time||'',tx.staffName||''
+    ].join('|');
+  }
+
+  function confirmIncomingTransfer(){
+    if(!pendingTransferPayload)return;
+
+    const current=PDW.db();
+    const incoming=pendingTransferPayload.data;
+    const byId=new Map(current.people.map(p=>[p.id,p]));
+
+    incoming.people.forEach(p=>{
+      const local=byId.get(p.id);
+      if(local){
+        const merged=mergeTransferredPerson(local,p);
+        Object.keys(local).forEach(k=>delete local[k]);
+        Object.assign(local,merged);
+      }else{
+        const copy={...p};
+        if(copy.type==='COMPANION')copy.raffle=false;
+        current.people.push(copy);
+        byId.set(copy.id,copy);
+      }
+    });
+
+    const existingTx=new Set((current.tx||[]).map(txKey));
+    (incoming.tx||[]).forEach(tx=>{
+      const key=txKey(tx);
+      if(!existingTx.has(key)){
+        current.tx.push(tx);
+        existingTx.add(key);
+      }
+    });
+
+    current.pending=Math.max(Number(current.pending||0),Number(incoming.pending||0));
+    current.syncedAt=new Date().toISOString();
+    PDW.save(current);
+    localStorage.setItem('pdw2027RegistrationUpdatedAt',new Date().toISOString());
+
+    const count=incoming.people.length;
+    pendingTransferPayload=null;
+    document.querySelector('#transferPreviewCard').classList.add('hidden');
+    showTransferStatus('Transfer merged successfully: '+count+' incoming Registration records processed.');
+    if(typeof render==='function')render();
+    fillPatientSelect();
+    enhanceRowsAndFilter();
+  }
+
+  function cancelIncomingTransfer(){
+    pendingTransferPayload=null;
+    document.querySelector('#transferPreviewCard').classList.add('hidden');
+    showTransferStatus('Incoming transfer cancelled. No records were changed.');
+  }
+
+  function showTransferStatus(message,bad=false){
+    const el=document.querySelector('#transferStatus');
     if(!el)return;
     el.className='status'+(bad?' bad':'');
     el.textContent=message;
