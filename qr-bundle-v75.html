@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#0f5132">
+<link rel="manifest" href="./manifest.webmanifest?v=75">
+<title>PD Warriors 2027 — QR Codes</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;min-height:100%;background:#fffaf0;color:#17221c;font-family:Arial,Helvetica,sans-serif;-webkit-text-size-adjust:100%}
+.page{width:100%;min-height:100vh;padding:10px 6px 30px}
+.hero{width:100%;background:#0f5132;color:#fff;border-radius:22px;padding:32px 14px;text-align:center;box-shadow:0 8px 22px rgba(20,35,28,.10)}
+.hero h1{margin:0;font-size:38px;line-height:1.04;font-weight:900}
+.hero p{margin:9px 0 0;font-size:22px;font-weight:750}
+.back{display:flex;align-items:center;min-height:54px;padding:0 6px;color:#0f5132;text-decoration:none;font-size:20px;font-weight:900}
+.summary{background:#fff;border:1px solid #e7dfcf;border-radius:20px;padding:18px 16px;margin-bottom:12px;box-shadow:0 8px 20px rgba(20,35,28,.06)}
+.summary h2{margin:0;color:#0f5132;font-size:28px;line-height:1.1}
+.summary p{margin:8px 0 0;color:#5d665f;font-size:18px;line-height:1.45;font-weight:700}
+.warn{margin-top:12px;background:#fff2e8;border:2px solid #efc694;color:#7b4e16;border-radius:16px;padding:14px;font-size:17px;font-weight:850;line-height:1.4}
+.grid{display:grid;grid-template-columns:1fr;gap:14px}
+.pass{width:100%;background:#fff;border:2px solid #c6a15b;border-radius:24px;padding:24px 10px 22px;text-align:center;box-shadow:0 8px 22px rgba(20,35,28,.08)}
+.pass.companion{border-color:#d9a0b8}
+.count{display:inline-block;margin-bottom:10px;padding:7px 12px;border-radius:999px;background:#eef8f2;color:#0f5132;font-size:15px;font-weight:900}
+.pass.companion .count{background:#fff0f6;color:#8a3458}
+.org{font-size:17px;font-weight:900;color:#0f5132;line-height:1.25}
+.event{margin:5px 0 12px;color:#0f5132;font-size:28px;line-height:1.1;font-weight:900}
+.name{font-size:36px;line-height:1.06;font-weight:900;color:#111}
+.type{margin-top:6px;font-size:20px;color:#555;font-weight:800}
+.linked{margin:10px auto 0;padding:10px 12px;max-width:94%;border-radius:14px;background:#fff7e9;border:1px solid #efd9ad;color:#5f4b22;font-size:17px;line-height:1.35;font-weight:800}
+.qr{width:min(90vw,400px);min-height:min(90vw,400px);margin:18px auto 14px;padding:8px;background:#fff;display:flex;align-items:center;justify-content:center}
+.qr img,.qr canvas{width:min(86vw,384px)!important;height:min(86vw,384px)!important;max-width:100%!important}
+.pid{font-size:29px;font-weight:900;letter-spacing:.01em}
+.badge{display:inline-block;margin-top:12px;padding:10px 14px;border-radius:999px;background:#e9f6ee;color:#0f5132;font-size:17px;font-weight:900}
+.entitlement{margin:16px 0 0;color:#4e5d55;font-size:19px;line-height:1.45;font-weight:900}
+.no-raffle{display:block;margin-top:5px;color:#8c2630}
+.footer{text-align:center;color:#707873;font-size:17px;font-weight:700;padding:22px 8px 8px}
+@media(max-width:390px){
+ .hero h1{font-size:34px}.hero p{font-size:20px}.summary h2{font-size:25px}
+ .name{font-size:33px}.event{font-size:25px}.org{font-size:16px}
+ .qr{width:min(92vw,370px);min-height:min(92vw,370px)}
+ .qr img,.qr canvas{width:min(87vw,354px)!important;height:min(87vw,354px)!important}
+}
+@media(min-width:760px){.page{max-width:980px;margin:auto;padding:24px}.grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<main class="page">
+<header class="hero"><h1>PD Warriors 2027</h1><p>Your QR Codes</p></header>
+<a class="back" href="./index.html?v=75">← Back to Search</a>
+
+<section class="summary">
+  <h2 id="summaryTitle">Loading QR codes…</h2>
+  <p id="summaryText">One person = one unique QR code.</p>
+  <div id="warning" class="warn" style="display:none"></div>
+</section>
+
+<section id="passes" class="grid"></section>
+<div class="footer">Save each QR code on your phone before the event.</div>
+</main>
+
+<script src="./app-core.js?v=75"></script>
+<script src="./vendor/qrcode.min.js?v=75"></script>
+<script>
+const active=PDW.active();
+const container=document.getElementById('passes');
+
+function norm(v){
+  return String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
+}
+function esc(v){
+  return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+if(!active){
+  location.replace('./index.html?v=75');
+}else{
+  const db=PDW.db();
+  const patient=active.type==='PATIENT'
+    ? active
+    : (db.people.find(p=>p.type==='PATIENT' && (p.id===active.linkedPatientId || norm(p.name)===norm(active.companionOf)))||null);
+
+  const people=patient
+    ? [patient,...db.people.filter(p=>p.type==='COMPANION' && (p.linkedPatientId===patient.id || norm(p.companionOf)===norm(patient.name)))]
+    : [active];
+
+  const patientName=patient?patient.name:active.name;
+  document.getElementById('summaryTitle').textContent=
+    people.length===1
+      ? patientName+' — 1 QR Code'
+      : patientName+' — '+people.length+' QR Codes';
+
+  document.getElementById('summaryText').textContent=
+    people.filter(p=>p.type==='PATIENT').length+' Patient / PD Warrior • '+
+    people.filter(p=>p.type==='COMPANION').length+' Companion'+(people.filter(p=>p.type==='COMPANION').length===1?'':'s');
+
+  if(patient && patient.companionCountMismatch){
+    const w=document.getElementById('warning');
+    w.style.display='block';
+    w.textContent=patient.reviewReason || 'Companion count does not match the named companions. Please ask Registration staff to review the record.';
+  }
+
+  container.innerHTML=people.map((p,i)=>{
+    const companion=p.type==='COMPANION';
+    const badge=p.biometric
+      ? 'Biometric Verified ✓'
+      : (p.verifyMethod==='STAFF_ASSISTED' ? 'Staff-Assisted Verification ✓' : (companion?'Companion QR Code Ready ✓':'QR Code Ready ✓'));
+    return '<article class="pass '+(companion?'companion':'')+'">'+
+      '<div class="count">QR '+(i+1)+' of '+people.length+'</div>'+
+      '<div class="org">PARKINSON\'S DISEASE WARRIORS PHILIPPINES</div>'+
+      '<div class="event">GET TOGETHER 2027</div>'+
+      '<div class="name">'+esc(p.name)+'</div>'+
+      '<div class="type">'+(companion?'COMPANION':'PD WARRIOR')+'</div>'+
+      (companion?'<div class="linked">Linked PD Warrior: '+esc(p.companionOf||patientName)+'</div>':'')+
+      '<div class="qr" id="qr-'+i+'"></div>'+
+      '<div class="pid">'+esc(p.id)+'</div>'+
+      '<div class="badge">'+esc(badge)+'</div>'+
+      '<div class="entitlement">'+
+        (companion
+          ? 'Snack ✓ &nbsp;•&nbsp; Lunch ✓<span class="no-raffle">Raffle ✕ — NOT ELIGIBLE</span>'
+          : 'Snack ✓ &nbsp;•&nbsp; Lunch ✓ &nbsp;•&nbsp; Raffle Draw Eligible ✓')+
+      '</div>'+
+    '</article>';
+  }).join('');
+
+  people.forEach((p,i)=>{
+    const el=document.getElementById('qr-'+i);
+    if(window.QRCode){
+      new QRCode(el,{
+        text:PDW.eventPassPayload(p),
+        width:384,
+        height:384,
+        colorDark:'#000000',
+        colorLight:'#ffffff',
+        correctLevel:QRCode.CorrectLevel.M
+      });
+    }else{
+      el.textContent='QR generator unavailable. Please reload the app.';
+    }
+  });
+}
+</script>
+</body>
+</html>
