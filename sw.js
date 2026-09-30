@@ -1,4 +1,4 @@
-const CACHE='pdw2027-home-biometric-v21';
+const CACHE='pdw2027-staff-files-v22';
 const ASSETS=['./','./index.html','./biometric.html','./pass.html','./admin.html','./master.html','./checkin.html','./snack.html','./lunch.html','./raffle.html','./reports.html','./privacy.html','./registration.html','./demo.html','./app.css','./app-core.js','./station-scanner.js','./manifest.webmanifest'];
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)))});
 self.addEventListener('activate',e=>e.waitUntil(Promise.all([self.clients.claim(),caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))])));
