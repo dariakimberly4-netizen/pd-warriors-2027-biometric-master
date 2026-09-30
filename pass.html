@@ -3,9 +3,34 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<link rel="stylesheet" href="./app.css">
+<link rel="stylesheet" href="./app.css?v=64">
 <title>PD Warriors 2027 — Generated QR Code</title>
-</head>
+<style>
+@media(max-width:700px){
+  .app{width:calc(100% - 20px);max-width:none;padding:16px 0 30px}
+  .hero{padding:30px 16px;border-radius:22px}
+  .hero h1{font-size:36px}
+  .hero p{font-size:21px;margin-top:8px}
+  .toplink{font-size:19px;min-height:48px;display:flex;align-items:center}
+  .card{padding:22px 14px;border-radius:22px}
+  .pass{width:100%;max-width:390px;padding:24px 16px;border-radius:22px}
+  .pass .small{font-size:15px!important;line-height:1.35}
+  .pass h3{font-size:24px;margin:6px 0 10px}
+  .pass .name{font-size:30px;line-height:1.1}
+  #type{font-size:18px;margin-top:5px}
+  #qr{width:280px!important;min-height:280px!important;margin:22px auto!important;padding:8px!important}
+  #qr img,#qr canvas{width:264px!important;height:264px!important}
+  .pid{font-size:25px}
+  .badge{font-size:16px;padding:11px 14px;margin-top:12px}
+  #entitlementText{font-size:18px;line-height:1.5}
+  .footer{font-size:17px;padding-top:18px}
+}
+@media(max-width:370px){
+  #qr{width:250px!important;min-height:250px!important}
+  #qr img,#qr canvas{width:234px!important;height:234px!important}
+  .pass .name{font-size:27px}
+}
+</style></head>
 <body>
 <div class="app">
   <div class="hero">
@@ -13,7 +38,7 @@
     <p>Generated QR Code</p>
   </div>
 
-  <a class="toplink" id="backLink" href="./index.html?v=58">← Back</a>
+  <a class="toplink" id="backLink" href="./index.html?v=64">← Back</a>
 
   <div class="card">
     <div class="pass">
@@ -38,22 +63,22 @@
   <div class="footer">Generated QR Code</div>
 </div>
 
-<script src="./app-core.js?v=58"></script>
-<script src="./vendor/qrcode.min.js?v=58"></script>
+<script src="./app-core.js?v=64"></script>
+<script src="./vendor/qrcode.min.js?v=64"></script>
 <script>
 const p=PDW.active();
 const staffMode=new URLSearchParams(location.search).get('staff')==='1';
 const backLink=document.querySelector('#backLink');
 if(staffMode){
-  backLink.href='./master.html?v=56';
+  backLink.href='./master.html?v=64';
   backLink.textContent='← Back to Registration';
 }else{
-  backLink.href='./index.html?v=58';
+  backLink.href='./index.html?v=64';
   backLink.textContent='← Back to Search';
 }
 
 if(!p){
-  location.href='./index.html?v=58';
+  location.href='./index.html?v=64';
 }else{
   document.querySelector('#name').textContent=p.name;
   document.querySelector('#type').textContent=p.type==='PATIENT'?'PD WARRIOR':'COMPANION';
@@ -80,8 +105,8 @@ if(!p){
   if(window.QRCode){
     new QRCode(q,{
       text:value,
-      width:214,
-      height:214,
+      width:264,
+      height:264,
       colorDark:'#000000',
       colorLight:'#ffffff',
       correctLevel:QRCode.CorrectLevel.M
@@ -91,7 +116,7 @@ if(!p){
   }
 
   bioBtn.onclick=()=>{
-    location.href='./biometric-large-v58.html?v=58';
+    location.href='./biometric-app-v63.html?v=64';
   };
 }
 </script>
