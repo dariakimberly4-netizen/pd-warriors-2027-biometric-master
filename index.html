@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0f5132">
+<meta name="theme-color" content="#0f5132">\n<meta name="mobile-web-app-capable" content="yes">\n<meta name="apple-mobile-web-app-capable" content="yes">\n<meta name="apple-mobile-web-app-title" content="PDW 2027">
 <link rel="manifest" href="./manifest.webmanifest">
 <title>PD Warriors 2027 — Home Biometric</title>
 <style>
@@ -219,8 +219,8 @@ button{
   <div class="footer">Step 1 of 3 • Search & Confirm</div>
 </main>
 
-<script src="./app-core.js?v=59"></script>
-<script src="./vendor/xlsx.full.min.js?v=59"></script>
+<script src="./app-core.js?v=63"></script>
+<script src="./vendor/xlsx.full.min.js?v=63"></script>
 <script>
 const SHEET_ID='1l8Xk4B5EkniJq3hVoES6blYPIFCEl1-rnmXmxWEJLgI';
 const SHEET_NAME='Form Responses 1';
@@ -415,7 +415,7 @@ function renderLocalResults(list){
     if(p.mobile)parts.push('Mobile: '+maskMobile(p.mobile));
     meta.textContent=parts.join(' • ');
     const b=document.createElement('button');b.textContent='THIS IS ME';
-    b.onclick=()=>{PDW.setActive(p.id);location.href='./biometric-fullscreen-v60.html?v=60'};
+    b.onclick=()=>{PDW.setActive(p.id);location.href='./biometric-app-v63.html?v=63'};
     box.append(h,meta,b);resultsEl.appendChild(box);
   });
   return true;
@@ -476,7 +476,7 @@ function renderResults(rows){
     b.textContent='THIS IS ME';
     b.onclick=()=>{
       PDW.selectMasterRecord(record);
-      location.href='./biometric-fullscreen-v60.html?v=60';
+      location.href='./biometric-app-v63.html?v=63';
     };
     box.append(h,p,b);
     resultsEl.appendChild(box);
