@@ -13,7 +13,7 @@
     <p>Generated QR Code</p>
   </div>
 
-  <a class="toplink" id="backLink" href="./index.html?v=56">← Back</a>
+  <a class="toplink" id="backLink" href="./index.html?v=57">← Back</a>
 
   <div class="card">
     <div class="pass">
@@ -38,8 +38,8 @@
   <div class="footer">Generated QR Code</div>
 </div>
 
-<script src="./app-core.js?v=56"></script>
-<script src="./vendor/qrcode.min.js?v=56"></script>
+<script src="./app-core.js?v=57"></script>
+<script src="./vendor/qrcode.min.js?v=57"></script>
 <script>
 const p=PDW.active();
 const staffMode=new URLSearchParams(location.search).get('staff')==='1';
@@ -48,12 +48,12 @@ if(staffMode){
   backLink.href='./master.html?v=56';
   backLink.textContent='← Back to Registration';
 }else{
-  backLink.href='./index.html?v=56';
+  backLink.href='./index.html?v=57';
   backLink.textContent='← Back to Search';
 }
 
 if(!p){
-  location.href='./index.html?v=56';
+  location.href='./index.html?v=57';
 }else{
   document.querySelector('#name').textContent=p.name;
   document.querySelector('#type').textContent=p.type==='PATIENT'?'PD WARRIOR':'COMPANION';
@@ -91,7 +91,7 @@ if(!p){
   }
 
   bioBtn.onclick=()=>{
-    location.href='./biometric.html?v=56';
+    location.href='./biometric-v57.html?v=57';
   };
 }
 </script>
